@@ -1,0 +1,103 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+apply from: 'dependencies.gradle'
+
+buildscript {
+    // Gradle will not find vars defined in an external file when referring to them
+    // in the buildscript block, unless you link it from the buildscript block, too.
+    apply from: 'dependencies.gradle'
+
+    repositories {
+        jcenter()
+        maven { url 'https://plugins.gradle.org/m2/' }
+    }
+    dependencies {
+        // See dependencies.gradle for declaration of plugins.
+
+        classpath gradlePlugins.android
+
+        // Compile-time annotation processing.
+        classpath gradlePlugins.apt
+
+        // Backport of some Java 8 language features such as Lambdas and method references.
+        classpath gradlePlugins.retrolambda
+
+        // Needed for Lint + Retrolambda.
+        classpath gradlePlugins.lombok
+
+        // Generates build info without breaking incremental builds.
+        classpath gradlePlugins.paperwork
+
+        // Code coverage.
+        classpath gradlePlugins.jacoco
+
+        // Performance metrics library for Android development.
+        classpath gradlePlugins.androidDevMetrics
+
+        // Catches common Java mistakes as compile-time errors.
+        classpath gradlePlugins.errorProne
+
+        // Method count plugin for android projects
+        classpath gradlePlugins.dexcount
+
+        // Check latest version of dependencies, task: dependencyUpdates
+        classpath gradlePlugins.versions
+    }
+
+    // Part of workaround for Lint + Retrolambda.
+    configurations.classpath.exclude group: 'com.android.tools.external.lombok'
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+
+    // Workaround to prevent Gradle from stealing focus from other apps during tests run/etc.
+    // https://gist.github.com/artem-zinnatullin/4c250e04636e25797165
+    tasks.withType(JavaForkOptions) {
+        jvmArgs '-Djava.awt.headless=true'
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+ext.preDexLibs = !project.hasProperty('disablePreDex')
+subprojects {
+    project.plugins.whenPluginAdded { plugin ->
+        if ('com.android.build.gradle.AppPlugin'.equals(plugin.class.name) || 'com.android.build.gradle.LibraryPlugin'.equals(plugin.class.name)) {
+            // enable or disable pre-dexing
+            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
+        }
+    }
+
+    project.plugins.apply('net.ltgt.errorprone')
+
+    configurations.errorprone {
+        resolutionStrategy.force "com.google.errorprone:error_prone_core:${versions.errorProneCoreVersion}"
+    }
+
+    afterEvaluate {
+        tasks.findByName('pmd').dependsOn('assemble')
+        tasks.findByName('findbugs').dependsOn('assemble')
+
+        def checkTask = tasks.findByName('check')
+
+        checkTask.dependsOn('pmd')
+        checkTask.dependsOn('findbugs')
+        checkTask.dependsOn('checkstyle')
+
+        dependencyUpdates.outputDir = new File("${projectDir}/build/reports/versions")
+
+        // Log instrumentation tests results.
+        tasks.withType(com.android.build.gradle.internal.tasks.AndroidTestTask) { task ->
+            task.doFirst {
+                logging.level = LogLevel.INFO
+            }
+            task.doLast {
+                logging.level = LogLevel.LIFECYCLE
+            }
+        }
+    }
+}
