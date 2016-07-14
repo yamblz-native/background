@@ -27,22 +27,6 @@ public class DeveloperSettingsPresenterTest {
     }
 
     @Test
-    public void bindView_shouldSendGitShaToTheView() {
-        when(developerSettingsModel.getGitSha()).thenReturn("test git sha");
-
-        developerSettingsPresenter.bindView(developerSettingsView);
-        verify(developerSettingsView).changeGitSha("test git sha");
-    }
-
-    @Test
-    public void bindView_shouldSendBuildDateToTheView() {
-        when(developerSettingsModel.getBuildDate()).thenReturn("test build date");
-
-        developerSettingsPresenter.bindView(developerSettingsView);
-        verify(developerSettingsView).changeBuildDate("test build date");
-    }
-
-    @Test
     public void bindView_shouldSendBuildVersionCodeToTheView() {
         when(developerSettingsModel.getBuildVersionCode()).thenReturn("test build version code");
 

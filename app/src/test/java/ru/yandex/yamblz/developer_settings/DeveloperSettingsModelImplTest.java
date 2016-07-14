@@ -5,78 +5,25 @@ import ru.yandex.yamblz.App;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import hu.supercluster.paperwork.Paperwork;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class DeveloperSettingsModelImplTest {
     private DeveloperSettingsModelImpl developerSettingsModel;
     private DeveloperSettings developerSettings;
-    private Paperwork paperwork;
 
     @Before
     public void beforeEachTest() {
         developerSettings = mock(DeveloperSettings.class);
-        paperwork = mock(Paperwork.class);
 
         developerSettingsModel = new DeveloperSettingsModelImpl(
                 mock(App.class),
                 developerSettings,
-                mock(LeakCanaryProxy.class),
-                paperwork
+                mock(LeakCanaryProxy.class)
         );
-    }
-
-    @Test
-    public void testGetGitSha() {
-        when(paperwork.get("gitSha")).thenReturn("abc123");
-
-        assertThat(developerSettingsModel.getGitSha()).isEqualTo("abc123");
-        verify(paperwork).get("gitSha");
-        verifyNoMoreInteractions(paperwork);
-    }
-
-    @Test
-    public void getGitSha_shouldReturnSameResultForSeveralCalls() {
-        when(paperwork.get("gitSha")).thenReturn("abc123");
-
-        String sha1 = developerSettingsModel.getGitSha();
-        String sha2 = developerSettingsModel.getGitSha();
-        String sha3 = developerSettingsModel.getGitSha();
-
-        assertThat(sha1).isEqualTo(sha2).isEqualTo(sha3).isEqualTo("abc123");
-    }
-
-    @Test
-    public void testGetBuildDate() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String date = dateFormat.format(new Date());
-        when(paperwork.get("buildDate")).thenReturn(date);
-
-        assertThat(developerSettingsModel.getBuildDate()).isEqualTo(date);
-        verify(paperwork).get("buildDate");
-        verifyNoMoreInteractions(paperwork);
-    }
-
-    @Test
-    public void getBuildDate_shouldReturnSameResultForSeveralCalls() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String date = dateFormat.format(new Date());
-        when(paperwork.get("buildDate")).thenReturn(date);
-
-        String buildDate1 = developerSettingsModel.getBuildDate();
-        String buildDate2 = developerSettingsModel.getBuildDate();
-        String buildDate3 = developerSettingsModel.getBuildDate();
-
-        assertThat(buildDate1).isEqualTo(buildDate2).isEqualTo(buildDate3).isEqualTo(date);
     }
 
     @Test
