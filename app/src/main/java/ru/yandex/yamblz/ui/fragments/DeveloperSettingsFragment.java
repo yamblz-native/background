@@ -37,12 +37,6 @@ public class DeveloperSettingsFragment extends BaseFragment implements Developer
     @Inject
     LynxConfig lynxConfig;
 
-    @BindView(R.id.developer_settings_git_sha_text_view)
-    TextView gitShaTextView;
-
-    @BindView(R.id.developer_settings_build_date_text_view)
-    TextView buildDateTextView;
-
     @BindView(R.id.developer_settings_build_version_code_text_view)
     TextView buildVersionCodeTextView;
 
@@ -91,24 +85,6 @@ public class DeveloperSettingsFragment extends BaseFragment implements Developer
     void onRestartAppClick() {
         final FragmentActivity activity = getActivity();
         ProcessPhoenix.triggerRebirth(activity, new Intent(activity, activity.getClass()));
-    }
-
-    @Override
-    @AnyThread
-    public void changeGitSha(@NonNull String gitSha) {
-        runOnUiThreadIfFragmentAlive(() -> {
-            assert gitShaTextView != null;
-            gitShaTextView.setText(gitSha);
-        });
-    }
-
-    @Override
-    @AnyThread
-    public void changeBuildDate(@NonNull String date) {
-        runOnUiThreadIfFragmentAlive(() -> {
-            assert buildDateTextView != null;
-            buildDateTextView.setText(date);
-        });
     }
 
     @Override

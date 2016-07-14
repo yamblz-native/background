@@ -24,43 +24,6 @@
             android:textSize="18sp"
             tools:ignore="HardcodedText" />
 
-        <TextView
-            style="@style/DeveloperSettingsCategoryTitle"
-            android:text="Build info"
-            tools:ignore="HardcodedText" />
-
-        <View style="@style/DeveloperSettingsCategoryDivider" />
-
-        <LinearLayout style="@style/DeveloperSettingsItemContainer">
-
-            <TextView
-                style="@style/DeveloperSettingsItemTitle"
-                android:text="Git sha"
-                tools:ignore="HardcodedText" />
-
-            <TextView
-                android:id="@+id/developer_settings_git_sha_text_view"
-                style="@style/DeveloperSettingsItemControl"
-                android:textIsSelectable="true"
-                tools:text="86bec6a6595bf7d" />
-
-        </LinearLayout>
-
-        <LinearLayout style="@style/DeveloperSettingsItemContainer">
-
-            <TextView
-                style="@style/DeveloperSettingsItemTitle"
-                android:text="Build date"
-                tools:ignore="HardcodedText" />
-
-            <TextView
-                android:id="@+id/developer_settings_build_date_text_view"
-                style="@style/DeveloperSettingsItemControl"
-                android:textIsSelectable="true"
-                tools:text="2020-09-22 16:35" />
-
-        </LinearLayout>
-
         <LinearLayout style="@style/DeveloperSettingsItemContainer">
 
             <TextView

@@ -9,7 +9,6 @@ import com.facebook.stetho.Stetho;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import hu.supercluster.paperwork.Paperwork;
 import ru.yandex.yamblz.BuildConfig;
 import timber.log.Timber;
 
@@ -28,9 +27,6 @@ public class DeveloperSettingsModelImpl implements DeveloperSettingsModel {
     private final LeakCanaryProxy leakCanaryProxy;
 
     @NonNull
-    private final Paperwork paperwork;
-
-    @NonNull
     private final AtomicBoolean stethoAlreadyEnabled = new AtomicBoolean();
 
     @NonNull
@@ -41,22 +37,10 @@ public class DeveloperSettingsModelImpl implements DeveloperSettingsModel {
 
     public DeveloperSettingsModelImpl(@NonNull Application application,
                                       @NonNull DeveloperSettings developerSettings,
-                                      @NonNull LeakCanaryProxy leakCanaryProxy,
-                                      @NonNull Paperwork paperwork) {
+                                      @NonNull LeakCanaryProxy leakCanaryProxy) {
         this.application = application;
         this.developerSettings = developerSettings;
         this.leakCanaryProxy = leakCanaryProxy;
-        this.paperwork = paperwork;
-    }
-
-    @NonNull
-    public String getGitSha() {
-        return paperwork.get("gitSha");
-    }
-
-    @NonNull
-    public String getBuildDate() {
-        return paperwork.get("buildDate");
     }
 
     @NonNull

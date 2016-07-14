@@ -7,12 +7,6 @@ import ru.yandex.yamblz.performance.AnyThread;
 public interface DeveloperSettingsView {
 
     @AnyThread
-    void changeGitSha(@NonNull String gitSha);
-
-    @AnyThread
-    void changeBuildDate(@NonNull String date);
-
-    @AnyThread
     void changeBuildVersionCode(@NonNull String versionCode);
 
     @AnyThread

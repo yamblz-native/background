@@ -24,9 +24,6 @@ buildscript {
         // Needed for Lint + Retrolambda.
         classpath gradlePlugins.lombok
 
-        // Generates build info without breaking incremental builds.
-        classpath gradlePlugins.paperwork
-
         // Code coverage.
         classpath gradlePlugins.jacoco
 

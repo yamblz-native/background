@@ -18,8 +18,6 @@ public class DeveloperSettingsPresenter extends Presenter<DeveloperSettingsView>
     public void bindView(@NonNull DeveloperSettingsView view) {
         super.bindView(view);
 
-        view.changeGitSha(developerSettingsModel.getGitSha());
-        view.changeBuildDate(developerSettingsModel.getBuildDate());
         view.changeBuildVersionCode(developerSettingsModel.getBuildVersionCode());
         view.changeBuildVersionName(developerSettingsModel.getBuildVersionName());
         view.changeStethoState(developerSettingsModel.isStethoEnabled());

@@ -1,18 +1,10 @@
 apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'com.neenbedankt.android-apt'
-apply plugin: 'hu.supercluster.paperwork'
 apply from: '../code_quality_tools/jacoco.gradle'
 apply plugin: 'com.frogermcs.androiddevmetrics'
 apply from: '../code_quality_tools/quality.gradle'
 apply plugin: 'com.github.ben-manes.versions'
-
-paperwork {
-    set = [
-        gitSha:    gitSha(),
-        buildDate: buildTime("dd-MM-yyyy HH:00:00 z", "UTC"),
-    ]
-}
 
 android {
     // Declared in dependencies.gradle in the root of the project.
@@ -110,7 +102,6 @@ dependencies {
     compile libraries.stetho
     compile libraries.leakCanary
     compile libraries.tinyDancer
-    compile libraries.paperwork
     compile libraries.lynx
     compile libraries.processPhoenix
 
