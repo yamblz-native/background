@@ -12,6 +12,7 @@ import ru.yandex.yamblz.developer_settings.DeveloperSettingsComponent;
 import ru.yandex.yamblz.developer_settings.DeveloperSettingsModel;
 import ru.yandex.yamblz.developer_settings.DeveloperSettingsModule;
 import ru.yandex.yamblz.developer_settings.LeakCanaryProxy;
+import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.ui.activities.MainActivity;
 
 @Singleton
@@ -36,4 +37,6 @@ public interface ApplicationComponent {
     Handler mainThreadHandler();
 
     void inject(@NonNull MainActivity mainActivity);
+
+    CollageLoader collageLoader();
 }
