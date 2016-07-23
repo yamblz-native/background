@@ -61,7 +61,7 @@ public class ApplicationModule {
     @Singleton
     @Named(WORKER_EXECUTOR)
     Executor provideWorkerExecutor() {
-        return new ThreadPoolExecutor(4, 10, 120, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1));
+        return new ThreadPoolExecutor(4, 10, 120, TimeUnit.SECONDS, new ArrayBlockingQueue<>(10));
     }
 
     @Provides

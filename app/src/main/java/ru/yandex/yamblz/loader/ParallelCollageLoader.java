@@ -3,6 +3,7 @@ package ru.yandex.yamblz.loader;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.widget.ImageView;
 
 import java.lang.ref.WeakReference;
@@ -18,10 +19,10 @@ public class ParallelCollageLoader implements CollageLoader {
     private ImageDownloader mImageDownloader;
     private CollageStrategy mDefaultCollageStrategy;
 
-
     public ParallelCollageLoader(@NonNull Executor postExecutor, @NonNull Executor workerExecutor,
                                  @NonNull ImageDownloader imageDownloader,
                                  @NonNull CollageStrategy defaultStrategy) {
+        Log.e("TAG", postExecutor + " " + workerExecutor);
         this.mPostExecutor = postExecutor;
         this.mWorkerExecutor = workerExecutor;
         this.mImageDownloader = imageDownloader;
@@ -46,6 +47,12 @@ public class ParallelCollageLoader implements CollageLoader {
         private void init() {
             this.mCntOfImages = new AtomicInteger(mUrls.size());
             this.mImages = new ArrayList<>(mUrls.size());
+        }
+
+        private void doWork() {
+            for (String url : mUrls) {
+                mWorkerExecutor.execute(() -> postImage(mImageDownloader.downloadBitmap(url)));
+            }
         }
 
         private void postImage(Bitmap bitmap) {
@@ -105,12 +112,6 @@ public class ParallelCollageLoader implements CollageLoader {
 
     private void process(@NonNull List<String> urls, @NonNull Object listener,
                          @Nullable CollageStrategy strategy) {
-        processJob(new Job(urls, listener, strategy));
-    }
-
-    private void processJob(Job job) {
-        for (String url : job.mUrls) {
-            mWorkerExecutor.execute(() -> job.postImage(mImageDownloader.downloadBitmap(url)));
-        }
+        (new Job(urls, listener, strategy)).doWork();
     }
 }
