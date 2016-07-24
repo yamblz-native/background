@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import ru.yandex.yamblz.artists.utils.DataSingleton;
 import ru.yandex.yamblz.developer_settings.DevMetricsProxy;
 import ru.yandex.yamblz.developer_settings.DeveloperSettingsModel;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
@@ -36,6 +37,7 @@ public class App extends Application {
 
         CollageLoaderManager.init(null);  // add implementation
         CriticalSectionsManager.init(null); // add implementation
+        DataSingleton.init(this);
     }
 
     @NonNull

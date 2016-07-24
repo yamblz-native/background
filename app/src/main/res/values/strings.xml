@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Yamblz</string>
     <string name="content">Hello</string>
+    <string name="no_intenet_message">Check your connection and try again</string>
+    <string name="retry_connect">Retry</string>
 </resources>
