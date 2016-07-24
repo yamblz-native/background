@@ -45,7 +45,7 @@ public class ContentFragment extends BaseFragment {
         urls.add("http://avatars.yandex.net/get-music-content/be7f0f49.p.74614/300x300");
         urls.add("http://avatars.yandex.net/get-music-content/40598113.p.1150/300x300");
 
-        mCollageLoader.loadCollage(urls, imageView, null, null);
+        mCollageLoader.loadCollage(urls, imageView, null);
 
         return view;
     }

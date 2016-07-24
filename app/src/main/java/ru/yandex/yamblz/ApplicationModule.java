@@ -33,8 +33,6 @@ public class ApplicationModule {
 
     public static final String WORKER_EXECUTOR = "WORKER_EXECUTOR";
 
-    public static final String COMMUNICATION_EXECUTOR = "COMMUNICATION_EXECUTOR";
-
     @NonNull
     private final Application application;
 
@@ -70,13 +68,6 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
-    @Named(COMMUNICATION_EXECUTOR)
-    Executor provideCommunicationExecutor() {
-        return Executors.newSingleThreadExecutor();
-    }
-
-    @Provides
-    @Singleton
     ImageDownloader provideImageDownloader() {
         return new UrlImageDownloader();
     }
@@ -91,11 +82,9 @@ public class ApplicationModule {
     @Singleton
     CollageLoader provideCollageLoader(@Named(POST_EXECUTOR) Executor postExecutor,
                                        @Named(WORKER_EXECUTOR) Executor workerExecutor,
-                                       @Named(COMMUNICATION_EXECUTOR) Executor communicationExecutor,
                                        ImageDownloader imageDownloader,
                                        CollageStrategy defaultStrategy) {
-        return new ParallelCollageLoader(postExecutor, workerExecutor, communicationExecutor,
-                imageDownloader, defaultStrategy);
+        return new ParallelCollageLoader(postExecutor, workerExecutor, imageDownloader, defaultStrategy);
     }
 
 }
