@@ -2,6 +2,7 @@ package ru.yandex.yamblz.handler;
 
 public interface CriticalSectionsHandler {
 
+    //пока работает секция ло не работают
     void startSection(int id);
 
     void stopSection(int id);

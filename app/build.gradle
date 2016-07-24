@@ -92,11 +92,14 @@ dependencies {
     compile libraries.supportDesign
     compile libraries.supportRecyclerView
     compile libraries.supportCardView
+    compile libraries.rx
 
     compile libraries.butterKnife
     apt libraries.butterKnifeCompiler
 
     compile libraries.timber
+    compile libraries.rx
+    compile libraries.rxAndroid
 
     // Developer tools (Developer Settings)
     compile libraries.stetho

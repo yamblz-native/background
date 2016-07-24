@@ -95,6 +95,17 @@ public class DataSingleton {
         return new ArrayList<>(artistsByGenre.keySet());
     }
 
+    public List<String> getImagesForGenre(String genre){
+        int index=getGenres().indexOf(genre);
+        List<ArtistModel> artists=getArtistsByGenre(genre);
+        if(artists==null)return null;
+        List<String> urls=new ArrayList<>();
+        for(ArtistModel artistModel:artists){
+            urls.add(artistModel.smallImageUrl);
+        }
+        return urls;
+    }
+
     public List<ArtistModel> getArtistsByGenre(String genre){
         return artistsByGenre.get(genre);
     }

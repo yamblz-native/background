@@ -66,6 +66,8 @@ ext.libraries = [
         butterKnife             : "com.jakewharton:butterknife:$versions.butterKnife",
         butterKnifeCompiler     : "com.jakewharton:butterknife-compiler:$versions.butterKnife",
         timber                  : "com.jakewharton.timber:timber:$versions.timber",
+        rx                      : "io.reactivex:rxjava:1.1.8",
+        rxAndroid               : "io.reactivex:rxandroid:1.2.1",
 
         // Developer Tools
         stetho                  : "com.facebook.stetho:stetho:$versions.stetho",
