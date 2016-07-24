@@ -3,6 +3,7 @@ package ru.yandex.yamblz.loader;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.ImageView;
 
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.util.List;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 public class StubCollageLoader implements CollageLoader {
 
@@ -42,7 +44,7 @@ public class StubCollageLoader implements CollageLoader {
     public void loadCollage(List<String> urls, ImageTarget imageTarget,
                             CollageStrategy collageStrategy) {
         List<Bitmap> bitmaps=new ArrayList<>();
-        Observable.from(urls).subscribeOn(AndroidSchedulers.mainThread()).observeOn(AndroidSchedulers.mainThread())
+        Observable.from(urls).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread())
                 .flatMap(new LoadFunc()).doOnCompleted(() -> imageTarget.onLoadBitmap(collageStrategy.create(bitmaps)))
                 .subscribe(bitmap -> {
                     bitmaps.add(bitmap);
@@ -57,6 +59,7 @@ public class StubCollageLoader implements CollageLoader {
                 new AsyncTask<String,Void,Bitmap>(){
                     @Override
                     protected Bitmap doInBackground(String... params) {
+                        Log.d("sdasd",Thread.currentThread().toString());
                         Bitmap b=getBitmapFromURL(params[0]);
                         return b;
                     }
