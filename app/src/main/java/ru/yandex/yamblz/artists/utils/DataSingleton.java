@@ -26,7 +26,7 @@ public class DataSingleton {
     private DataSingleton(Context context){
         this.context=context;
         String jsonString=CacheHelper.readCacheString(context, ARTIST_JSON_KEY);
-        if(false && jsonString!=null){
+        if(jsonString!=null){
             artists=parseData(jsonString);
             Log.i(TAG,"get data from cache");
         }
