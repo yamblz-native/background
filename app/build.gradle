@@ -15,7 +15,8 @@ android {
         applicationId 'ru.yandex.yamblz'
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
-        versionCode versions.code // Notice that you may want to use BUILD_NUMBER from CI in real project with own CI.
+        versionCode versions.code
+        // Notice that you may want to use BUILD_NUMBER from CI in real project with own CI.
         versionName versions.name
 
         // Make generated apks contain version name and code.
@@ -121,6 +122,9 @@ dependencies {
         exclude module: 'recyclerview-v7'
         exclude module: 'support-v4'
     }
+    compile 'io.reactivex:rxjava:1.1.6'
+    compile 'com.squareup.okhttp3:okhttp:3.2.0'
+    compile 'com.google.code.gson:gson:2.6.2'
 }
 
 configurations.all {
