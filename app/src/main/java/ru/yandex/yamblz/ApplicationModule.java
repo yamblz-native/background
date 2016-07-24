@@ -1,6 +1,7 @@
 package ru.yandex.yamblz;
 
 import android.app.Application;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -17,9 +18,11 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import ru.yandex.yamblz.loader.Cache;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.loader.CollageStrategy;
 import ru.yandex.yamblz.loader.ImageDownloader;
+import ru.yandex.yamblz.loader.ImagesLRUCache;
 import ru.yandex.yamblz.loader.ParallelCollageLoader;
 import ru.yandex.yamblz.loader.TableCollageStrategy;
 import ru.yandex.yamblz.loader.UrlImageDownloader;
@@ -80,11 +83,19 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
+    Cache<String, Bitmap> provideImageCache() {
+        return new ImagesLRUCache(4 * 1024 * 1024);
+    }
+
+    @Provides
+    @Singleton
     CollageLoader provideCollageLoader(@Named(POST_EXECUTOR) Executor postExecutor,
                                        @Named(WORKER_EXECUTOR) Executor workerExecutor,
                                        ImageDownloader imageDownloader,
-                                       CollageStrategy defaultStrategy) {
-        return new ParallelCollageLoader(postExecutor, workerExecutor, imageDownloader, defaultStrategy);
+                                       CollageStrategy defaultStrategy,
+                                       Cache<String, Bitmap> cache) {
+        return new ParallelCollageLoader(postExecutor, workerExecutor, imageDownloader,
+                defaultStrategy, cache);
     }
 
 }

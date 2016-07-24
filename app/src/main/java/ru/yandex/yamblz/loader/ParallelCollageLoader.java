@@ -17,14 +17,18 @@ public class ParallelCollageLoader implements CollageLoader {
     private Executor mWorkerExecutor;
     private ImageDownloader mImageDownloader;
     private CollageStrategy mDefaultCollageStrategy;
+    private Cache<String, Bitmap> mCache;
 
-    public ParallelCollageLoader(@NonNull Executor postExecutor, @NonNull Executor workerExecutor,
+    public ParallelCollageLoader(@NonNull Executor postExecutor,
+                                 @NonNull Executor workerExecutor,
                                  @NonNull ImageDownloader imageDownloader,
-                                 @NonNull CollageStrategy defaultStrategy) {
+                                 @NonNull CollageStrategy defaultStrategy,
+                                 @Nullable Cache<String, Bitmap> cache) {
         this.mPostExecutor = postExecutor;
         this.mWorkerExecutor = workerExecutor;
         this.mImageDownloader = imageDownloader;
         this.mDefaultCollageStrategy = defaultStrategy;
+        this.mCache = cache;
     }
 
     @Override
@@ -80,14 +84,26 @@ public class ParallelCollageLoader implements CollageLoader {
 
         private void doWork() {
             for (String url : mUrls) {
-                mWorkerExecutor.execute(() -> postImage(mImageDownloader.downloadBitmap(url)));
+                mWorkerExecutor.execute(() -> processUrl(url));
             }
         }
 
-        private void postImage(Bitmap bitmap) {
+        private void processUrl(@NonNull String url) {
+            if(mCache != null && mCache.containsKey(url)) {
+                postImage(mCache.get(url));
+            } else {
+                Bitmap image = mImageDownloader.downloadBitmap(url);
+                if(mCache != null) {
+                    mCache.put(url, image);
+                }
+                postImage(image);
+            }
+        }
+
+        private void postImage(Bitmap image) {
             int left = mCntOfImages.decrementAndGet();
             synchronized (mImages) {
-                mImages.add(bitmap);
+                mImages.add(image);
             }
             if (left == 0) {
                 postResult(transformToCollage());
