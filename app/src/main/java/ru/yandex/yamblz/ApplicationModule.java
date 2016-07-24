@@ -7,6 +7,8 @@ import android.support.annotation.NonNull;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +32,8 @@ public class ApplicationModule {
     public static final String POST_EXECUTOR = "POST_EXECUTOR";
 
     public static final String WORKER_EXECUTOR = "WORKER_EXECUTOR";
+
+    public static final String COMMUNICATION_EXECUTOR = "COMMUNICATION_EXECUTOR";
 
     @NonNull
     private final Application application;
@@ -66,6 +70,13 @@ public class ApplicationModule {
 
     @Provides
     @Singleton
+    @Named(COMMUNICATION_EXECUTOR)
+    Executor provideCommunicationExecutor() {
+        return Executors.newSingleThreadExecutor();
+    }
+
+    @Provides
+    @Singleton
     ImageDownloader provideImageDownloader() {
         return new UrlImageDownloader();
     }
@@ -80,9 +91,11 @@ public class ApplicationModule {
     @Singleton
     CollageLoader provideCollageLoader(@Named(POST_EXECUTOR) Executor postExecutor,
                                        @Named(WORKER_EXECUTOR) Executor workerExecutor,
+                                       @Named(COMMUNICATION_EXECUTOR) Executor communicationExecutor,
                                        ImageDownloader imageDownloader,
                                        CollageStrategy defaultStrategy) {
-        return new ParallelCollageLoader(postExecutor, workerExecutor, imageDownloader, defaultStrategy);
+        return new ParallelCollageLoader(postExecutor, workerExecutor, communicationExecutor,
+                imageDownloader, defaultStrategy);
     }
 
 }
