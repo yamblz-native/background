@@ -1,10 +1,12 @@
 package ru.yandex.yamblz.handler;
 
+import java.util.LinkedHashSet;
+
 public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
 
     @Override
     public void startSection(int id) {
-
+        int i = (short)1;
     }
 
     @Override

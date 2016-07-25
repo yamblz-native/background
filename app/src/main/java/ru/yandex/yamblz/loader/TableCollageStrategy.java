@@ -2,6 +2,8 @@ package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import java.util.ArrayList;

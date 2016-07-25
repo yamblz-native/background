@@ -19,6 +19,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import okhttp3.OkHttpClient;
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSectionsHandler;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.tasks.LoadSingersTask;
 import ru.yandex.yamblz.models.Singer;
@@ -36,6 +37,9 @@ public class ContentFragment extends BaseFragment implements LoadSingersTask.Cal
 
     @Inject
     SingersApi mSingersApi;
+
+    @Inject
+    CriticalSectionsHandler mCriticalSectionsHandler;
 
     @BindView(R.id.genres)
     RecyclerView genres;
@@ -74,13 +78,22 @@ public class ContentFragment extends BaseFragment implements LoadSingersTask.Cal
 
     @Override
     public void onSingers(@Nullable List<Singer> singers) {
-        Log.e("TAG", singers.toString());
         if(singers == null) {
             Snackbar.make(genres, getString(R.string.error), Snackbar.LENGTH_LONG).show();
         } else {
+            genres.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    if(newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                        mCriticalSectionsHandler.startSection(0);
+                    } else if(newState == RecyclerView.SCROLL_STATE_IDLE) {
+                        mCriticalSectionsHandler.stopSection(0);
+                    }
+                }
+            });
             genres.setLayoutManager(new LinearLayoutManager(getContext()));
             genres.setAdapter(new GenresAdapter(Singer.collectGenres(singers),
-                    mCollageLoader, new TableCollageStrategy()));
+                    mCollageLoader, new TableCollageStrategy(), mCriticalSectionsHandler));
         }
     }
 

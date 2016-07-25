@@ -18,6 +18,8 @@ import dagger.Module;
 import dagger.Provides;
 import okhttp3.OkHttpClient;
 import ru.yandex.yamblz.api.AssetsSingersApi;
+import ru.yandex.yamblz.handler.CriticalSectionsHandler;
+import ru.yandex.yamblz.handler.CriticalSectionsHandlerThread;
 import ru.yandex.yamblz.images.Cache;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.loader.CollageStrategy;
@@ -109,6 +111,12 @@ public class ApplicationModule {
     @Singleton
     SingersApi provideSingersApi(Application application) {
         return new AssetsSingersApi(application);
+    }
+
+    @Provides
+    @Singleton
+    CriticalSectionsHandler provideUiCriticalSectionsHandler(@Named(MAIN_THREAD_HANDLER) Handler handler) {
+        return new CriticalSectionsHandlerThread(handler);
     }
 
 }

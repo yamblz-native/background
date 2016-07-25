@@ -182,19 +182,23 @@ public class ParallelCollageLoader implements CollageLoader {
          * @param result the result collage
          */
         private void postResult(Bitmap result) {
-            if(mSubscription.isSubscribed()) {
-                mPostExecutor.execute(() -> {
-                    Object listener = mListener.get();
-                    if (listener == null) {
-                        return;
-                    }
-                    if (listener instanceof ImageView) {
-                        ((ImageView) listener).setImageBitmap(result);
-                    } else if (listener instanceof ImageTarget) {
-                        ((ImageTarget) listener).onLoadBitmap(result);
-                    }
-                });
+            if(!mSubscription.isSubscribed()) {
+                return;
             }
+            mPostExecutor.execute(() -> {
+                if(!mSubscription.isSubscribed()) {
+                    return;
+                }
+                Object listener = mListener.get();
+                if (listener == null) {
+                    return;
+                }
+                if (listener instanceof ImageView) {
+                    ((ImageView) listener).setImageBitmap(result);
+                } else if (listener instanceof ImageTarget) {
+                    ((ImageTarget) listener).onLoadBitmap(result);
+                }
+            });
         }
     }
 

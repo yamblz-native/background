@@ -1,5 +1,7 @@
 package ru.yandex.yamblz.handler;
 
+import android.os.Handler;
+
 public class CriticalSectionsManager {
 
     private static CriticalSectionsHandler sCriticalSectionsHandler;
