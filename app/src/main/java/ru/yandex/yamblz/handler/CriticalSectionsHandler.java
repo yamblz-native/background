@@ -10,7 +10,7 @@ public interface CriticalSectionsHandler {
 
     void postLowPriorityTask(Task task);
 
-    void postLowPriorityTaskDelayed(Task task, int delay);
+    void postLowPriorityTaskDelayed(Task task, int delayMillis);
 
     void removeLowPriorityTask(Task task);
 
