@@ -1,6 +1,7 @@
 package ru.yandex.yamblz.ui.adapters;
 
 
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,6 +15,8 @@ import java.util.List;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.artists.utils.DataSingleton;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
+import ru.yandex.yamblz.loader.DefaultImageTarget;
+import ru.yandex.yamblz.loader.ImageTarget;
 
 public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.MyViewHolder> {
     private List<String> genres;
@@ -40,11 +43,13 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.MyViewHold
     static class MyViewHolder extends RecyclerView.ViewHolder {
         ImageView collage;
         TextView textView;
+        ImageTarget imageTarget;
         private String prevGenre=null;
         MyViewHolder(View itemView) {
             super(itemView);
             collage= (ImageView) itemView.findViewById(R.id.image_collage);
             textView= (TextView) itemView.findViewById(R.id.title);
+            imageTarget=new DefaultImageTarget(collage);
         }
 
         void bind(String genre){
@@ -52,9 +57,9 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.MyViewHold
                 CollageLoaderManager.getLoader().cancel(prevGenre);
             }
             prevGenre=genre;
-            collage.setImageDrawable(new ColorDrawable());
+            collage.setImageDrawable(new ColorDrawable(Color.BLACK));
             textView.setText(genre);
-            CollageLoaderManager.getLoader().loadCollage(DataSingleton.get().getImagesForGenre(genre),collage,genre);
+            CollageLoaderManager.getLoader().loadCollage(DataSingleton.get().getImagesForGenre(genre),imageTarget,genre);
         }
     }
 }

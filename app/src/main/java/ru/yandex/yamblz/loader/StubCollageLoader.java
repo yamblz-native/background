@@ -24,20 +24,19 @@ public class StubCollageLoader implements CollageLoader {
     //взять defaultCollageStrategy
     @Override
     public void loadCollage(List<String> urls, ImageView imageView, String key) {
-        loadCollage(urls, bitmap -> {
-            imageView.setImageBitmap(bitmap);
-        }, new DefaultCollageStrategy(), key);
+        loadCollage(urls, new DefaultImageTarget(imageView), key);
     }
 
     //загрузить
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget, String key) {
-
+        loadCollage(urls, imageTarget,new DefaultCollageStrategy(), key);
     }
 
     @Override
     public void loadCollage(List<String> urls, ImageView imageView,
                             CollageStrategy collageStrategy, String key) {
+        loadCollage(urls, new DefaultImageTarget(imageView),collageStrategy, key);
     }
 
     @Override
