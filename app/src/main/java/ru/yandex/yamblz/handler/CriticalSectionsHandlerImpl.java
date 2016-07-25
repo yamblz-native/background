@@ -119,6 +119,7 @@ public class CriticalSectionsHandlerImpl implements CriticalSectionsHandler {
     @Override
     public void removeLowPriorityTasks() {
         taskQueue.clear();
+        delayedTasks.clear();
         handler.removeCallbacks(executeTask);
     }
 }
