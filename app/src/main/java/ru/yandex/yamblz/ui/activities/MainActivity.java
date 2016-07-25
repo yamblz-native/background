@@ -11,6 +11,7 @@ import ru.yandex.yamblz.App;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.artists.utils.DataSingleton;
 import ru.yandex.yamblz.developer_settings.DeveloperSettingsModule;
+import ru.yandex.yamblz.ui.fragments.ContentFragment;
 import ru.yandex.yamblz.ui.fragments.LoadingFragment;
 import ru.yandex.yamblz.ui.other.ViewModifier;
 
@@ -29,7 +30,10 @@ public class MainActivity extends BaseActivity {
 
         if (savedInstanceState == null) {
             if(DataSingleton.get().hasData()){
-
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.main_frame_layout, new ContentFragment())
+                        .commit();
             }else{
                 getSupportFragmentManager()
                         .beginTransaction()

@@ -3,7 +3,6 @@ package ru.yandex.yamblz.loader;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.widget.ImageView;
 
 import java.io.IOException;
@@ -59,7 +58,7 @@ public class StubCollageLoader implements CollageLoader {
                 new AsyncTask<String,Void,Bitmap>(){
                     @Override
                     protected Bitmap doInBackground(String... params) {
-                        Log.d("sdasd",Thread.currentThread().toString());
+                        //Log.d("sdasd",Thread.currentThread().toString());
                         Bitmap b=getBitmapFromURL(params[0]);
                         return b;
                     }

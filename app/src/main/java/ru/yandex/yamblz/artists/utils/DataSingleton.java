@@ -76,7 +76,7 @@ public class DataSingleton {
     }
 
     public boolean hasData(){
-        return  false && artists!=null;
+        return artists!=null;
     }
 
     public List<ArtistModel> getArtists() {
