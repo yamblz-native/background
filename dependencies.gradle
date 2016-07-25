@@ -67,6 +67,9 @@ ext.libraries = [
         butterKnifeCompiler     : "com.jakewharton:butterknife-compiler:$versions.butterKnife",
         timber                  : "com.jakewharton.timber:timber:$versions.timber",
 
+        okhttp                  : "com.squareup.okhttp3:okhttp:3.4.1",
+        gson                    : "com.google.code.gson:gson:2.6.2",
+
         // Developer Tools
         stetho                  : "com.facebook.stetho:stetho:$versions.stetho",
         leakCanary              : "com.squareup.leakcanary:leakcanary-android:$versions.leakCanary",

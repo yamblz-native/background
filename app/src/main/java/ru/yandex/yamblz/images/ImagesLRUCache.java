@@ -1,9 +1,12 @@
-package ru.yandex.yamblz.loader;
+package ru.yandex.yamblz.images;
 
 import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.util.LruCache;
 
+/**
+ * Simple {@link LruCache} wrapper for url2images
+ */
 public class ImagesLRUCache implements Cache<String, Bitmap> {
 
     private LruCache<String, Bitmap> mCache;

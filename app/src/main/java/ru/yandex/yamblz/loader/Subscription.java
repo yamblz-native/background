@@ -2,6 +2,9 @@ package ru.yandex.yamblz.loader;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Subscribe/unsubscribe mechanism
+ */
 public final class Subscription {
     private final AtomicBoolean subscribed;
 

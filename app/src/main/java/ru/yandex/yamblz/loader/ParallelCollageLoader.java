@@ -9,15 +9,42 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import ru.yandex.yamblz.images.Cache;
+import ru.yandex.yamblz.images.ImageDownloader;
+
+/**
+ * An {@link CollageLoader} which loads images using executors (so it's possible to use as many
+ * threads as you want) and posts them back to UIThread
+ * Supports subscribe/unsubscribe mechanism.
+ * Supports caching mechanism.
+ */
 public class ParallelCollageLoader implements CollageLoader {
 
-    private Executor mPostExecutor;
-    private Executor mWorkerExecutor;
-    private ImageDownloader mImageDownloader;
-    private CollageStrategy mDefaultCollageStrategy;
-    private Cache<String, Bitmap> mCache;
+    /**
+     * The executor to post result back on UI thread
+     */
+    @NonNull private Executor mPostExecutor;
+
+    /**
+     * The executor which does hard work - loading images, transforming them etc.
+     */
+    @NonNull private Executor mWorkerExecutor;
+
+    /**
+     * Downloads images
+     */
+    @NonNull private ImageDownloader mImageDownloader;
+
+    /**
+     * Collages images into one
+     */
+    @NonNull private CollageStrategy mDefaultCollageStrategy;
+
+    /**
+     * Caches the images by URL
+     */
+    @Nullable private Cache<String, Bitmap> mCache;
 
     public ParallelCollageLoader(@NonNull Executor postExecutor,
                                  @NonNull Executor workerExecutor,
@@ -51,7 +78,13 @@ public class ParallelCollageLoader implements CollageLoader {
         return process(urls, imageTarget, collageStrategy);
     }
 
-
+    /**
+     * Starts processing job
+     * @param urls the urls to download images from
+     * @param listener the listener
+     * @param strategy the strategy to combine downloaded images
+     * @return subscription to make it possible to unsubscribe
+     */
     private Subscription process(@NonNull List<String> urls, @NonNull Object listener,
                                  @Nullable CollageStrategy strategy) {
         Subscription subscription = new Subscription();
@@ -59,14 +92,24 @@ public class ParallelCollageLoader implements CollageLoader {
         return subscription;
     }
 
+    /**
+     * Unit of work. Does downloading, transforming, collaging, posting back
+     */
     private class Job {
         private final List<String> mUrls;
         private final WeakReference mListener;
         private final CollageStrategy mCollageStrategy;
         private final Subscription mSubscription;
 
+        /**
+         * Downloaded images
+         */
         private List<Bitmap> mImages;
-        private AtomicInteger mCntOfImages;
+
+        /**
+         * How many to download left
+         */
+        private int mCntOfImages;
 
         private Job(@NonNull List<String> urls, @NonNull Object listener,
                     @Nullable Subscription subscription, @Nullable CollageStrategy strategy) {
@@ -78,16 +121,23 @@ public class ParallelCollageLoader implements CollageLoader {
         }
 
         private void init() {
-            this.mCntOfImages = new AtomicInteger(mUrls.size());
+            this.mCntOfImages = mUrls.size();
             this.mImages = new ArrayList<>(mUrls.size());
         }
 
+        /**
+         * Start downloading by posting to {@link #mWorkerExecutor}
+         */
         private void doWork() {
             for (String url : mUrls) {
                 mWorkerExecutor.execute(() -> processUrl(url));
             }
         }
 
+        /**
+         * Gets image from the cache or downloads it
+         * @param url the url of image
+         */
         private void processUrl(@NonNull String url) {
             if(mCache != null && mCache.containsKey(url)) {
                 postImage(mCache.get(url));
@@ -100,17 +150,25 @@ public class ParallelCollageLoader implements CollageLoader {
             }
         }
 
+        /**
+         * Called when image was retrieved. If all images were downloaded posts result back
+         * @param image
+         */
         private void postImage(Bitmap image) {
-            int left = mCntOfImages.decrementAndGet();
             synchronized (mImages) {
                 mImages.add(image);
+                mCntOfImages--;
             }
-            if (left == 0) {
+            if (mCntOfImages == 0) {
                 postResult(transformToCollage());
             }
 
         }
 
+        /**
+         * Transforms downloaded image
+         * @return the result
+         */
         private Bitmap transformToCollage() {
             if (mCollageStrategy != null) {
                 return mCollageStrategy.create(mImages);
@@ -119,6 +177,10 @@ public class ParallelCollageLoader implements CollageLoader {
             }
         }
 
+        /**
+         * Posts result back to either {@link ImageView} or {@link ImageTarget}
+         * @param result the result collage
+         */
         private void postResult(Bitmap result) {
             if(mSubscription.isSubscribed()) {
                 mPostExecutor.execute(() -> {

@@ -2,54 +2,64 @@ package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Composes images in square table NxN
+ */
 public class TableCollageStrategy implements CollageStrategy {
-
-    private int mRows, mCols;
-
-    public TableCollageStrategy(int rows, int cols) {
-        this.mRows = rows;
-        this.mCols = cols;
-    }
 
     private void checkConditions(List<Bitmap> bitmaps) {
         if (bitmaps.size() == 0) {
             throw new IllegalArgumentException("Empty bitmap list");
         }
-        if(bitmaps.size() != mRows * mCols) {
-            throw new IllegalArgumentException("Number of bitmaps not equals to number of cells");
-        }
-        int width, height;
-        {
-            Bitmap bitmap = bitmaps.get(0);
-            width = bitmap.getWidth();
-            height = bitmap.getHeight();
-        }
+    }
+
+    private int meanWidth(List<Bitmap> bitmaps) {
+        int result = 0;
         for(Bitmap bitmap : bitmaps) {
-            if(bitmap.getWidth() != width || bitmap.getHeight() != height) {
-                throw new IllegalArgumentException("Images should have the same size");
-            }
+            result += bitmap.getWidth();
+        }
+        return result / bitmaps.size();
+    }
+
+    private int meanHeight(List<Bitmap> bitmaps) {
+        int result = 0;
+        for(Bitmap bitmap : bitmaps) {
+            result += bitmap.getHeight();
+        }
+        return result / bitmaps.size();
+    }
+
+    private void transformToEqualSizes(List<Bitmap> bitmaps) {
+        int width = meanWidth(bitmaps);
+        int height = meanHeight(bitmaps);
+        for(int i = 0; i < bitmaps.size(); i++) {
+            bitmaps.set(i, Bitmap.createScaledBitmap(bitmaps.get(i), width, height, false));
         }
     }
 
-    @Override
-    public Bitmap create(List<Bitmap> bitmaps) {
+    private Bitmap collage(List<Bitmap> bitmaps) {
+        int sqrt = (int)Math.sqrt(bitmaps.size());
+
         int width = bitmaps.get(0).getWidth();
         int height = bitmaps.get(0).getHeight();
-        int totalWidth = width * mCols;
-        int totalHeight = height * mRows;
+
+        int totalWidth = sqrt * width;
+        int totalHeight = sqrt * height;
 
         Bitmap result = Bitmap.createBitmap(totalWidth, totalHeight, bitmaps.get(0).getConfig());
         Canvas canvas = new Canvas(result);
         int left, top;
         left = top = 0;
-        for(int i = 0; i < mRows; i++) {
-            for(int j = 0; j < mCols; j++) {
-                Bitmap bitmap = bitmaps.get(i * mCols + j);
+        for(int i = 0; i < sqrt; i++) {
+            for(int j = 0; j < sqrt; j++) {
+                Bitmap bitmap = bitmaps.get(i * sqrt + j);
                 canvas.drawBitmap(bitmap, left, top, null);
-                if(j == mCols - 1) {
+                if(j == sqrt - 1) {
                     left = 0;
                     top += height;
                 } else {
@@ -58,5 +68,15 @@ public class TableCollageStrategy implements CollageStrategy {
             }
         }
         return result;
+    }
+
+    @Override
+    public Bitmap create(List<Bitmap> bitmaps) {
+        checkConditions(bitmaps);
+
+        bitmaps = new ArrayList<>(bitmaps);
+        transformToEqualSizes(bitmaps);
+
+        return collage(bitmaps);
     }
 }

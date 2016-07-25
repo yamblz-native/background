@@ -1,7 +1,12 @@
-package ru.yandex.yamblz.loader;
+package ru.yandex.yamblz.images;
 
 import android.support.annotation.Nullable;
 
+/**
+ * Simple cache interface
+ * @param <K> key
+ * @param <V> value associated with the key
+ */
 public interface Cache<K, V> {
     /**
      * Returns {@link V} object associated with the key

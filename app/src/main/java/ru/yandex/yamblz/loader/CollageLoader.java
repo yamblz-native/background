@@ -12,7 +12,6 @@ public interface CollageLoader {
 
     Subscription loadCollage(@NonNull List<String> urls, @NonNull ImageTarget imageTarget);
 
-
     Subscription loadCollage(@NonNull List<String> urls, @NonNull ImageView imageView,
                      @Nullable CollageStrategy collageStrategy);
 
