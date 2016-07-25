@@ -27,6 +27,7 @@ public class ContentFragment extends BaseFragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         List<String> images= DataSingleton.get().getImagesForGenre("rock");
-        CollageLoaderManager.getLoader().loadCollage(images,collage);
+        CollageLoaderManager.getLoader().loadCollage(images,collage,"rock");
+        CollageLoaderManager.getLoader().loadCollage(images,collage,"rock");
     }
 }
