@@ -12,12 +12,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class StubCollageLoader implements CollageLoader {
-    private HashMap<String, LoadBitmapsCallback> callbacksHashMap;
-
+    private Map<String, LoadBitmapsCallback> callbacksMap;
+    private Map<String, CreateCollageTask> collageTaskMap;
+    private Executor collageExecutor;
     public StubCollageLoader() {
-        callbacksHashMap = new HashMap<>();
+        callbacksMap = new HashMap<>();
+        collageTaskMap = new HashMap<>();
+        collageExecutor=new ScheduledThreadPoolExecutor(5);
     }
 
     //загрузить колаж из списка и поставить его в ImageView
@@ -44,27 +50,44 @@ public class StubCollageLoader implements CollageLoader {
                             CollageStrategy collageStrategy, String key) {
         cancel(key);
         LoadBitmapsCallback loadBitmapsCallback = new LoadBitmapsCallback(value -> {
-            imageTarget.onLoadBitmap(collageStrategy.create(value));
+            callbacksMap.remove(key);
+            CreateCollageTask execute = new CreateCollageTask(value, imageTarget, collageStrategy){
+                @Override
+                protected void onPostExecute(Bitmap bitmap) {
+                    super.onPostExecute(bitmap);
+                    collageTaskMap.remove(key);
+                }
+            };
+            execute.executeOnExecutor(collageExecutor);
+            collageTaskMap.put(key,execute);
         });
-        callbacksHashMap.put(key, loadBitmapsCallback);
+        callbacksMap.put(key, loadBitmapsCallback);
         loadBitmapsCallback.load(urls);
 
     }
 
     @Override
     public void cancel(String key) {
-        if (callbacksHashMap.containsKey(key)) {
-            LoadBitmapsCallback loadBitmapsCallback = callbacksHashMap.get(key);
+        if (callbacksMap.containsKey(key)) {
+            LoadBitmapsCallback loadBitmapsCallback = callbacksMap.get(key);
             loadBitmapsCallback.cancel();
+        }
+        if(collageTaskMap.containsKey(key)){
+            CreateCollageTask createCollageTask = collageTaskMap.get(key);
+            createCollageTask.cancel(true);
         }
     }
 
     @Override
     public void cancelAll() {
-        for(LoadBitmapsCallback loadBitmapsCallback:callbacksHashMap.values()){
+        for(LoadBitmapsCallback loadBitmapsCallback: callbacksMap.values()){
             loadBitmapsCallback.cancel();
         }
-        callbacksHashMap.clear();
+        for(CreateCollageTask createCollageTask:collageTaskMap.values()){
+            createCollageTask.cancel(true);
+        }
+        callbacksMap.clear();
+        collageTaskMap.clear();
     }
 
     private class LoadBitmapsCallback {
@@ -100,7 +123,6 @@ public class StubCollageLoader implements CollageLoader {
             if (tasksDone == asyncTasks.size()) {
                 asyncTasks.clear();
                 loadComplete(bitmaps);
-                bitmaps.clear();
                 tasksDone = 0;
             }
         }
@@ -143,6 +165,29 @@ public class StubCollageLoader implements CollageLoader {
 
     private interface Consumer<T> {
         void call(T value);
+    }
+
+    private static class CreateCollageTask extends AsyncTask<Void,Void,Bitmap>{
+        private List<Bitmap> bitmaps;
+        private ImageTarget imageTarget;
+        private CollageStrategy collageStrategy;
+
+        public CreateCollageTask(List<Bitmap> bitmaps,ImageTarget imageTarget,CollageStrategy collageStrategy) {
+            this.bitmaps = bitmaps;
+            this.imageTarget = imageTarget;
+            this.collageStrategy = collageStrategy;
+        }
+
+        @Override
+        protected Bitmap doInBackground(Void... params) {
+            return collageStrategy.create(bitmaps);
+        }
+
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            imageTarget.onLoadBitmap(bitmap);
+        }
     }
 
 
