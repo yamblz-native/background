@@ -10,6 +10,8 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import ru.yandex.yamblz.loader.CollageLoader;
+import ru.yandex.yamblz.loader.CollageLoaderManager;
 
 @Module
 public class ApplicationModule {
@@ -31,6 +33,11 @@ public class ApplicationModule {
     @Provides @NonNull @Named(MAIN_THREAD_HANDLER) @Singleton
     public Handler provideMainThreadHandler() {
         return new Handler(Looper.getMainLooper());
+    }
+
+    @Provides
+    public CollageLoader provideCollageLoader(){
+        return CollageLoaderManager.getLoader();
     }
 
 }
