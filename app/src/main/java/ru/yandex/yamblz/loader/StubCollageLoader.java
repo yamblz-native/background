@@ -2,6 +2,8 @@ package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.ImageView;
 
 import java.io.IOException;
@@ -12,10 +14,13 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
-import ru.yandex.yamblz.handler.CriticalSectionsManager;
-import ru.yandex.yamblz.handler.Task;
+import rx.Observable;
+import rx.Observer;
+import rx.schedulers.Schedulers;
 
 public class StubCollageLoader implements CollageLoader {
+    public static final String DEBUG_TAG = StubCollageLoader.class.getName();
+
     @Override
     public void loadCollage(List<String> urls, ImageView imageView) {
 
@@ -29,27 +34,49 @@ public class StubCollageLoader implements CollageLoader {
     @Override
     public void loadCollage(List<String> urls, WeakReference<ImageView> imageView,
                             CollageStrategy collageStrategy) {
-        Bitmap collage = getCollage(urls, collageStrategy);
+        LinkedList<Bitmap> bitmaps = new LinkedList<>();
 
-        CriticalSectionsManager.getHandler().postLowPriorityTask(new ImageSetter(imageView, collage));
+        Observable.from(urls).map(s -> {
+            try {
+                return loadBitmapFromUrl(s);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }).collect(
+                () -> bitmaps, (bitmaps1, bitmap) -> bitmaps1.add(bitmap)
+        ).subscribeOn(Schedulers.io()).subscribe(new Observer<LinkedList<Bitmap>>() {
+            @Override
+            public void onCompleted() {
+                Log.d(DEBUG_TAG, "Bitmap size + " + bitmaps.size());
+                Bitmap collage = collageStrategy.create(bitmaps);
+                ((AppCompatActivity) imageView.get().getContext()).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        imageView.get().setImageBitmap(collage);
+                        imageView.get().invalidate();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(LinkedList<Bitmap> bitmaps) {
+                Log.d(DEBUG_TAG, "qq");
+            }
+        });
+
+
     }
 
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget,
                             CollageStrategy collageStrategy) {
 
-    }
-
-    protected Bitmap getCollage(List<String> stringUrls, CollageStrategy strategy) {
-        List<Bitmap> bitmaps = new LinkedList<>();
-        for (String url : stringUrls) {
-            try {
-                bitmaps.add(loadBitmapFromUrl(url));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return strategy.create(bitmaps);
     }
 
     protected Bitmap loadBitmapFromUrl(String stringUrl) throws IOException {
@@ -61,21 +88,4 @@ public class StubCollageLoader implements CollageLoader {
         return BitmapFactory.decodeStream(inputStream);
     }
 
-    public class ImageSetter implements Task {
-
-        private WeakReference<ImageView> imageView;
-        private Bitmap collage;
-
-        public ImageSetter(WeakReference<ImageView> imageView, Bitmap collage) {
-            this.imageView = imageView;
-            this.collage = collage;
-        }
-
-        @Override
-        public void run() {
-            imageView.get().setImageBitmap(collage);
-            imageView.get().invalidate();
-            imageView.get().requestLayout();
-        }
-    }
 }
