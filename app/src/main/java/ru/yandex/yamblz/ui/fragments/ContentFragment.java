@@ -32,7 +32,6 @@ public class ContentFragment extends BaseFragment {
         GenresAdapter genresAdapter=new GenresAdapter(DataSingleton.get().getGenres());
         Task task = () -> Log.d("Tag", "delayed");
         CriticalSectionsManager.getHandler().postLowPriorityTaskDelayed(task,10000);
-        CriticalSectionsManager.getHandler().startSection(1);
         rv.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         rv.setAdapter(genresAdapter);
         rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
