@@ -18,6 +18,7 @@ import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.loader.FourImagesCollageStrategy;
 import ru.yandex.yamblz.model.Genre;
+import rx.Subscription;
 
 /**
  * Created by Aleksandra on 25/07/16.
@@ -25,6 +26,7 @@ import ru.yandex.yamblz.model.Genre;
 public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.GenreViewHolder> {
     public static final String DEBUG_TAG = GenreListAdapter.class.getName();
     private List<Genre> dataset;
+    private Subscription subscription;
 
     @Override
     public GenreViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -39,10 +41,21 @@ public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.Genr
             holder.name.setText(genre.getName());
             Log.d(DEBUG_TAG, Arrays.deepToString(genre.getUrls().toArray()));
 
-            new Thread(() -> {
-                CollageLoaderManager.getLoader().loadCollage(genre.getUrls(), holder.image, new FourImagesCollageStrategy());
-            }).start();
+            subscription = CollageLoaderManager.getLoader().loadCollage(genre.getUrls(), holder.image, new FourImagesCollageStrategy());
         }
+    }
+
+    @Override
+    public void onViewRecycled(GenreViewHolder holder) {
+        super.onViewRecycled(holder);
+        subscription.unsubscribe();
+        Log.d(DEBUG_TAG, "OnViewRecycled");
+    }
+
+    @Override
+    public void onViewAttachedToWindow(GenreViewHolder holder) {
+        super.onViewAttachedToWindow(holder);
+        Log.d(DEBUG_TAG, "onViewAttachedToWindow");
     }
 
     @Override
@@ -61,7 +74,7 @@ public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.Genr
 
             ButterKnife.bind(this, itemView);
 
-            image = new WeakReference<ImageView>((ImageView) itemView.findViewById(R.id.image_view_genre));
+            image = new WeakReference<>((ImageView) itemView.findViewById(R.id.image_view_genre));
         }
     }
 
@@ -69,4 +82,6 @@ public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.Genr
         this.dataset = dataset;
         notifyDataSetChanged();
     }
+
+
 }
