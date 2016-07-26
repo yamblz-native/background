@@ -16,11 +16,11 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-public class StubCollageLoader implements CollageLoader {
+class StubCollageLoader implements CollageLoader {
     private Map<String, LoadBitmapsCallback> callbacksMap;
     private Map<String, CreateCollageTask> collageTaskMap;
     private Executor collageExecutor;
-    public StubCollageLoader() {
+    StubCollageLoader() {
         callbacksMap = new HashMap<>();
         collageTaskMap = new HashMap<>();
         collageExecutor=new ScheduledThreadPoolExecutor(5);
@@ -127,13 +127,14 @@ public class StubCollageLoader implements CollageLoader {
             }
         }
 
-        public void cancel() {
+        void cancel() {
             for (LoadBitmapTask loadBitmapTask : asyncTasks) {
                 loadBitmapTask.cancel(true);
             }
         }
 
         private class LoadBitmapTask extends AsyncTask<String, Void, Bitmap> {
+            private InputStream input;
             @Override
             protected Bitmap doInBackground(String... params) {
                 Bitmap b = getBitmapFromURL(params[0]);
@@ -152,13 +153,30 @@ public class StubCollageLoader implements CollageLoader {
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setDoInput(true);
                     connection.connect();
-                    InputStream input = connection.getInputStream();
+                    input = connection.getInputStream();
                     Bitmap myBitmap = BitmapFactory.decodeStream(input);
                     return myBitmap;
                 } catch (IOException e) {
                     // Log exception
                     return null;
                 }
+                finally {
+                    if(input!=null) try {
+                        input.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            protected void onCancelled() {
+                if(input!=null) try {
+                    input.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                super.onCancelled();
             }
         }
     }
