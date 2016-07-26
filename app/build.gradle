@@ -84,6 +84,10 @@ android {
 
 // Libraries declared in dependencies.gradle in the root of the project
 dependencies {
+    compile 'io.reactivex:rxandroid:1.2.1'
+    compile 'io.reactivex:rxjava:1.1.6'
+    compile 'com.android.support:support-v4:23.4.0'
+
     compile libraries.dagger
     apt libraries.daggerCompiler
 
