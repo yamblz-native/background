@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,13 +54,14 @@ public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.Genr
         @BindView(R.id.text_view_genre)
         TextView name;
 
-        @BindView(R.id.image_view_genre)
-        ImageView image;
+        WeakReference<ImageView> image;
 
         public GenreViewHolder(View itemView) {
             super(itemView);
 
             ButterKnife.bind(this, itemView);
+
+            image = new WeakReference<ImageView>((ImageView) itemView.findViewById(R.id.image_view_genre));
         }
     }
 

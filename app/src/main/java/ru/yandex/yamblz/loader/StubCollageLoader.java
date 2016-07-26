@@ -2,16 +2,18 @@ package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.Task;
 
 public class StubCollageLoader implements CollageLoader {
     @Override
@@ -25,15 +27,11 @@ public class StubCollageLoader implements CollageLoader {
     }
 
     @Override
-    public void loadCollage(List<String> urls, ImageView imageView,
+    public void loadCollage(List<String> urls, WeakReference<ImageView> imageView,
                             CollageStrategy collageStrategy) {
         Bitmap collage = getCollage(urls, collageStrategy);
 
-        ((AppCompatActivity) imageView.getContext()).runOnUiThread(() -> {
-            imageView.setImageBitmap(collage);
-            imageView.invalidate();
-            imageView.requestLayout();
-        });
+        CriticalSectionsManager.getHandler().postLowPriorityTask(new ImageSetter(imageView, collage));
     }
 
     @Override
@@ -61,5 +59,23 @@ public class StubCollageLoader implements CollageLoader {
         connection.connect();
         InputStream inputStream = connection.getInputStream();
         return BitmapFactory.decodeStream(inputStream);
+    }
+
+    public class ImageSetter implements Task {
+
+        private WeakReference<ImageView> imageView;
+        private Bitmap collage;
+
+        public ImageSetter(WeakReference<ImageView> imageView, Bitmap collage) {
+            this.imageView = imageView;
+            this.collage = collage;
+        }
+
+        @Override
+        public void run() {
+            imageView.get().setImageBitmap(collage);
+            imageView.get().invalidate();
+            imageView.get().requestLayout();
+        }
     }
 }

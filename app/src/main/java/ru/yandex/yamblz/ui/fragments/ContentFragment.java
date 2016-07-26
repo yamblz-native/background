@@ -18,6 +18,7 @@ import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.loader.GenreLoader;
 import ru.yandex.yamblz.model.Genre;
+import ru.yandex.yamblz.ui.MyScrollListener;
 import ru.yandex.yamblz.ui.adapters.GenreListAdapter;
 
 public class ContentFragment extends BaseFragment implements LoaderManager.LoaderCallbacks<List<Genre>> {
@@ -36,6 +37,7 @@ public class ContentFragment extends BaseFragment implements LoaderManager.Loade
         adapter = new GenreListAdapter();
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.addOnScrollListener(new MyScrollListener());
 
         getLoaderManager().initLoader(1, null, this);
         return v;
