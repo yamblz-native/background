@@ -26,7 +26,7 @@ import rx.Subscription;
 public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.GenreViewHolder> {
     public static final String DEBUG_TAG = GenreListAdapter.class.getName();
     private List<Genre> dataset;
-    private Subscription subscription;
+
 
     @Override
     public GenreViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -41,14 +41,15 @@ public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.Genr
             holder.name.setText(genre.getName());
             Log.d(DEBUG_TAG, Arrays.deepToString(genre.getUrls().toArray()));
 
-            subscription = CollageLoaderManager.getLoader().loadCollage(genre.getUrls(), holder.image, new FourImagesCollageStrategy());
+            Subscription subscription = CollageLoaderManager.getLoader().loadCollage(genre.getUrls(), holder.image, new FourImagesCollageStrategy());
+            holder.setSubscription(subscription);
         }
     }
 
     @Override
     public void onViewRecycled(GenreViewHolder holder) {
         super.onViewRecycled(holder);
-        subscription.unsubscribe();
+        holder.getSubscription().unsubscribe();
         Log.d(DEBUG_TAG, "OnViewRecycled");
     }
 
@@ -58,12 +59,20 @@ public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.Genr
         Log.d(DEBUG_TAG, "onViewAttachedToWindow");
     }
 
+
+    public void setDataset(List<Genre> dataset) {
+        this.dataset = dataset;
+        notifyDataSetChanged();
+    }
+
     @Override
     public int getItemCount() {
         return dataset != null ? dataset.size() : 0;
     }
 
     public class GenreViewHolder extends RecyclerView.ViewHolder {
+        private Subscription subscription;
+
         @BindView(R.id.text_view_genre)
         TextView name;
 
@@ -76,12 +85,14 @@ public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.Genr
 
             image = new WeakReference<>((ImageView) itemView.findViewById(R.id.image_view_genre));
         }
-    }
 
-    public void setDataset(List<Genre> dataset) {
-        this.dataset = dataset;
-        notifyDataSetChanged();
-    }
+        public Subscription getSubscription() {
+            return subscription;
+        }
 
+        public void setSubscription(Subscription subscription) {
+            this.subscription = subscription;
+        }
+    }
 
 }

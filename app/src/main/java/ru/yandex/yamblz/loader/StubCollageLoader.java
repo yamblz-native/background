@@ -38,18 +38,10 @@ public class StubCollageLoader implements CollageLoader {
         LinkedList<Bitmap> bitmaps = new LinkedList<>();
 
         return Observable.from(urls)
-                .subscribeOn(Schedulers.newThread())
-                .map(s -> {
-                    try {
-                        return loadBitmapFromUrl(s);
-                    } catch (IOException e) {
-                        Log.d(DEBUG_TAG, "error");
-                        e.printStackTrace();
-                    }
-                    return null;
-                }).collect(
-                        () -> bitmaps, LinkedList::add
-                ).subscribe(new Subscriber<LinkedList<Bitmap>>() {
+                .observeOn(Schedulers.io())
+                .map(this::loadBitmapFromUrl)
+                .collect(() -> bitmaps, LinkedList::add)
+                .subscribe(new Subscriber<LinkedList<Bitmap>>() {
                     @Override
                     public void onCompleted() {
                         Log.d(DEBUG_TAG, "Bitmap size + " + bitmaps.size());
@@ -78,13 +70,18 @@ public class StubCollageLoader implements CollageLoader {
 
     }
 
-    protected Bitmap loadBitmapFromUrl(String stringUrl) throws IOException {
-        URL url = new URL(stringUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setDoInput(true);
-        connection.connect();
-        InputStream inputStream = connection.getInputStream();
-        return BitmapFactory.decodeStream(inputStream);
+    protected Bitmap loadBitmapFromUrl(String stringUrl) {
+        try {
+            URL url = new URL(stringUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream inputStream = connection.getInputStream();
+            return BitmapFactory.decodeStream(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }
