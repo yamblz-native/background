@@ -37,6 +37,12 @@ ext.versions = [
         equalsVerifier               : '1.7.5',
         mockito                      : '1.10.19',
         supportTestRunner            : '0.5',
+        jacksonCore                  : '2.4.1',
+        jacksonDatabind              : '2.4.1',
+        volley                       : '1.0.0',
+        rxjava                       : '1.1.6',
+        rxandroid                    : '1.2.1'
+
 ]
 
 ext.gradlePlugins = [
@@ -85,4 +91,9 @@ ext.libraries = [
         supportTestRules        : "com.android.support.test:rules:$versions.supportTestRunner",
         espressoCore            : "com.android.support.test.espresso:espresso-core:$versions.espresso",
         espressoContrib         : "com.android.support.test.espresso:espresso-contrib:$versions.espresso",
+        jacksonCore             : "com.fasterxml.jackson.core:jackson-core:$versions.jacksonCore",
+        jacksonDatabind         : "com.fasterxml.jackson.core:jackson-databind:$versions.jacksonDatabind",
+        volley                  : "com.android.volley:volley:$versions.volley",
+        rxjava                  : "io.reactivex:rxjava:$versions.rxjava",
+        rxandroid               : "io.reactivex:rxandroid:$versions.rxandroid"
 ]
