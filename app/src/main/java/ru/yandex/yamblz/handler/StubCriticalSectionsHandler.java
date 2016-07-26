@@ -12,12 +12,12 @@ import java.util.List;
 
 public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
     private static final String TAG = "StubCritSectHandler";
-    private final MyHandler handler;
+    private final MyHandler mainHandler;
     private SparseArray<Object> sparseArray;
 
     public StubCriticalSectionsHandler() {
         sparseArray = new SparseArray<>();
-        handler = new MyHandler(Looper.getMainLooper());
+        mainHandler = new MyHandler(Looper.getMainLooper());
     }
 
     @Override
@@ -41,43 +41,47 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
 
     private void checkSections() {
         if (sparseArray.size() == 0) {
-            Log.d(TAG, "start handler");
-            handler.resume();
+            Log.d(TAG, "start mainHandler");
+            mainHandler.resume();
         } else {
-            Log.d(TAG, "stop handler");
-            handler.pause();
+            Log.d(TAG, "stop mainHandler");
+            mainHandler.pause();
         }
     }
 
     @Override
     public void postLowPriorityTask(Task task) {
-        postLowPriorityTaskDelayed(task, 0);
+        mainHandler.postDelayedTask(task,0);
     }
 
     @Override
     public void postLowPriorityTaskDelayed(Task task, int delay) {
-        handler.postDelayedTask(task, delay);
+        mainHandler.postDelayedTask(task,delay);
     }
 
     @Override
     public void removeLowPriorityTask(Task task) {
-        handler.removeTask(task);
+        mainHandler.removeTask(task);
     }
 
     @Override
     public void removeLowPriorityTasks() {
-        handler.removeTasks();
+        mainHandler.removeTasks();
     }
 
-    private class MyHandler extends Handler {
-        private List<TaskRunnable> allRunnables;
+    /*
+    Хендлеры зранят ссылки на TaskRunnable что-бы была возможность отменить таски
+     */
+
+    private static class MyHandler extends Handler {
+        private final DelayedHandler delayedHandler;
         private List<TaskRunnable> postRunnables;
         private boolean isRunning = true;
 
         MyHandler(Looper looper) {
             super(looper);
+            delayedHandler=new DelayedHandler(getLooper());
             postRunnables = new ArrayList<>();
-            allRunnables = new ArrayList<>();
         }
 
 
@@ -108,8 +112,8 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
             postRunnables.clear();
         }
 
-        //todo нужно оптимизировать иначе если таск много будут проблемы
         void removeTask(Task task) {
+            //удаляем таску если она есть в паузе
             Iterator<TaskRunnable> iterator= postRunnables.iterator();
             while (iterator.hasNext()){
                 TaskRunnable taskRunnable=iterator.next();
@@ -118,28 +122,79 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
                     Log.d("MyHandler","task removed:"+taskRunnable);
                 }
             }
-            iterator= allRunnables.iterator();
+            //удаляем таску если она была отправленна с задержкой
+            delayedHandler.removeTask(task);
+
+        }
+
+        void removeTasks() {
+            removeCallbacksAndMessages(null);
+            postRunnables.clear();
+            delayedHandler.removeTasks();
+        }
+
+        void postDelayedTask(Task task,long millis){
+            if(millis==0){
+                TaskRunnable taskRunnable=new TaskRunnable(task);
+                super.post(taskRunnable);
+            }else{
+                delayedHandler.postTaskRunnble(new TaskRunnable(task){
+                    @Override
+                    public void run() {
+                        //super.run();
+                        postDelayedTask(task,0);
+                    }
+                },millis);
+            }
+
+        }
+    }
+
+    private static class DelayedHandler extends Handler{
+        private List<TaskRunnable> taskRunnables;
+
+        public DelayedHandler(Looper looper) {
+            super(looper);
+            taskRunnables =new ArrayList<>();
+        }
+
+        @Override
+        public void dispatchMessage(Message msg) {
+            //убираем выполненую таску из массива тасок
+            if(msg.getCallback()!=null){
+                TaskRunnable taskRunnable= (TaskRunnable) msg.getCallback();
+                Iterator<TaskRunnable> iterator= taskRunnables.iterator();
+                while (iterator.hasNext()){
+                    TaskRunnable t=iterator.next();
+                    if(taskRunnable==t){
+                        iterator.remove();
+                        break;
+                    }
+                }
+            }
+            super.dispatchMessage(msg);
+        }
+
+        void removeTask(Task task) {
+            Iterator<TaskRunnable> iterator= taskRunnables.iterator();
             while (iterator.hasNext()){
                 TaskRunnable taskRunnable=iterator.next();
                 if(taskRunnable.task==task){
-                    removeCallbacks(taskRunnable);
                     iterator.remove();
-                    Log.d("MyHandler","task removed:"+taskRunnable);
+                    removeCallbacks(taskRunnable);
+                    Log.d("DelayedHandler","task removed:"+taskRunnable);
                 }
             }
         }
 
         void removeTasks() {
-            postRunnables.clear();
-            for(TaskRunnable t:allRunnables){
-                removeCallbacks(t);
-            }
+            taskRunnables.clear();
+            removeCallbacksAndMessages(null);
         }
 
-        void postDelayedTask(Task task,long millis){
-            TaskRunnable taskRunnable=new TaskRunnable(task);
-            allRunnables.add(taskRunnable);
-            super.postDelayed(taskRunnable,millis);
+        public void postTaskRunnble(TaskRunnable taskRunnable,long delay){
+            taskRunnables.add(taskRunnable);
+            super.postDelayed(taskRunnable,delay);
         }
     }
 

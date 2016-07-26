@@ -14,6 +14,7 @@ import butterknife.BindView;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.artists.utils.DataSingleton;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.Task;
 import ru.yandex.yamblz.ui.adapters.GenresAdapter;
 
 public class ContentFragment extends BaseFragment {
@@ -29,20 +30,18 @@ public class ContentFragment extends BaseFragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         GenresAdapter genresAdapter=new GenresAdapter(DataSingleton.get().getGenres());
+        Task task = () -> Log.d("Tag", "delayed");
+        CriticalSectionsManager.getHandler().postLowPriorityTaskDelayed(task,10000);
         CriticalSectionsManager.getHandler().startSection(1);
         rv.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         rv.setAdapter(genresAdapter);
         rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-            }
-
-            @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if(newState== RecyclerView.SCROLL_STATE_IDLE){
                     Log.d("Rv","idle");
+                    CriticalSectionsManager.getHandler().removeLowPriorityTask(task);
                     CriticalSectionsManager.getHandler().stopSection(1);
                 }else if(newState==RecyclerView.SCROLL_STATE_DRAGGING){
                     Log.d("Rv","drag");
