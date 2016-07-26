@@ -37,12 +37,8 @@ public class CriticalSectionsHandlerImpl implements CriticalSectionsHandler {
     private Runnable buildExecuteTask() {
         return () -> {
             Task currentTask = null;
-            //noinspection LoopStatementThatDoesntLoop, because no getFirst method
-            for (Task task : taskQueue) {
-                currentTask = task;
-                taskQueue.remove(currentTask);
-                break;
-            }
+            currentTask = taskQueue.iterator().next();
+            taskQueue.remove(currentTask);
 
             // This runnable is in execution queue iff taskQueue is not empty.
             assert currentTask != null;
