@@ -36,14 +36,17 @@ public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.Genr
 
     @Override
     public void onBindViewHolder(GenreViewHolder holder, int position) {
-        if (position < dataset.size()) {
-            Genre genre = dataset.get(position);
-            holder.name.setText(genre.getName());
-            Log.d(DEBUG_TAG, Arrays.deepToString(genre.getUrls().toArray()));
-
-            Subscription subscription = CollageLoaderManager.getLoader().loadCollage(genre.getUrls(), holder.image, new FourImagesCollageStrategy());
-            holder.setSubscription(subscription);
+        if (holder.getSubscription() != null && holder.getSubscription().isUnsubscribed()) {
+            holder.getSubscription().unsubscribe();
         }
+        Genre genre = dataset.get(position);
+        holder.name.setText(genre.getName());
+        Log.d(DEBUG_TAG, Arrays.deepToString(genre.getUrls().toArray()));
+
+        Subscription subscription = CollageLoaderManager.getLoader()
+                .loadCollage(genre.getUrls(), new WeakReference<>(holder.image), new FourImagesCollageStrategy());
+        holder.setSubscription(subscription);
+
     }
 
     @Override
@@ -76,14 +79,12 @@ public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.Genr
         @BindView(R.id.text_view_genre)
         TextView name;
 
-        WeakReference<ImageView> image;
+        @BindView(R.id.image_view_genre)
+        ImageView image;
 
         public GenreViewHolder(View itemView) {
             super(itemView);
-
             ButterKnife.bind(this, itemView);
-
-            image = new WeakReference<>((ImageView) itemView.findViewById(R.id.image_view_genre));
         }
 
         public Subscription getSubscription() {
