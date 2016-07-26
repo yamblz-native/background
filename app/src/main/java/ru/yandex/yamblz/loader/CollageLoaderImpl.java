@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.List;
 
 import rx.Observable;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -16,34 +17,7 @@ import rx.schedulers.Schedulers;
 public class CollageLoaderImpl implements CollageLoader {
 
     private static final int DEFAULT_BITMAP_SIZE = 1000;
-
-    @Override
-    public void loadCollage(List<String> urls, ImageView imageView) {
-        loadCollage(urls, imageView::setImageBitmap);
-    }
-
-    @Override
-    public void loadCollage(List<String> urls, ImageTarget imageTarget) {
-        loadCollage(urls, imageTarget, new DefaultCollageStrategy(DEFAULT_BITMAP_SIZE));
-    }
-
-    @Override
-    public void loadCollage(List<String> urls, ImageView imageView,
-                            CollageStrategy collageStrategy) {
-        loadCollage(urls, imageView::setImageBitmap, collageStrategy);
-    }
-
-    @Override
-    public void loadCollage(List<String> urls, ImageTarget imageTarget,
-                            CollageStrategy collageStrategy) {
-        Observable.from(urls)
-                .flatMap(CollageLoaderImpl::buildBitmapObservable)
-                .toList()
-                .map(collageStrategy::create)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(imageTarget::onLoadBitmap);
-    }
+    private static final int MAX_INPUT_IMAGE_N = 4;
 
     private static Observable<Bitmap> buildBitmapObservable(String url) {
         return Observable.create(subscriber -> {
@@ -57,6 +31,36 @@ public class CollageLoaderImpl implements CollageLoader {
                 subscriber.onError(e);
             }
         });
+    }
+
+    @Override
+    public Subscription loadCollage(List<String> urls, ImageView imageView) {
+        return loadCollage(urls, imageView::setImageBitmap);
+    }
+
+    @Override
+    public Subscription loadCollage(List<String> urls, ImageTarget imageTarget) {
+        return loadCollage(urls, imageTarget, new DefaultCollageStrategy(DEFAULT_BITMAP_SIZE));
+    }
+
+    @Override
+    public Subscription loadCollage(List<String> urls, ImageView imageView,
+                                    CollageStrategy collageStrategy) {
+        return loadCollage(urls, imageView::setImageBitmap, collageStrategy);
+    }
+
+    @Override
+    public Subscription loadCollage(List<String> urls, ImageTarget imageTarget,
+                                    CollageStrategy collageStrategy) {
+        return Observable.from(urls)
+                .filter(url -> url != null)
+                .take(MAX_INPUT_IMAGE_N)
+                .flatMap(CollageLoaderImpl::buildBitmapObservable)
+                .toList()
+                .map(collageStrategy::create)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(imageTarget::onLoadBitmap);
     }
 
 }

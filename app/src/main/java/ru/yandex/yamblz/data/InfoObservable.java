@@ -48,10 +48,9 @@ public class InfoObservable {
                         case "id":
                             artist.id = reader.nextInt();
                             break;
-                        case "name": {
+                        case "name":
                             artist.name = reader.nextString();
                             break;
-                        }
                         case "genres":
                             List<String> genres = new ArrayList<>();
                             reader.beginArray();
@@ -70,10 +69,9 @@ public class InfoObservable {
                         case "link":
                             artist.link = reader.nextString();
                             break;
-                        case "description": {
+                        case "description":
                             artist.description = reader.nextString();
                             break;
-                        }
                         case "cover":
                             reader.beginObject();
                             for (int i = 0; i < 2; ++i) {

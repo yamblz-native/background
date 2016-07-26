@@ -12,6 +12,17 @@ import java.util.List;
  */
 @SuppressWarnings("WeakerAccess")
 public class Artist implements Parcelable {
+    public static final Creator<Artist> CREATOR = new Creator<Artist>() {
+        @Override
+        public Artist createFromParcel(Parcel in) {
+            return new Artist(in);
+        }
+
+        @Override
+        public Artist[] newArray(int size) {
+            return new Artist[size];
+        }
+    };
     public int id;
     public String name;
     public List<String> genres;
@@ -24,10 +35,19 @@ public class Artist implements Parcelable {
     }
 
     /**
-     * Returns genres as a comma-separated string.
+     * Creates an instance from parcel.
+     * @param in parcel.
      */
-    public String getGenres() {
-        return TextUtils.join(", ", genres);
+    protected Artist(Parcel in) {
+        id = in.readInt();
+        name = in.readString();
+        genres = in.createStringArrayList();
+        tracks = in.readInt();
+        albums = in.readInt();
+        link = in.readString();
+        description = in.readString();
+        smallCover = in.readString();
+        bigCover = in.readString();
     }
 
     /**
@@ -45,19 +65,10 @@ public class Artist implements Parcelable {
     }
 
     /**
-     * Creates an instance from parcel.
-     * @param in parcel.
+     * Returns genres as a comma-separated string.
      */
-    protected Artist(Parcel in) {
-        id = in.readInt();
-        name = in.readString();
-        genres = in.createStringArrayList();
-        tracks = in.readInt();
-        albums = in.readInt();
-        link = in.readString();
-        description = in.readString();
-        smallCover = in.readString();
-        bigCover = in.readString();
+    public String getGenres() {
+        return TextUtils.join(", ", genres);
     }
 
     @Override
@@ -78,15 +89,18 @@ public class Artist implements Parcelable {
         return 0;
     }
 
-    public static final Creator<Artist> CREATOR = new Creator<Artist>() {
-        @Override
-        public Artist createFromParcel(Parcel in) {
-            return new Artist(in);
-        }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-        @Override
-        public Artist[] newArray(int size) {
-            return new Artist[size];
-        }
-    };
+        Artist artist = (Artist) o;
+
+        return id == artist.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
 }

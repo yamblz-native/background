@@ -19,41 +19,12 @@ import ru.yandex.yamblz.data.Artist;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import rx.Observable;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
     private List<Pair<List<Artist>, String>> artistByGenres = Collections.emptyList();
-
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.item_collage)
-        ImageView imageView;
-        @BindView(R.id.item_name)
-        TextView textView;
-
-        Subscriber<List<String>> subscriber = new Subscriber<List<String>>() {
-            @Override
-            public void onCompleted() {
-            }
-
-            @Override
-            public void onError(Throwable e) {
-            }
-
-            @Override
-            public void onNext(List<String> strings) {
-                CollageLoaderManager.getLoader().loadCollage(strings, imageView);
-            }
-        };
-
-        ViewHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
-    }
-
-    Adapter() {
-    }
 
     void setArtistByGenres(List<Pair<List<Artist>, String>> artistByGenres) {
         this.artistByGenres = artistByGenres;
@@ -70,26 +41,55 @@ class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Log.d("qq", "onBind");
         holder.textView.setText(artistByGenres.get(position).second);
 
-        Observable.from(artistByGenres.get(position).first)
+        holder.subscription = Observable.from(artistByGenres.get(position).first)
                 .map(artist -> artist.smallCover)
                 .toList()
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(holder.subscriber);
+                .subscribe(new Subscriber<List<String>>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(Adapter.class.getSimpleName(), "", e);
+                    }
+
+                    @Override
+                    public void onNext(List<String> strings) {
+                        holder.subscription =
+                                CollageLoaderManager.getLoader()
+                                        .loadCollage(strings, holder.imageView);
+                    }
+                });
     }
 
     @Override
-    public void onViewDetachedFromWindow(ViewHolder holder) {
-        super.onViewDetachedFromWindow(holder);
+    public void onViewRecycled(ViewHolder holder) {
+        super.onViewRecycled(holder);
         holder.imageView.setImageResource(android.R.color.transparent);
-        holder.subscriber.unsubscribe();
+        holder.subscription.unsubscribe();
     }
 
     @Override
     public int getItemCount() {
         return artistByGenres.size();
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.item_collage)
+        ImageView imageView;
+        @BindView(R.id.item_name)
+        TextView textView;
+
+        Subscription subscription;
+
+        ViewHolder(View itemView) {
+            super(itemView);
+            ButterKnife.bind(this, itemView);
+        }
     }
 }
