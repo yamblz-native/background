@@ -3,4 +3,10 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
+    <dimen name="list_horizontal_margin">8dp</dimen>
+    <dimen name="list_item_interval">8dp</dimen>
+
+    <dimen name="description_small">8dp</dimen>
+    <dimen name="description_large">16dp</dimen>
+
 </resources>

@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import ru.yandex.yamblz.R;
-import ru.yandex.yamblz.handler.CriticalSectionsHandler;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
 
 public class ContentFragment extends BaseFragment {
