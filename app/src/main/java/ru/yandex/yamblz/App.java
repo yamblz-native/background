@@ -9,6 +9,7 @@ import ru.yandex.yamblz.developer_settings.DeveloperSettingsModel;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import ru.yandex.yamblz.handler.StubCriticalSectionsHandler;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
+import ru.yandex.yamblz.loader.StubCollageLoader;
 import timber.log.Timber;
 
 public class App extends Application {
@@ -35,7 +36,7 @@ public class App extends Application {
             devMetricsProxy.apply();
         }
 
-        CollageLoaderManager.init(null);  // add implementation
+        CollageLoaderManager.init(new StubCollageLoader());  // add implementation
         CriticalSectionsManager.init(new StubCriticalSectionsHandler()); // add implementation
     }
 
