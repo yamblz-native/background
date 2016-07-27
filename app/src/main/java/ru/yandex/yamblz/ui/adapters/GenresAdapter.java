@@ -14,6 +14,7 @@ import java.util.List;
 
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.handler.CriticalSectionsHandler;
+import ru.yandex.yamblz.handler.Task;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.loader.CollageStrategy;
 import ru.yandex.yamblz.loader.ImageTarget;
@@ -79,6 +80,7 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
         TextView genreTV, singersTV;
         CriticalSectionsHandler criticalSectionsHandler;
         Subscription subscription;
+        Task task;
 
         public ViewHolder(View itemView, CriticalSectionsHandler criticalSectionsHandler) {
             super(itemView);
@@ -91,7 +93,15 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
         @Override
         public void onLoadBitmap(Bitmap bitmap) {
             //post to critical section handler so not to load main thread with setting images
-            criticalSectionsHandler.postLowPriorityTask(() -> collage.setImageBitmap(bitmap));
+            if(task != null) {
+                criticalSectionsHandler.removeLowPriorityTask(task);
+            }
+            task = createTask(bitmap);
+            criticalSectionsHandler.postLowPriorityTask(task);
+        }
+
+        private Task createTask(Bitmap bitmap) {
+            return () -> collage.setImageBitmap(bitmap);
         }
     }
 }
