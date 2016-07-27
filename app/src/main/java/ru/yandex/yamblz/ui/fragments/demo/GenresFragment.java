@@ -19,11 +19,14 @@ import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.data.Artist;
 import ru.yandex.yamblz.data.InfoObservable;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class GenresFragment extends Fragment {
+
+    private static final int CRITICAL_SECTION_ID = 0;
 
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
@@ -37,6 +40,17 @@ public class GenresFragment extends Fragment {
         ButterKnife.bind(this, view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(new Adapter());
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    CriticalSectionsManager.getHandler().stopSection(CRITICAL_SECTION_ID);
+                } else {
+                    CriticalSectionsManager.getHandler().startSection(CRITICAL_SECTION_ID);
+                }
+            }
+        });
 
         subscription = InfoObservable.getObservable()
                 .map(list -> {

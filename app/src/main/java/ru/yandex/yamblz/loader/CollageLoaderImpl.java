@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory;
 import android.widget.ImageView;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.List;
 
@@ -19,6 +18,8 @@ public class CollageLoaderImpl implements CollageLoader {
 
     private static final int DEFAULT_BITMAP_SIZE = 1000;
     private static final int MAX_INPUT_IMAGE_N = 4;
+    private static final CollageStrategy defaultCollageStrategy =//
+            new DefaultCollageStrategy(DEFAULT_BITMAP_SIZE);
 
     private static Observable<Bitmap> buildBitmapObservable(String url) {
         return Observable.create(subscriber -> {
@@ -36,18 +37,18 @@ public class CollageLoaderImpl implements CollageLoader {
 
     @Override
     public Subscription loadCollage(List<String> urls, ImageView imageView) {
-        return loadCollage(urls, new ImageViewImageTarget(imageView));
+        return loadCollage(urls, new WeakImageViewTarget(imageView));
     }
 
     @Override
     public Subscription loadCollage(List<String> urls, ImageTarget imageTarget) {
-        return loadCollage(urls, imageTarget, new DefaultCollageStrategy(DEFAULT_BITMAP_SIZE));
+        return loadCollage(urls, imageTarget, defaultCollageStrategy);
     }
 
     @Override
     public Subscription loadCollage(List<String> urls, ImageView imageView,
                                     CollageStrategy collageStrategy) {
-        return loadCollage(urls, new ImageViewImageTarget(imageView), collageStrategy);
+        return loadCollage(urls, new WeakImageViewTarget(imageView), collageStrategy);
     }
 
     @Override
@@ -62,22 +63,6 @@ public class CollageLoaderImpl implements CollageLoader {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(imageTarget::onLoadBitmap);
-    }
-
-    private static class ImageViewImageTarget implements ImageTarget {
-
-        WeakReference<ImageView> reference;
-
-        public ImageViewImageTarget(ImageView reference) {
-            this.reference = new WeakReference<>(reference);
-        }
-
-        @Override
-        public void onLoadBitmap(Bitmap bitmap) {
-            if (reference.get() != null) {
-                reference.get().setImageBitmap(bitmap);
-            }
-        }
     }
 
 }

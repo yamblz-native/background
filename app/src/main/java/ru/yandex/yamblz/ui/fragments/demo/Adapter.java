@@ -1,5 +1,6 @@
 package ru.yandex.yamblz.ui.fragments.demo;
 
+import android.graphics.Bitmap;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -16,7 +17,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.data.Artist;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.Task;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
+import ru.yandex.yamblz.loader.WeakImageViewTarget;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
@@ -60,9 +64,15 @@ class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
                     @Override
                     public void onNext(List<String> strings) {
-                        holder.subscription =
-                                CollageLoaderManager.getLoader()
-                                        .loadCollage(strings, holder.imageView);
+                        holder.subscription = CollageLoaderManager.getLoader()
+                                .loadCollage(strings, new WeakImageViewTarget(holder.imageView) {
+                                    @Override
+                                    public void onLoadBitmap(Bitmap bitmap) {
+                                        holder.task = () -> super.onLoadBitmap(bitmap);
+                                        CriticalSectionsManager.getHandler()
+                                                .postLowPriorityTask(holder.task);
+                                    }
+                                });
                     }
                 });
     }
@@ -72,6 +82,10 @@ class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         super.onViewRecycled(holder);
         holder.imageView.setImageResource(android.R.color.transparent);
         holder.subscription.unsubscribe();
+        if (holder.task != null) {
+            CriticalSectionsManager.getHandler().removeLowPriorityTask(holder.task);
+            holder.task = null;
+        }
     }
 
     @Override
@@ -86,6 +100,7 @@ class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         TextView textView;
 
         Subscription subscription;
+        Task task;
 
         ViewHolder(View itemView) {
             super(itemView);
