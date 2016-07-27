@@ -87,6 +87,12 @@ dependencies {
     compile libraries.dagger
     apt libraries.daggerCompiler
 
+    compile libraries.rxjava
+    compile libraries.rxandroid
+
+    compile libraries.gson
+    compile libraries.okhttp
+
     compile libraries.supportAnnotations
     compile libraries.supportAppCompat
     compile libraries.supportDesign

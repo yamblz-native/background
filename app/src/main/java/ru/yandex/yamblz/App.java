@@ -35,7 +35,7 @@ public class App extends Application {
         }
 
         CollageLoaderManager.init(null);  // add implementation
-        CriticalSectionsManager.init(null); // add implementation
+        //CriticalSectionsManager.init(null); // add implementation
     }
 
     @NonNull
