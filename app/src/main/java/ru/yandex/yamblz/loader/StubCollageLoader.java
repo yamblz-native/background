@@ -10,15 +10,11 @@ import android.widget.ImageView;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-import ru.yandex.yamblz.handler.CriticalSectionsManager;
-import ru.yandex.yamblz.handler.Task;
 
 public class StubCollageLoader implements CollageLoader {
 
@@ -37,20 +33,17 @@ public class StubCollageLoader implements CollageLoader {
                             CollageStrategy collageStrategy) {
         Log.d("loadCollage", "download");
         List<Bitmap> bitmapList = new ArrayList<>();
-        for (String url :
-                urls) {
-            bitmapList.add(getBitmapFromURL(url));
+        int size = Math.min(collageStrategy.numOfImage(), urls.size());
+        for (int i = 0; i < size; i++) {
+            bitmapList.add(getBitmapFromURL(urls.get(i)));
         }
         Bitmap bitmap = collageStrategy.create(bitmapList);
         if (imageView != null) {
             imageView.post(() -> {
-                imageView.setImageBitmap(null);
+                imageView.setImageDrawable(null);
                 imageView.setImageBitmap(bitmap);
-                imageView.invalidate();
             });
-
         }
-
     }
 
     @Override
@@ -61,7 +54,6 @@ public class StubCollageLoader implements CollageLoader {
 
     private static Bitmap getBitmapFromURL(String src) {
         try {
-            //throw new IOException();
             URL url = new URL(src);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setDoInput(true);

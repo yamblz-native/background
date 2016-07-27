@@ -38,4 +38,9 @@ public class CollageStrategyImpl implements CollageStrategy {
             return bitmap;
         }
     }
+
+    @Override
+    public int numOfImage() {
+        return 4;
+    }
 }

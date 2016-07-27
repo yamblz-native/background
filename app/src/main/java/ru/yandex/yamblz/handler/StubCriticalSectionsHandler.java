@@ -33,13 +33,17 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
 
     @Override
     public void startSection(int id) {
+        Log.d("startSection", Integer.toString(sections.size()));
         sections.add(id);
+        Log.d("startSection", Integer.toString(sections.size()));
         handler.removeCallbacks(callBack);
     }
 
     @Override
     public void stopSection(int id) {
+        Log.d("stopSection", Integer.toString(sections.size()));
         sections.remove(id);
+        Log.d("stopSection", Integer.toString(sections.size()));
         if (sections.isEmpty()) {
             handler.post(callBack);
         }
@@ -55,7 +59,7 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
     public void postLowPriorityTask(Task task) {
         Log.d("postLowPriorityTask", "post");
         taskQueue.add(task);
-        if (taskQueue.size() == 1) {
+        if (taskQueue.size() == 1 && sections.isEmpty()) {
             handler.post(callBack);
         }
     }

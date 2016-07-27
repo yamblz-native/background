@@ -39,12 +39,13 @@ public class GenreAdapter extends RecyclerView.Adapter<GenreViewHolder> {
     public void onBindViewHolder(GenreViewHolder holder, int position) {
         Log.d("onBindViewHolder,pos = ", Integer.toString(position));
         Genre genre = genres.get(position);
-        holder.textInList.setText(genre.getDescription());
+        holder.textInList.setText(genre.getName() + "\n" + genre.getDescription());
 
-        holder.imgInList.setImageBitmap(null);
+        holder.imgInList.setImageDrawable(null);
 
         Object old_setter = holder.imgInList.getTag();
         if (old_setter != null) {
+            Log.d("onBindViewHolder", "removeLowPriorityTask");
             CriticalSectionsManager.getHandler().removeLowPriorityTask((Task) old_setter);
         }
 
