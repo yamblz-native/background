@@ -14,7 +14,7 @@ import ru.yandex.yamblz.images.Cache;
 import ru.yandex.yamblz.images.ImageDownloader;
 
 /**
- * An {@link CollageLoader} which loads images using executors (so it's possible to use as many
+ * A {@link CollageLoader} which loads images using executors (so it's possible to use as many
  * threads as you want) and posts them back to UIThread
  * Supports subscribe/unsubscribe mechanism.
  * Supports caching mechanism.
@@ -139,14 +139,19 @@ public class ParallelCollageLoader implements CollageLoader {
          * @param url the url of image
          */
         private void processUrl(@NonNull String url) {
+            if(!mSubscription.isSubscribed()) {
+                return;
+            }
             if(mCache != null && mCache.containsKey(url)) {
                 postImage(mCache.get(url));
             } else {
                 Bitmap image = mImageDownloader.downloadBitmap(url);
-                if(mCache != null) {
-                    mCache.put(url, image);
+                if(image != null) { //TODO handle case when image wasn't downloaded
+                    if(mCache != null) {
+                        mCache.put(url, image);
+                    }
+                    postImage(image);
                 }
-                postImage(image);
             }
         }
 
@@ -155,6 +160,9 @@ public class ParallelCollageLoader implements CollageLoader {
          * @param image
          */
         private void postImage(Bitmap image) {
+            if(!mSubscription.isSubscribed()) {
+                return;
+            }
             synchronized (mImages) {
                 mImages.add(image);
                 mCntOfImages--;
@@ -170,6 +178,9 @@ public class ParallelCollageLoader implements CollageLoader {
          * @return the result
          */
         private Bitmap transformToCollage() {
+            if(!mSubscription.isSubscribed()) {
+                return null;
+            }
             if (mCollageStrategy != null) {
                 return mCollageStrategy.create(mImages);
             } else {
