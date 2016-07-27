@@ -49,6 +49,9 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
             //unsubscribe if there was a subscription, because we don't need the result of it
             holder.subscription.unsubscribe();
         }
+        if(holder.task != null) {
+            mCriticalSectionHandler.removeLowPriorityTask(holder.task);
+        }
         holder.subscription = mCollageLoader.loadCollage(shuffleAndCut(Genre.getCoversForCollage(genre)),
                 holder, mCollageStrategy);
 
@@ -93,9 +96,6 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
         @Override
         public void onLoadBitmap(Bitmap bitmap) {
             //post to critical section handler so not to load main thread with setting images
-            if(task != null) {
-                criticalSectionsHandler.removeLowPriorityTask(task);
-            }
             task = createTask(bitmap);
             criticalSectionsHandler.postLowPriorityTask(task);
         }
