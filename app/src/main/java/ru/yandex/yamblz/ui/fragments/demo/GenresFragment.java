@@ -9,20 +9,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
-import ru.yandex.yamblz.data.Artist;
 import ru.yandex.yamblz.data.InfoObservable;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import solid.collections.SolidSet;
+import solid.collectors.ToSolidSet;
+
+import static solid.collectors.ToList.toList;
+import static solid.stream.Stream.stream;
 
 public class GenresFragment extends Fragment {
 
@@ -54,24 +53,14 @@ public class GenresFragment extends Fragment {
 
         subscription = InfoObservable.getObservable()
                 .map(list -> {
-                    Set<String> genres = new HashSet<>();
-                    for (Artist artist : list) {
-                        genres.addAll(artist.genres);
-                    }
+                    SolidSet<String> genres = stream(list)
+                            .flatMap(artist -> artist.genres)
+                            .collect(ToSolidSet.toSolidSet());
 
-                    List<Pair<List<Artist>, String>> adapterContent = new ArrayList<>(genres.size());
-
-                    for (String genre : genres) {
-                        List<Artist> artists = new ArrayList<>();
-                        for (Artist artist : list) {
-                            if (artist.genres.contains(genre)) {
-                                artists.add(artist);
-                            }
-                        }
-                        adapterContent.add(new Pair<>(artists, genre));
-                    }
-
-                    return adapterContent;
+                    return genres.map(genre -> new Pair<>(
+                            stream(list).filter(artist -> artist.genres.contains(genre))
+                                    .collect(toList()),
+                            genre)).collect(toList());
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
