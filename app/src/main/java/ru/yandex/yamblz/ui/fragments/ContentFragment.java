@@ -26,7 +26,7 @@ public class ContentFragment extends BaseFragment implements LoaderManager.Loade
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
 
-    private GenreListAdapter adapter;
+    private GenreListAdapter adapter = new GenreListAdapter();
 
     @NonNull
     @Override
@@ -34,7 +34,6 @@ public class ContentFragment extends BaseFragment implements LoaderManager.Loade
         View v = inflater.inflate(R.layout.fragment_content, container, false);
         ButterKnife.bind(this, v);
 
-        adapter = new GenreListAdapter();
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.addOnScrollListener(new MyScrollListener());

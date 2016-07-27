@@ -2,8 +2,6 @@ package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.ImageView;
 
 import java.io.IOException;
@@ -13,43 +11,60 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.Task;
 import rx.Observable;
+import rx.Scheduler;
 import rx.Subscriber;
 import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action2;
 import rx.schedulers.Schedulers;
 
 public class StubCollageLoader implements CollageLoader {
     public static final String DEBUG_TAG = StubCollageLoader.class.getName();
 
-    @Override
-    public void loadCollage(List<String> urls, ImageView imageView) {
+    private static final Scheduler SCHEDULER = Schedulers.from(Executors.newFixedThreadPool(10));
 
+    @Override
+    public Subscription loadCollage(List<String> urls, ImageView imageView) {
+        return loadCollage(urls, imageView, new FourImagesCollageStrategy());
     }
 
     @Override
-    public void loadCollage(List<String> urls, ImageTarget imageTarget) {
-
+    public Subscription loadCollage(List<String> urls, ImageTarget imageTarget) {
+        return loadCollage(urls, imageTarget, new FourImagesCollageStrategy());
     }
 
     @Override
-    public Subscription loadCollage(List<String> urls, WeakReference<ImageView> imageView,
+    public Subscription loadCollage(List<String> urls, ImageView imageView, CollageStrategy collageStrategy) {
+        return loadCollage(urls, new ImageViewImageTarget(new WeakReference<ImageView>(imageView)), collageStrategy);
+    }
+
+    @Override
+    public Subscription loadCollage(List<String> urls, ImageTarget imageTarget,
                                     CollageStrategy collageStrategy) {
-        LinkedList<Bitmap> bitmaps = new LinkedList<>();
+        int n = Math.min(urls.size(), collageStrategy.amountOfImagesNeeded());
+        urls = urls.subList(0, n);
+
 
         return Observable.from(urls)
-                .observeOn(Schedulers.io())
-                .map(this::loadBitmapFromUrl)
-                .collect(() -> bitmaps, LinkedList::add)
-                .subscribe(new Subscriber<LinkedList<Bitmap>>() {
+                .flatMap(s -> Observable.just(s)
+                        .observeOn(SCHEDULER)
+                        .map(this::loadBitmapFromUrl))
+                .collect(LinkedList::new, new Action2<LinkedList<Bitmap>, Bitmap>() {
+                    @Override
+                    public void call(LinkedList<Bitmap> bitmaps, Bitmap bitmap) {
+                        bitmaps.add(bitmap);
+                    }
+                })
+                .map(collageStrategy::create)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Bitmap>() {
                     @Override
                     public void onCompleted() {
-                        Log.d(DEBUG_TAG, "Bitmap size + " + bitmaps.size());
-                        Bitmap collage = collageStrategy.create(bitmaps);
-                        ((AppCompatActivity) imageView.get().getContext()).runOnUiThread(() -> {
-                            imageView.get().setImageBitmap(collage);
-                            imageView.get().invalidate();
-                        });
                     }
 
                     @Override
@@ -58,15 +73,11 @@ public class StubCollageLoader implements CollageLoader {
                     }
 
                     @Override
-                    public void onNext(LinkedList<Bitmap> bitmaps) {
-
+                    public void onNext(Bitmap collage) {
+                        CriticalSectionsManager.getHandler()
+                                .postLowPriorityTask(new ImageViewSetter(imageTarget, collage));
                     }
                 });
-    }
-
-    @Override
-    public void loadCollage(List<String> urls, ImageTarget imageTarget,
-                            CollageStrategy collageStrategy) {
 
     }
 
@@ -82,6 +93,21 @@ public class StubCollageLoader implements CollageLoader {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public class ImageViewSetter implements Task {
+        private ImageTarget target;
+        private Bitmap collage;
+
+        public ImageViewSetter(ImageTarget target, Bitmap collage) {
+            this.target = target;
+            this.collage = collage;
+        }
+
+        @Override
+        public void run() {
+            target.onLoadBitmap(collage);
+        }
     }
 
 }

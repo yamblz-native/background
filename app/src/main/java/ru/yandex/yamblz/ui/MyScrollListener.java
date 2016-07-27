@@ -24,6 +24,8 @@ public class MyScrollListener extends RecyclerView.OnScrollListener {
                 Log.d(DEBUG_TAG, "In scroll state idle");
                 CriticalSectionsManager.getHandler().stopSection(0);
                 break;
+            default:
+                break;
         }
     }
 }

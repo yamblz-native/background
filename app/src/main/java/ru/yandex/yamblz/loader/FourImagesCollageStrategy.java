@@ -13,6 +13,11 @@ public class FourImagesCollageStrategy implements CollageStrategy {
     public static final String DEBUG_TAG = FourImagesCollageStrategy.class.getName();
 
     @Override
+    public int amountOfImagesNeeded() {
+        return 4;
+    }
+
+    @Override
     public Bitmap create(List<Bitmap> bitmaps) {
         Log.d(DEBUG_TAG, "in create collage");
 

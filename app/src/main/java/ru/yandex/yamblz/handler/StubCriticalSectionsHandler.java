@@ -25,7 +25,7 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
 
     @Override
     public void stopSection(int id) {
-        criticalSections.remove(new Integer(0));
+        criticalSections.remove(Integer.valueOf(0));
         if (criticalSections.isEmpty()) {
             handler.post(executor);
         }

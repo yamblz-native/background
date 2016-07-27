@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,7 +25,7 @@ import rx.Subscription;
  */
 public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.GenreViewHolder> {
     public static final String DEBUG_TAG = GenreListAdapter.class.getName();
-    private List<Genre> dataset;
+    private List<Genre> dataset = new ArrayList<>();
 
 
     @Override
@@ -36,30 +36,28 @@ public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.Genr
 
     @Override
     public void onBindViewHolder(GenreViewHolder holder, int position) {
-        if (holder.getSubscription() != null && holder.getSubscription().isUnsubscribed()) {
+        if (holder.getSubscription() != null && !holder.getSubscription().isUnsubscribed()) {
             holder.getSubscription().unsubscribe();
         }
         Genre genre = dataset.get(position);
         holder.name.setText(genre.getName());
         Log.d(DEBUG_TAG, Arrays.deepToString(genre.getUrls().toArray()));
 
+        holder.image.setImageDrawable(null);
         Subscription subscription = CollageLoaderManager.getLoader()
-                .loadCollage(genre.getUrls(), new WeakReference<>(holder.image), new FourImagesCollageStrategy());
+                .loadCollage(genre.getUrls(), holder.image, new FourImagesCollageStrategy());
         holder.setSubscription(subscription);
-
     }
 
     @Override
     public void onViewRecycled(GenreViewHolder holder) {
         super.onViewRecycled(holder);
         holder.getSubscription().unsubscribe();
-        Log.d(DEBUG_TAG, "OnViewRecycled");
     }
 
     @Override
     public void onViewAttachedToWindow(GenreViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        Log.d(DEBUG_TAG, "onViewAttachedToWindow");
     }
 
 
@@ -74,13 +72,11 @@ public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.Genr
     }
 
     public class GenreViewHolder extends RecyclerView.ViewHolder {
-        private Subscription subscription;
-
         @BindView(R.id.text_view_genre)
         TextView name;
-
         @BindView(R.id.image_view_genre)
         ImageView image;
+        private Subscription subscription;
 
         public GenreViewHolder(View itemView) {
             super(itemView);

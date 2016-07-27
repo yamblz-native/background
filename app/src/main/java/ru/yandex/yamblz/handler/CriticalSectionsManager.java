@@ -5,7 +5,10 @@ import android.os.Looper;
 
 public class CriticalSectionsManager {
 
-    private static CriticalSectionsHandler sCriticalSectionsHandler;
+    private static volatile CriticalSectionsHandler sCriticalSectionsHandler;
+
+    private CriticalSectionsManager() {
+    }
 
     public static void init(CriticalSectionsHandler criticalSectionsHandler) {
         sCriticalSectionsHandler = criticalSectionsHandler;
