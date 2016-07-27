@@ -6,14 +6,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.Task;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.loader.CollageStrategyImpl;
 
@@ -41,14 +40,26 @@ public class GenreAdapter extends RecyclerView.Adapter<GenreViewHolder> {
         Log.d("onBindViewHolder,pos = ", Integer.toString(position));
         Genre genre = genres.get(position);
         holder.textInList.setText(genre.getDescription());
-        new Thread(() -> {
-            Log.d("new Thread", "start: " + genre.getName());
-            CollageLoaderManager
-                    .getLoader()
-                    .loadCollage(genre.getImgUrls(),
-                            holder.imgInList,
-                            new CollageStrategyImpl());
-        }).start();
+
+        holder.imgInList.setImageBitmap(null);
+
+        Object old_setter = holder.imgInList.getTag();
+        if (old_setter != null) {
+            CriticalSectionsManager.getHandler().removeLowPriorityTask((Task) old_setter);
+        }
+
+        Task setter = () -> {
+            new Thread(() -> {
+                Log.d("new Thread", "start: " + genre.getName());
+                CollageLoaderManager
+                        .getLoader()
+                        .loadCollage(genre.getImgUrls(),
+                                     holder.imgInList,
+                                     new CollageStrategyImpl());
+            }).start();
+        };
+        holder.imgInList.setTag(setter);
+        CriticalSectionsManager.getHandler().postLowPriorityTask(setter);
     }
 
     @Override

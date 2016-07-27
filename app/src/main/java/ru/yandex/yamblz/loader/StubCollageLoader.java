@@ -2,6 +2,9 @@ package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -12,8 +15,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.Task;
 
 public class StubCollageLoader implements CollageLoader {
 
@@ -37,12 +42,14 @@ public class StubCollageLoader implements CollageLoader {
             bitmapList.add(getBitmapFromURL(url));
         }
         Bitmap bitmap = collageStrategy.create(bitmapList);
-        CriticalSectionsManager.getHandler().postLowPriorityTask(() -> {
-            if (imageView != null) {
+        if (imageView != null) {
+            imageView.post(() -> {
+                imageView.setImageBitmap(null);
                 imageView.setImageBitmap(bitmap);
                 imageView.invalidate();
-            }
-        });
+            });
+
+        }
 
     }
 
@@ -54,6 +61,7 @@ public class StubCollageLoader implements CollageLoader {
 
     private static Bitmap getBitmapFromURL(String src) {
         try {
+            //throw new IOException();
             URL url = new URL(src);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setDoInput(true);
@@ -61,8 +69,16 @@ public class StubCollageLoader implements CollageLoader {
             InputStream input = connection.getInputStream();
             return BitmapFactory.decodeStream(input);
         } catch (IOException e) {
-            // Log exception
-            return null;
+            Bitmap bitmap = Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            int[] colors = {Color.BLACK, Color.BLUE, Color.GREEN, Color.RED};
+            Random random = new Random();
+            int ind = Math.abs(random.nextInt()) % colors.length;
+            Paint paint = new Paint();
+            paint.setColor(colors[ind]);
+            canvas.drawCircle(150, 150, 150, paint);
+            canvas.save();
+            return bitmap;
         }
     }
 }
