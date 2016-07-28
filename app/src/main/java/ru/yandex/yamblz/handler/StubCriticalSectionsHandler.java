@@ -18,14 +18,15 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
 
     @Override
     public void startSection(int id) {
-        criticalSections.add(id);
-        handler.removeCallbacks(executor);
-
+        if (!criticalSections.contains(id)) {
+            criticalSections.add(id);
+            handler.removeCallbacks(executor);
+        }
     }
 
     @Override
     public void stopSection(int id) {
-        criticalSections.remove(Integer.valueOf(0));
+        criticalSections.remove(Integer.valueOf(id));
         if (criticalSections.isEmpty()) {
             handler.post(executor);
         }
