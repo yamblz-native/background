@@ -82,17 +82,31 @@ public class StubCollageLoader implements CollageLoader {
     }
 
     protected Bitmap loadBitmapFromUrl(String stringUrl) {
+        Bitmap bitmap = null;
+        HttpURLConnection connection = null;
+        InputStream inputStream = null;
         try {
             URL url = new URL(stringUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection = (HttpURLConnection) url.openConnection();
             connection.setDoInput(true);
             connection.connect();
-            InputStream inputStream = connection.getInputStream();
-            return BitmapFactory.decodeStream(inputStream);
+            inputStream = connection.getInputStream();
+            bitmap = BitmapFactory.decodeStream(inputStream);
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return null;
+        return bitmap;
     }
 
     public class ImageViewSetter implements Task {
@@ -109,5 +123,4 @@ public class StubCollageLoader implements CollageLoader {
             target.onLoadBitmap(collage);
         }
     }
-
 }
