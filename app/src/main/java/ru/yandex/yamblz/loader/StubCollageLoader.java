@@ -15,8 +15,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.Task;
 
 public class StubCollageLoader implements CollageLoader {
+
+    private final ExecutorService pool = Executors.newFixedThreadPool(10);
 
     @Override
     public void loadCollage(List<String> urls, ImageView imageView) {
@@ -31,25 +41,51 @@ public class StubCollageLoader implements CollageLoader {
     @Override
     public void loadCollage(List<String> urls, ImageView imageView,
                             CollageStrategy collageStrategy) {
-        Log.d("loadCollage", "download");
-        List<Bitmap> bitmapList = new ArrayList<>();
-        int size = Math.min(collageStrategy.numOfImage(), urls.size());
-        for (int i = 0; i < size; i++) {
-            bitmapList.add(getBitmapFromURL(urls.get(i)));
+        imageView.setImageDrawable(null);
+
+        Object old_setter = imageView.getTag();
+        if (old_setter != null) {
+            Log.d("onBindViewHlder", "removeLowPriorityTask");
+            CriticalSectionsManager.getHandler().removeLowPriorityTask((Task) old_setter);
         }
-        Bitmap bitmap = collageStrategy.create(bitmapList);
-        if (imageView != null) {
-            imageView.post(() -> {
-                imageView.setImageDrawable(null);
-                imageView.setImageBitmap(bitmap);
-            });
-        }
+
+        UUID uuid = UUID.randomUUID();
+
+        Task setter = () -> {
+            pool.execute(() -> loadCollageImpl(
+                    urls,
+                    imageView,
+                    collageStrategy,
+                    uuid
+            ));
+        };
+
+        imageView.setTag(setter);
+        imageView.setTag(R.id.img_in_list, uuid);
+        CriticalSectionsManager.getHandler().postLowPriorityTask(setter);
     }
 
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget,
                             CollageStrategy collageStrategy) {
 
+    }
+
+    private void loadCollageImpl(List<String> urls, ImageView imageView,
+                                 CollageStrategy collageStrategy, UUID uuid) {
+        Log.d("loadCollageImpl", "download");
+        List<Bitmap> bitmapList = new ArrayList<>();
+        int size = Math.min(collageStrategy.numOfImage(), urls.size());
+        for (int i = 0; i < size; i++) {
+            bitmapList.add(getBitmapFromURL(urls.get(i)));
+        }
+        Bitmap bitmap = collageStrategy.create(bitmapList);
+        if (imageView != null && imageView.getTag(R.id.img_in_list).equals(uuid)) {
+            imageView.post(() -> {
+                imageView.setImageDrawable(null);
+                imageView.setImageBitmap(bitmap);
+            });
+        }
     }
 
     private static Bitmap getBitmapFromURL(String src) {

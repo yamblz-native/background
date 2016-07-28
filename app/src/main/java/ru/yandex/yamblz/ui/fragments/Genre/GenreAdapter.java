@@ -13,6 +13,7 @@ import java.util.List;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import ru.yandex.yamblz.handler.Task;
+import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.loader.CollageStrategyImpl;
 
@@ -37,30 +38,14 @@ public class GenreAdapter extends RecyclerView.Adapter<GenreViewHolder> {
 
     @Override
     public void onBindViewHolder(GenreViewHolder holder, int position) {
-        Log.d("onBindViewHolder,pos = ", Integer.toString(position));
         Genre genre = genres.get(position);
+        Log.d("onBindViewHlder", "genre = " + genre.getName());
         holder.textInList.setText(genre.getName() + "\n" + genre.getDescription());
-
-        holder.imgInList.setImageDrawable(null);
-
-        Object old_setter = holder.imgInList.getTag();
-        if (old_setter != null) {
-            Log.d("onBindViewHolder", "removeLowPriorityTask");
-            CriticalSectionsManager.getHandler().removeLowPriorityTask((Task) old_setter);
-        }
-
-        Task setter = () -> {
-            new Thread(() -> {
-                Log.d("new Thread", "start: " + genre.getName());
-                CollageLoaderManager
-                        .getLoader()
-                        .loadCollage(genre.getImgUrls(),
-                                     holder.imgInList,
-                                     new CollageStrategyImpl());
-            }).start();
-        };
-        holder.imgInList.setTag(setter);
-        CriticalSectionsManager.getHandler().postLowPriorityTask(setter);
+        CollageLoaderManager.getLoader().loadCollage(
+                genre.getImgUrls(),
+                holder.imgInList,
+                new CollageStrategyImpl()
+        );
     }
 
     @Override
