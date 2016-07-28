@@ -29,28 +29,27 @@ public class StubCollageLoader implements CollageLoader {
     private static final Scheduler SCHEDULER = Schedulers.from(Executors.newFixedThreadPool(10));
 
     @Override
-    public Subscription loadCollage(List<String> urls, ImageView imageView) {
-        return loadCollage(urls, imageView, new FourImagesCollageStrategy());
+    public void loadCollage(List<String> urls, ImageView imageView) {
+        loadCollage(urls, imageView, new FourImagesCollageStrategy());
     }
 
     @Override
-    public Subscription loadCollage(List<String> urls, ImageTarget imageTarget) {
-        return loadCollage(urls, imageTarget, new FourImagesCollageStrategy());
+    public void loadCollage(List<String> urls, ImageTarget imageTarget) {
+        loadCollage(urls, imageTarget, new FourImagesCollageStrategy());
     }
 
     @Override
-    public Subscription loadCollage(List<String> urls, ImageView imageView, CollageStrategy collageStrategy) {
-        return loadCollage(urls, new ImageViewImageTarget(new WeakReference<ImageView>(imageView)), collageStrategy);
+    public void loadCollage(List<String> urls, ImageView imageView, CollageStrategy collageStrategy) {
+        loadCollage(urls, new ImageViewImageTarget(new WeakReference<ImageView>(imageView)), collageStrategy);
     }
 
     @Override
-    public Subscription loadCollage(List<String> urls, ImageTarget imageTarget,
-                                    CollageStrategy collageStrategy) {
+    public void loadCollage(List<String> urls, ImageTarget imageTarget,
+                            CollageStrategy collageStrategy) {
         int n = Math.min(urls.size(), collageStrategy.amountOfImagesNeeded());
         urls = urls.subList(0, n);
 
-
-        return Observable.from(urls)
+        Subscription subscription = Observable.from(urls)
                 .flatMap(s -> Observable.just(s)
                         .observeOn(SCHEDULER)
                         .map(this::loadBitmapFromUrl))
@@ -74,11 +73,13 @@ public class StubCollageLoader implements CollageLoader {
 
                     @Override
                     public void onNext(Bitmap collage) {
+                        Task task = new ImageViewSetter(imageTarget, collage);
+                        imageTarget.setTask(task);
                         CriticalSectionsManager.getHandler()
-                                .postLowPriorityTask(new ImageViewSetter(imageTarget, collage));
+                                .postLowPriorityTask(task);
                     }
                 });
-
+        imageTarget.setSubscription(subscription);
     }
 
     protected Bitmap loadBitmapFromUrl(String stringUrl) {

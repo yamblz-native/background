@@ -15,6 +15,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.Task;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.loader.FourImagesCollageStrategy;
 import ru.yandex.yamblz.model.Genre;
@@ -36,23 +38,35 @@ public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.Genr
 
     @Override
     public void onBindViewHolder(GenreViewHolder holder, int position) {
-        if (holder.getSubscription() != null && !holder.getSubscription().isUnsubscribed()) {
-            holder.getSubscription().unsubscribe();
+        Log.d(DEBUG_TAG, "On bind" + holder.toString());
+
+        Subscription subscription = (Subscription) holder.image.getTag(R.id.tag_subscription);
+        if (subscription != null && !subscription.isUnsubscribed()) {
+            subscription.unsubscribe();
         }
+
         Genre genre = dataset.get(position);
         holder.name.setText(genre.getName());
         Log.d(DEBUG_TAG, Arrays.deepToString(genre.getUrls().toArray()));
 
         holder.image.setImageDrawable(null);
-        Subscription subscription = CollageLoaderManager.getLoader()
+        holder.image.invalidate();
+        CollageLoaderManager.getLoader()
                 .loadCollage(genre.getUrls(), holder.image, new FourImagesCollageStrategy());
-        holder.setSubscription(subscription);
     }
 
     @Override
     public void onViewRecycled(GenreViewHolder holder) {
         super.onViewRecycled(holder);
-        holder.getSubscription().unsubscribe();
+        Subscription subscription = (Subscription) holder.image.getTag(R.id.tag_subscription);
+        if (subscription != null) {
+            subscription.unsubscribe();
+        }
+        Task task = (Task) holder.image.getTag(R.id.tag_task);
+        if (task != null) {
+            CriticalSectionsManager.getHandler().removeLowPriorityTask(task);
+        }
+        Log.d(DEBUG_TAG, "Recycled" + holder.toString());
     }
 
     @Override
@@ -76,19 +90,10 @@ public class GenreListAdapter extends RecyclerView.Adapter<GenreListAdapter.Genr
         TextView name;
         @BindView(R.id.image_view_genre)
         ImageView image;
-        private Subscription subscription;
 
         public GenreViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-        }
-
-        public Subscription getSubscription() {
-            return subscription;
-        }
-
-        public void setSubscription(Subscription subscription) {
-            this.subscription = subscription;
         }
     }
 

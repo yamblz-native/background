@@ -20,6 +20,9 @@ public class MyScrollListener extends RecyclerView.OnScrollListener {
                 CriticalSectionsManager.getHandler().startSection(0);
                 Log.d(DEBUG_TAG, "In scroll state dragging");
                 break;
+            case RecyclerView.SCROLL_STATE_SETTLING:
+                Log.d(DEBUG_TAG, "In scroll state settling");
+                break;
             case RecyclerView.SCROLL_STATE_IDLE:
                 Log.d(DEBUG_TAG, "In scroll state idle");
                 CriticalSectionsManager.getHandler().stopSection(0);

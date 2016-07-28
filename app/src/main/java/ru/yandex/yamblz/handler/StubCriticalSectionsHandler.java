@@ -2,14 +2,13 @@ package ru.yandex.yamblz.handler;
 
 import android.os.Handler;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
 
     private final Handler handler;
-    private final List<Integer> criticalSections = new LinkedList<>();
-    private final List<Task> lowPriorityTasks = new LinkedList<>();
+    private final CopyOnWriteArrayList<Integer> criticalSections = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<Task> lowPriorityTasks = new CopyOnWriteArrayList<>();
     private final LowPriorityTaskExecutor executor = new LowPriorityTaskExecutor();
 
     public StubCriticalSectionsHandler(Handler handler) {
@@ -64,18 +63,19 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
         lowPriorityTasks.clear();
     }
 
-    public void executeLowPriorityTask() {
-        Task currentTask;
-        while (criticalSections.isEmpty() && !lowPriorityTasks.isEmpty()) {
-            currentTask = lowPriorityTasks.remove(0);
-            currentTask.run();
-        }
-    }
 
     public class LowPriorityTaskExecutor implements Runnable {
         @Override
         public void run() {
             executeLowPriorityTask();
+        }
+
+        public void executeLowPriorityTask() {
+            Task currentTask;
+            while (criticalSections.isEmpty() && !lowPriorityTasks.isEmpty()) {
+                currentTask = lowPriorityTasks.remove(0);
+                currentTask.run();
+            }
         }
     }
 
