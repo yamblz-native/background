@@ -2,12 +2,16 @@ package ru.yandex.yamblz;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 
 import ru.yandex.yamblz.developer_settings.DevMetricsProxy;
 import ru.yandex.yamblz.developer_settings.DeveloperSettingsModel;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.StubCriticalSectionsHandler;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
+import ru.yandex.yamblz.loader.StubCollageLoader;
 import timber.log.Timber;
 
 public class App extends Application {
@@ -34,8 +38,8 @@ public class App extends Application {
             devMetricsProxy.apply();
         }
 
-        CollageLoaderManager.init(null);  // add implementation
-        CriticalSectionsManager.init(null); // add implementation
+        CollageLoaderManager.init(new StubCollageLoader());
+        CriticalSectionsManager.init(new StubCriticalSectionsHandler(new Handler(Looper.getMainLooper())));
     }
 
     @NonNull

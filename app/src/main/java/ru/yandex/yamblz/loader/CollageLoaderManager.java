@@ -2,7 +2,10 @@ package ru.yandex.yamblz.loader;
 
 public class CollageLoaderManager {
 
-    private static CollageLoader sCollageLoader;
+    private static volatile CollageLoader sCollageLoader;
+
+    private CollageLoaderManager() {
+    }
 
     public static void init(CollageLoader collageLoader) {
         sCollageLoader = collageLoader;
