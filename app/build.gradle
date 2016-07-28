@@ -96,6 +96,11 @@ dependencies {
     compile libraries.butterKnife
     apt libraries.butterKnifeCompiler
 
+    compile libraries.retrofit2
+    compile libraries.rxAndroid
+    compile libraries.converterGson
+    compile libraries.adapterRxjava
+
     compile libraries.timber
 
     // Developer tools (Developer Settings)

@@ -5,4 +5,5 @@ import android.graphics.Bitmap;
 public interface ImageTarget {
 
     void onLoadBitmap(Bitmap bitmap);
+    void clear();
 }
