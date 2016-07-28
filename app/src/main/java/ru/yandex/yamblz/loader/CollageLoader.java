@@ -2,6 +2,7 @@ package ru.yandex.yamblz.loader;
 
 import android.widget.ImageView;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 public interface CollageLoader {
