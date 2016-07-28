@@ -23,11 +23,7 @@ public class ContentFragment extends BaseFragment {
             @Override
             protected Void doInBackground(Void... params) {
 
-                try {
-                    new CollageLoaderImpl().doSomething();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                new CollageLoaderImpl().doo(null);
 
                 return null;
             }
