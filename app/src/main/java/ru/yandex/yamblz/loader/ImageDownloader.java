@@ -1,6 +1,7 @@
 package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import ru.yandex.yamblz.genre.util.BitmapUtils;
+import ru.yandex.yamblz.loader.interfaces.ImageCache;
 
 /**
  * Created by platon on 27.07.2016.
@@ -26,10 +28,12 @@ public class ImageDownloader implements Runnable
     private final List<Bitmap> bitmaps;
     private final String url;
     private final CountDownLatch countDownLatch;
+    private ImageCache<Bitmap> bitmapCache;
 
     public ImageDownloader(String url, List<Bitmap> bitmaps, CountDownLatch countDownLatch)
     {
         this.countDownLatch = countDownLatch;
+        bitmapCache = BitmapCache.getCache();
         this.bitmaps = bitmaps;
         this.url = url;
     }
@@ -37,15 +41,30 @@ public class ImageDownloader implements Runnable
     @Override
     public void run()
     {
+        if (bitmapCache.get(url) != null)
+        {
+            bitmaps.add(cachedBitmap());
+        }
+        else
+        {
+            bitmaps.add(remoteBitmap());
+        }
+
+        countDownLatch.countDown();
+    }
+
+    private Bitmap remoteBitmap()
+    {
+        Log.d("Downloader", "fromRemote");
         HttpURLConnection conn = null;
+        Bitmap bitmap = null;
 
         try
         {
             conn = getConnection(url);
             byte[] bitmapBytes = getBytes(conn.getInputStream());
-            bitmaps.add(BitmapUtils.decodeBitmapFromByte(bitmapBytes, 0, bitmapBytes.length, REQ_WIDTH, REQ_HEIGHT));
-
-            countDownLatch.countDown();
+            bitmap = BitmapUtils.decodeBitmapFromByte(bitmapBytes, 0, bitmapBytes.length, REQ_WIDTH, REQ_HEIGHT);
+            bitmapCache.put(url, bitmap);
         }
         catch (IOException e)
         {
@@ -55,6 +74,14 @@ public class ImageDownloader implements Runnable
         {
             if (conn != null) { conn.disconnect(); }
         }
+
+        return bitmap;
+    }
+
+    private Bitmap cachedBitmap()
+    {
+        Log.d("Downloader", "fromCache");
+        return bitmapCache.get(url);
     }
 
     private byte[] getBytes(InputStream stream) throws IOException

@@ -4,6 +4,10 @@ import android.widget.ImageView;
 
 import java.util.List;
 
+import ru.yandex.yamblz.loader.interfaces.CollageLoader;
+import ru.yandex.yamblz.loader.interfaces.CollageStrategy;
+import ru.yandex.yamblz.loader.interfaces.ImageTarget;
+
 public class StubCollageLoader implements CollageLoader
 {
     @Override

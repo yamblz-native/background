@@ -1,6 +1,5 @@
 package ru.yandex.yamblz.genre;
 
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -26,7 +25,7 @@ import ru.yandex.yamblz.genre.data.source.CacheImpl;
 import ru.yandex.yamblz.genre.data.source.DataSource;
 import ru.yandex.yamblz.genre.data.source.RemoteDataSource;
 import ru.yandex.yamblz.genre.data.source.Repository;
-import ru.yandex.yamblz.loader.CollageLoader;
+import ru.yandex.yamblz.loader.interfaces.CollageLoader;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.loader.SimpleCollageLoader;
 import ru.yandex.yamblz.genre.adapter.CollageAdapter;

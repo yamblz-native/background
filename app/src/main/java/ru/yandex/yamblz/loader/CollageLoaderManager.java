@@ -1,5 +1,7 @@
 package ru.yandex.yamblz.loader;
 
+import ru.yandex.yamblz.loader.interfaces.CollageLoader;
+
 public class CollageLoaderManager
 {
     private static CollageLoader sCollageLoader;

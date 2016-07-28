@@ -12,8 +12,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
-import ru.yandex.yamblz.loader.CollageLoader;
-import ru.yandex.yamblz.loader.ImageTarget;
+import ru.yandex.yamblz.loader.interfaces.CollageLoader;
+import ru.yandex.yamblz.loader.interfaces.ImageTarget;
 import ru.yandex.yamblz.loader.ImageTargetImpl;
 import ru.yandex.yamblz.genre.data.entity.Genre;
 

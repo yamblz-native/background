@@ -15,5 +15,4 @@ public interface CriticalSectionsHandler {
     void removeLowPriorityTask(Task task);
 
     void removeLowPriorityTasks();
-
 }

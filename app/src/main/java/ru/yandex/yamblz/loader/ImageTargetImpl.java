@@ -8,6 +8,8 @@ import android.widget.ImageView;
 
 import java.lang.ref.WeakReference;
 
+import ru.yandex.yamblz.loader.interfaces.ImageTarget;
+
 /**
  * Created by platon on 26.07.2016.
  */

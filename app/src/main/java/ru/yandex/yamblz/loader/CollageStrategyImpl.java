@@ -7,6 +7,8 @@ import android.graphics.Paint;
 
 import java.util.List;
 
+import ru.yandex.yamblz.loader.interfaces.CollageStrategy;
+
 /**
  * Created by platon on 26.07.2016.
  */

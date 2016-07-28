@@ -1,4 +1,4 @@
-package ru.yandex.yamblz.loader;
+package ru.yandex.yamblz.loader.interfaces;
 
 import android.widget.ImageView;
 

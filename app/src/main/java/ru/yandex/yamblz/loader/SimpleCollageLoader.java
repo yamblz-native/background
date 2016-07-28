@@ -2,8 +2,6 @@ package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
@@ -13,12 +11,15 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import ru.yandex.yamblz.loader.interfaces.CollageLoader;
+import ru.yandex.yamblz.loader.interfaces.CollageStrategy;
+import ru.yandex.yamblz.loader.interfaces.ImageTarget;
+
 public class SimpleCollageLoader implements CollageLoader
 {
     private static final int DEF_THREAD_COUNT = 4;
 
     private final CollageStrategy collageStrategy;
-    private ImageTarget imageTarget;
     private Handler mainThreadHandler;
 
     public SimpleCollageLoader(Handler mainThreadHandler)
@@ -30,7 +31,7 @@ public class SimpleCollageLoader implements CollageLoader
     @Override
     public void loadCollage(List<String> urls, ImageView imageView)
     {
-        imageTarget = new ImageTargetImpl(imageView);
+        ImageTarget imageTarget = new ImageTargetImpl(imageView);
         loadCollage(urls, imageTarget);
     }
 
@@ -59,9 +60,8 @@ public class SimpleCollageLoader implements CollageLoader
         {
             executorService.submit(new ImageDownloader(urls.get(i), bitmaps, countDownLatch));
         }
-
-        new Consumer(() -> postResult(bitmaps, imageTarget, strategy), countDownLatch).start();
         executorService.shutdown();
+        new Consumer(() -> postResult(bitmaps, imageTarget, strategy), countDownLatch).start();
     }
 
     private void postResult(List<Bitmap> bitmaps, ImageTarget imageTarget, CollageStrategy strategy)

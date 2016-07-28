@@ -21,7 +21,7 @@ public class Utils
         {
             for (String s : a.getGenres())
             {
-                if (genresMap.containsKey(s) && genresMap.get(s).getUrls().size() < 4)
+                if (genresMap.containsKey(s))
                 {
                     genresMap.get(s).getUrls().add(a.getCover().getCoverUrl());
                 }
