@@ -18,6 +18,7 @@ public class SimpleCollageLoader implements CollageLoader
     private static final int DEF_THREAD_COUNT = 4;
 
     private final CollageStrategy collageStrategy;
+    private ImageTarget imageTarget;
     private Handler mainThreadHandler;
 
     public SimpleCollageLoader(Handler mainThreadHandler)
@@ -29,7 +30,7 @@ public class SimpleCollageLoader implements CollageLoader
     @Override
     public void loadCollage(List<String> urls, ImageView imageView)
     {
-        ImageTarget imageTarget = new ImageTargetImpl(imageView);
+        imageTarget = new ImageTargetImpl(imageView);
         loadCollage(urls, imageTarget);
     }
 

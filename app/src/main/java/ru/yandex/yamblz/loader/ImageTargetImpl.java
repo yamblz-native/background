@@ -34,7 +34,8 @@ public class ImageTargetImpl implements ImageTarget
     }
 
     @Override
-    public void clear() {
+    public void clear()
+    {
         weakReference.clear();
     }
 
