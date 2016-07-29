@@ -104,6 +104,8 @@ dependencies {
     compile libraries.tinyDancer
     compile libraries.lynx
     compile libraries.processPhoenix
+    compile 'com.googlecode.json-simple:json-simple:1.1'
+
 
     testCompile libraries.junit
     testCompile libraries.robolectric
