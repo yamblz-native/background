@@ -1,5 +1,6 @@
 package ru.yandex.yamblz.ui.adapters;
 
+import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
@@ -20,14 +21,14 @@ import ru.yandex.yamblz.ui.other.ImageType;
 public class CollageAdapter extends Adapter<CollageHolder> {
     private Map<ImageType, int[]> images;
 
-    public CollageAdapter(Map<ImageType, int[]> images) {
-        this(images, null);
+    public CollageAdapter(Map<ImageType, int[]> images, Resources resources) {
+        this(images, resources, null);
     }
 
 
-    public CollageAdapter(Map<ImageType, int[]> images, CollageLoader loader) {
+    public CollageAdapter(Map<ImageType, int[]> images, Resources resources, CollageLoader loader) {
         this.images = images;
-        CollageLoaderManager.init((loader == null) ? new DefaultCollageLoader() : loader);
+        CollageLoaderManager.init((loader == null) ? new DefaultCollageLoader(resources) : loader);
     }
 
 

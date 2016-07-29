@@ -28,7 +28,7 @@ public class ContentFragment extends BaseFragment {
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recycler);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(new CollageAdapter(getImages()));
+        recyclerView.setAdapter(new CollageAdapter(getImages(), getResources()));
 
         return view;
     }
