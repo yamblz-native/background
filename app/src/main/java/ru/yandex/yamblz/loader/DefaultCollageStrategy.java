@@ -8,6 +8,10 @@ public class DefaultCollageStrategy implements CollageStrategy {
 
     @Override
     public Bitmap create(List<Bitmap> bitmaps) {
-        return null;
+        if (bitmaps == null || bitmaps.isEmpty()) {
+            return null;
+        }
+
+        return bitmaps.get(0);
     }
 }

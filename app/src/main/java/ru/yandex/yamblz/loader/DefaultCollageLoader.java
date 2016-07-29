@@ -8,15 +8,14 @@ import android.util.DisplayMetrics;
 import android.widget.ImageView;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class DefaultCollageLoader implements CollageLoader {
-    private static int imageDensity;
-
-    static {
-        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-        imageDensity = (int) (metrics.densityDpi / metrics.density);
-    }
-
     private Resources resources;
 
     public DefaultCollageLoader(Resources resources) {
@@ -59,6 +58,8 @@ public class DefaultCollageLoader implements CollageLoader {
 
 
     private static class AsyncCollageLoader extends AsyncTask<Void, Void, Bitmap> {
+        private static ExecutorService executorService = Executors.newCachedThreadPool();
+
         private int[] ids;
         private Resources resources;
         private WeakReference<ImageView> refImageView;
@@ -84,9 +85,26 @@ public class DefaultCollageLoader implements CollageLoader {
 
         @Override
         protected Bitmap doInBackground(Void... params) {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inTargetDensity = imageDensity;
-            return BitmapFactory.decodeResource(resources, ids[0], options);
+            List<Future<Bitmap>> futures = new ArrayList<>(ids.length);
+            for (int id : ids) {
+                futures.add(executorService.submit(() -> {
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inTargetDensity = DisplayMetrics.DENSITY_MEDIUM;
+                    return BitmapFactory.decodeResource(resources, id, options);
+                }));
+            }
+
+            List<Bitmap> bitmaps = new ArrayList<>(futures.size());
+
+            for (Future<Bitmap> future : futures) {
+                try {
+                    bitmaps.add(future.get());
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return collageStrategy.create(bitmaps);
         }
 
 
