@@ -6,6 +6,7 @@ import ru.yandex.yamblz.genre.data.entity.Genre;
 import ru.yandex.yamblz.genre.data.source.DataSource;
 import ru.yandex.yamblz.genre.interfaces.GenresPresenter;
 import ru.yandex.yamblz.genre.interfaces.GenresView;
+import ru.yandex.yamblz.genre.util.INetworkManager;
 import ru.yandex.yamblz.genre.util.NetworkManager;
 import ru.yandex.yamblz.genre.util.Utils;
 import rx.android.schedulers.AndroidSchedulers;
@@ -21,17 +22,19 @@ public class GenresPresenterImpl implements GenresPresenter<GenresView>
     private GenresView genresView;
     private CompositeSubscription subscriptions;
     private DataSource dataSource;
+    private INetworkManager networkManager;
 
     public GenresPresenterImpl(DataSource dataSource)
     {
         this.dataSource = dataSource;
+        networkManager = NetworkManager.getManager();
         subscriptions = new CompositeSubscription();
     }
 
     @Override
     public void getGenres(boolean forceLoad)
     {
-        if (NetworkManager.getManager().networkIsAvailable())
+        if (networkManager.networkIsAvailable())
         {
             genresView.showProgress(true);
             if (forceLoad) dataSource.delete();

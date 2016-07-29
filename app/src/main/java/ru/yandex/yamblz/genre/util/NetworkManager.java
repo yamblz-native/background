@@ -7,10 +7,10 @@ import android.net.NetworkInfo;
 /**
  * Created by platon on 29.07.2016.
  */
-public class NetworkManager
+public class NetworkManager implements INetworkManager
 {
     private static NetworkManager sInstance;
-    private Context mContext;
+    private Context context;
 
     public static void init(Context context)
     {
@@ -24,12 +24,13 @@ public class NetworkManager
 
     private NetworkManager(Context context)
     {
-        mContext = context;
+        this.context = context;
     }
 
+    @Override
     public boolean networkIsAvailable()
     {
-        ConnectivityManager connMgr = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeInfo = connMgr.getActiveNetworkInfo();
         return  (activeInfo != null && activeInfo.isConnected());
     }
