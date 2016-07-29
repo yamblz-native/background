@@ -11,6 +11,9 @@ import android.widget.TextView;
 import java.util.Map;
 
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.loader.CollageLoader;
+import ru.yandex.yamblz.loader.CollageLoaderManager;
+import ru.yandex.yamblz.loader.DefaultCollageLoader;
 import ru.yandex.yamblz.ui.adapters.CollageAdapter.CollageHolder;
 import ru.yandex.yamblz.ui.other.ImageType;
 
@@ -18,7 +21,13 @@ public class CollageAdapter extends Adapter<CollageHolder> {
     private Map<ImageType, int[]> images;
 
     public CollageAdapter(Map<ImageType, int[]> images) {
+        this(images, null);
+    }
+
+
+    public CollageAdapter(Map<ImageType, int[]> images, CollageLoader loader) {
         this.images = images;
+        CollageLoaderManager.init((loader == null) ? new DefaultCollageLoader() : loader);
     }
 
 
@@ -47,8 +56,7 @@ public class CollageAdapter extends Adapter<CollageHolder> {
 
         holder.label.setText(imageType.getLabel());
 
-        // Hello lags & OutOfMemoryError
-        holder.collage.setImageResource(images.get(imageType)[0]);
+        CollageLoaderManager.getLoader().loadCollage(images.get(imageType), holder.collage);
     }
 
 
