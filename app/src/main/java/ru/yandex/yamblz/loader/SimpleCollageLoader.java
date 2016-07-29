@@ -6,6 +6,7 @@ import android.widget.ImageView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -20,12 +21,14 @@ public class SimpleCollageLoader implements CollageLoader
     private static final int DEF_THREAD_COUNT = 4;
 
     private final CollageStrategy collageStrategy;
-    private Handler mainThreadHandler;
+    private final Handler mainThreadHandler;
+    private final LinkedList<ImageTarget> imageTargets;
 
-    public SimpleCollageLoader(Handler mainThreadHandler)
+    public SimpleCollageLoader(Handler handler)
     {
-        this.mainThreadHandler = mainThreadHandler;
+        mainThreadHandler = handler;
         collageStrategy = new CollageStrategyImpl();
+        imageTargets = new LinkedList<>();
     }
 
     @Override
@@ -51,24 +54,41 @@ public class SimpleCollageLoader implements CollageLoader
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget, CollageStrategy strategy)
     {
-        int threadCount = urls.size() < DEF_THREAD_COUNT ? 1 : DEF_THREAD_COUNT;
-        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-        CountDownLatch countDownLatch = new CountDownLatch(threadCount);
+        int threadsCount = urls.size() < DEF_THREAD_COUNT ? 1 : DEF_THREAD_COUNT;
+        CountDownLatch cdl = new CountDownLatch(threadsCount);
         List<Bitmap> bitmaps = Collections.synchronizedList(new ArrayList<>());
+        ExecutorService downloadExecutor = Executors.newFixedThreadPool(threadsCount);
 
-        for(int i = 0; i < threadCount; i++)
+        clearDuplicate(imageTarget.getImageView());
+        imageTargets.push(imageTarget);
+
+        for(int i = 0; i < threadsCount; i++)
         {
-            executorService.submit(new ImageDownloader(urls.get(i), bitmaps, countDownLatch));
+            ImageDownloader imgDownloader = new ImageDownloader(urls.get(i), bitmaps, cdl);
+            downloadExecutor.execute(imgDownloader);
         }
-        executorService.shutdown();
-        new Consumer(() -> postResult(bitmaps, imageTarget, strategy), countDownLatch).start();
+
+        downloadExecutor.shutdown();
+
+        new CollageConsumer(
+                bitmap -> postResult(imageTarget, bitmap),
+                bitmaps, collageStrategy, cdl).start();
     }
 
-    private void postResult(List<Bitmap> bitmaps, ImageTarget imageTarget, CollageStrategy strategy)
+    private void postResult(ImageTarget imageTarget, Bitmap bitmap)
     {
-        mainThreadHandler.post(() -> {
-            Bitmap collage = strategy.create(bitmaps);
-            imageTarget.onLoadBitmap(collage);
-        });
+        mainThreadHandler.post(() -> imageTarget.onLoadBitmap(bitmap));
+    }
+
+    private void clearDuplicate(ImageView newImgView)
+    {
+        if (newImgView != null)
+        {
+            for (ImageTarget it: imageTargets)
+            {
+                ImageView cachedImgView = it.getImageView();
+                if (cachedImgView!= null && cachedImgView.equals(newImgView)) it.clear();
+            }
+        }
     }
 }

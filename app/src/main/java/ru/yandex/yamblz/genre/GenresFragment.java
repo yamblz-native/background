@@ -1,7 +1,6 @@
 package ru.yandex.yamblz.genre;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -19,17 +18,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.genre.adapter.CollageAdapter;
 import ru.yandex.yamblz.genre.data.entity.Artist;
+import ru.yandex.yamblz.genre.data.entity.Genre;
 import ru.yandex.yamblz.genre.data.source.Cache;
 import ru.yandex.yamblz.genre.data.source.CacheImpl;
 import ru.yandex.yamblz.genre.data.source.DataSource;
 import ru.yandex.yamblz.genre.data.source.RemoteDataSource;
 import ru.yandex.yamblz.genre.data.source.Repository;
-import ru.yandex.yamblz.loader.interfaces.CollageLoader;
-import ru.yandex.yamblz.loader.CollageLoaderManager;
-import ru.yandex.yamblz.loader.SimpleCollageLoader;
-import ru.yandex.yamblz.genre.adapter.CollageAdapter;
-import ru.yandex.yamblz.genre.data.entity.Genre;
 import ru.yandex.yamblz.genre.interfaces.GenresPresenter;
 import ru.yandex.yamblz.genre.interfaces.GenresView;
 import ru.yandex.yamblz.ui.fragments.BaseFragment;
@@ -38,7 +34,6 @@ public class GenresFragment extends BaseFragment implements SwipeRefreshLayout.O
 
     private static final String TAG = "GenresFragment";
 
-    private CollageLoader collageLoader;
     private GenresPresenter<GenresView> presenter;
     private CollageAdapter collageAdapter;
     private Unbinder unbinder;
@@ -52,10 +47,6 @@ public class GenresFragment extends BaseFragment implements SwipeRefreshLayout.O
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
-        Handler responseHandler = new Handler();
-        CollageLoaderManager.init(new SimpleCollageLoader(responseHandler));
-        collageLoader = CollageLoaderManager.getLoader();
 
         File cacheDir = getActivity().getCacheDir();
         Cache<Artist> cache = new CacheImpl(cacheDir);
@@ -77,7 +68,7 @@ public class GenresFragment extends BaseFragment implements SwipeRefreshLayout.O
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState)
     {
         super.onViewCreated(view, savedInstanceState);
-        collageAdapter = new CollageAdapter(collageLoader);
+        collageAdapter = new CollageAdapter();
         recyclerView.setAdapter(collageAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         swipeLayout.setOnRefreshListener(this);
@@ -126,7 +117,6 @@ public class GenresFragment extends BaseFragment implements SwipeRefreshLayout.O
     @Override
     public void onRefresh()
     {
-        collageAdapter.clear();
         presenter.getGenres(true);
     }
 }

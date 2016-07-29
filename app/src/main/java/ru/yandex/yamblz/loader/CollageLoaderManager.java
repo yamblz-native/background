@@ -20,4 +20,9 @@ public class CollageLoaderManager
 
         return sCollageLoader;
     }
+
+    public static void destroy()
+    {
+        sCollageLoader = null;
+    }
 }

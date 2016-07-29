@@ -12,6 +12,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.loader.interfaces.CollageLoader;
 import ru.yandex.yamblz.loader.interfaces.ImageTarget;
 import ru.yandex.yamblz.loader.ImageTargetImpl;
@@ -25,9 +26,9 @@ public class CollageAdapter extends RecyclerView.Adapter<CollageAdapter.CollageI
     private CollageLoader collageLoader;
     private List<Genre> genres;
 
-    public CollageAdapter(CollageLoader loader)
+    public CollageAdapter()
     {
-        collageLoader = loader;
+        collageLoader = CollageLoaderManager.getLoader();
     }
 
     @Override
@@ -56,16 +57,10 @@ public class CollageAdapter extends RecyclerView.Adapter<CollageAdapter.CollageI
         notifyDataSetChanged();
     }
 
-    public void clear()
-    {
-        genres.clear();
-    }
-
     public class CollageItemHolder extends RecyclerView.ViewHolder
     {
         @BindView(R.id.iv_collage_container) ImageView collageContainer;
         @BindView(R.id.tw_genre) TextView genreTextView;
-        ImageTarget imageTarget = null;
 
         public CollageItemHolder(View view)
         {
@@ -77,11 +72,7 @@ public class CollageAdapter extends RecyclerView.Adapter<CollageAdapter.CollageI
         {
             collageContainer.setImageResource(R.drawable.ic_place_holder);
             genreTextView.setText(genre.getName());
-
-            if (imageTarget != null) imageTarget.clear();
-
-            imageTarget = new ImageTargetImpl(collageContainer);
-            collageLoader.loadCollage(genre.getUrls(), imageTarget);
+            collageLoader.loadCollage(genre.getUrls(), collageContainer);
         }
     }
 }

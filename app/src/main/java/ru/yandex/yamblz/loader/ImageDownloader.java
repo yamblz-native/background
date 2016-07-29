@@ -1,7 +1,6 @@
 package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -55,7 +54,6 @@ public class ImageDownloader implements Runnable
 
     private Bitmap remoteBitmap()
     {
-        Log.d("Downloader", "fromRemote");
         HttpURLConnection conn = null;
         Bitmap bitmap = null;
 
@@ -80,7 +78,6 @@ public class ImageDownloader implements Runnable
 
     private Bitmap cachedBitmap()
     {
-        Log.d("Downloader", "fromCache");
         return bitmapCache.get(url);
     }
 

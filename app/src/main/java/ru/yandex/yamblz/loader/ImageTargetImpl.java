@@ -36,6 +36,12 @@ public class ImageTargetImpl implements ImageTarget
     }
 
     @Override
+    public ImageView getImageView()
+    {
+        return weakReference.get();
+    }
+
+    @Override
     public void clear()
     {
         weakReference.clear();

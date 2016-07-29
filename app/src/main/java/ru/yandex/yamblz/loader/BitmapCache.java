@@ -12,13 +12,13 @@ public class BitmapCache implements ImageCache<Bitmap>
     private static BitmapCache sInstance;
     private LruCache<String, Bitmap> mMemoryCache;
 
-    public static void init()
-    {
-        sInstance = new BitmapCache();
-    }
-
     public static BitmapCache getCache()
     {
+        if (sInstance == null)
+        {
+            sInstance = new BitmapCache();
+        }
+
         return sInstance;
     }
 

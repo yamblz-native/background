@@ -6,6 +6,7 @@ import ru.yandex.yamblz.genre.data.entity.Genre;
 import ru.yandex.yamblz.genre.data.source.DataSource;
 import ru.yandex.yamblz.genre.interfaces.GenresPresenter;
 import ru.yandex.yamblz.genre.interfaces.GenresView;
+import ru.yandex.yamblz.genre.util.NetworkManager;
 import ru.yandex.yamblz.genre.util.Utils;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -30,14 +31,22 @@ public class GenresPresenterImpl implements GenresPresenter<GenresView>
     @Override
     public void getGenres(boolean forceLoad)
     {
-        genresView.showProgress(true);
-        if (forceLoad) dataSource.delete();
+        if (NetworkManager.getManager().networkIsAvailable())
+        {
+            genresView.showProgress(true);
+            if (forceLoad) dataSource.delete();
 
-        subscriptions.add(dataSource.getList()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .map(Utils::transformArtistToGenres)
-                .subscribe(onNext, onError));
+            subscriptions.add(dataSource.getList()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .map(Utils::transformArtistToGenres)
+                    .subscribe(onNext, onError));
+        }
+        else
+        {
+            genresView.showProgress(false);
+            genresView.showError("no connection");
+        }
     }
 
     @Override
