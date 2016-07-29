@@ -72,7 +72,7 @@ public class SimpleCollageLoader implements CollageLoader
 
         new CollageConsumer(
                 bitmap -> postResult(imageTarget, bitmap),
-                bitmaps, collageStrategy, cdl).start();
+                bitmaps, strategy, cdl).start();
     }
 
     private void postResult(ImageTarget imageTarget, Bitmap bitmap)

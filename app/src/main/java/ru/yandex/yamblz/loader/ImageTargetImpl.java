@@ -28,7 +28,7 @@ public class ImageTargetImpl implements ImageTarget
     {
         ImageView imageView = weakReference.get();
 
-        if (imageView != null)
+        if (imageView != null && bitmap != null)
         {
             animateChange(imageView);
             imageView.setImageBitmap(bitmap);
