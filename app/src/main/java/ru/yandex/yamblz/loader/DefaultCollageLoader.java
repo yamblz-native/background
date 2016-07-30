@@ -105,7 +105,7 @@ public class DefaultCollageLoader implements CollageLoader {
         @Override
         protected void onPreExecute() {
             ImageView imageView = refImageView.get();
-            if (null == imageView) {
+            if (imageView == null) {
                 cancel(false);
             } else {
                 imageView.setImageBitmap(null);
