@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,9 +14,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import ru.yandex.yamblz.ui.adapters.CollageAdapter;
 import ru.yandex.yamblz.ui.other.ImageType;
 
+import static android.support.v7.widget.RecyclerView.SCROLL_STATE_IDLE;
 import static ru.yandex.yamblz.ui.other.ImageType.*;
 
 public class ContentFragment extends BaseFragment {
@@ -28,7 +31,19 @@ public class ContentFragment extends BaseFragment {
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recycler);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(new CollageAdapter(getImages(), getResources()));
+        recyclerView.setAdapter(new CollageAdapter(getImages()));
+        recyclerView.addOnScrollListener(new OnScrollListener() {
+            int sectionNumber = 0;
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if (newState == SCROLL_STATE_IDLE) {
+                    CriticalSectionsManager.getHandler().stopSections();
+                } else {
+                    CriticalSectionsManager.getHandler().startSection(sectionNumber++);
+                }
+            }
+        });
 
         return view;
     }

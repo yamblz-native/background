@@ -1,6 +1,5 @@
 package ru.yandex.yamblz.ui.adapters;
 
-import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
@@ -12,23 +11,16 @@ import android.widget.TextView;
 import java.util.Map;
 
 import ru.yandex.yamblz.R;
-import ru.yandex.yamblz.loader.CollageLoader;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
-import ru.yandex.yamblz.loader.DefaultCollageLoader;
 import ru.yandex.yamblz.ui.adapters.CollageAdapter.CollageHolder;
 import ru.yandex.yamblz.ui.other.ImageType;
 
 public class CollageAdapter extends Adapter<CollageHolder> {
     private Map<ImageType, int[]> images;
 
-    public CollageAdapter(Map<ImageType, int[]> images, Resources resources) {
-        this(images, resources, null);
-    }
-
-
-    public CollageAdapter(Map<ImageType, int[]> images, Resources resources, CollageLoader loader) {
+    public CollageAdapter(Map<ImageType, int[]> images) {
         this.images = images;
-        CollageLoaderManager.init((loader == null) ? new DefaultCollageLoader(resources) : loader);
     }
 
 
@@ -58,6 +50,10 @@ public class CollageAdapter extends Adapter<CollageHolder> {
         holder.label.setText(imageType.getLabel());
 
         CollageLoaderManager.getLoader().loadCollage(images.get(imageType), holder.collage);
+
+        // TODO
+        CriticalSectionsManager.getHandler().removeLowPriorityTask(null);
+        CriticalSectionsManager.getHandler().postLowPriorityTask(null);
     }
 
 
