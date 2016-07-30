@@ -4,7 +4,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.LruCache;
 import android.widget.ImageView;
@@ -117,9 +116,7 @@ public class DefaultCollageLoader implements CollageLoader {
                 if (bitmap == null) {
                     futures.add(executorService.submit(() -> {
                         setThreadPriority(THREAD_PRIORITY_BACKGROUND);
-                        BitmapFactory.Options options = new BitmapFactory.Options();
-                        options.inTargetDensity = DisplayMetrics.DENSITY_MEDIUM;
-                        Bitmap bmp = BitmapFactory.decodeResource(resources, id, options);
+                        Bitmap bmp = BitmapFactory.decodeResource(resources, id);
                         bitmapCache.put(id, bmp);
                         return bmp;
                     }));
