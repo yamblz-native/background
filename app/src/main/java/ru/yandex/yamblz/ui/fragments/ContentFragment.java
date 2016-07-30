@@ -90,12 +90,7 @@ public class ContentFragment extends BaseFragment {
                 R.drawable.mountain_5,
                 R.drawable.mountain_6,
                 R.drawable.desert_3,
-                R.drawable.desert_4,
-                R.drawable.land_2,
-                R.drawable.land_3,
-                R.drawable.land_5,
-                R.drawable.water_2,
-                R.drawable.water_5
+                R.drawable.desert_4
         });
 
 
@@ -107,12 +102,118 @@ public class ContentFragment extends BaseFragment {
                 R.drawable.land_5,
                 R.drawable.desert_2,
                 R.drawable.mountain_1,
-                R.drawable.mountain_4,
-                R.drawable.mountain_6,
-                R.drawable.water_5,
+                R.drawable.mountain_4
         });
 
         images.put(CAR, new int[]{
+                R.drawable.car_1,
+                R.drawable.car_2,
+                R.drawable.car_3,
+                R.drawable.car_4,
+                R.drawable.car_5,
+                R.drawable.car_6
+        });
+
+        images.put(ONE, new int[]{
+                R.drawable.mountain_5
+        });
+
+        images.put(FOUR, new int[]{
+                R.drawable.mountain_3,
+                R.drawable.desert_4,
+                R.drawable.land_3,
+                R.drawable.forest_3
+        });
+
+        images.put(NINE, new int[]{
+                R.drawable.mountain_1,
+                R.drawable.forest_1,
+                R.drawable.forest_2,
+                R.drawable.forest_3,
+                R.drawable.desert_2,
+                R.drawable.desert_3,
+                R.drawable.desert_5,
+                R.drawable.land_5,
+                R.drawable.car_2
+        });
+        images.put(SIXTEEN, new int[]{
+                R.drawable.forest_3,
+                R.drawable.forest_6,
+                R.drawable.water_1,
+                R.drawable.water_4,
+                R.drawable.animal_2,
+                R.drawable.animal_3,
+                R.drawable.desert_3,
+                R.drawable.desert_4,
+                R.drawable.mountain_2,
+                R.drawable.mountain_3,
+                R.drawable.land_1,
+                R.drawable.land_3,
+                R.drawable.land_4,
+                R.drawable.car_1,
+                R.drawable.car_3,
+                R.drawable.car_4
+        });
+
+        images.put(TWENTY_FIVE, new int[]{
+                R.drawable.forest_3,
+                R.drawable.forest_4,
+                R.drawable.forest_6,
+                R.drawable.water_2,
+                R.drawable.water_3,
+                R.drawable.water_4,
+                R.drawable.animal_1,
+                R.drawable.animal_2,
+                R.drawable.animal_3,
+                R.drawable.desert_1,
+                R.drawable.desert_2,
+                R.drawable.desert_4,
+                R.drawable.desert_5,
+                R.drawable.mountain_1,
+                R.drawable.mountain_2,
+                R.drawable.mountain_4,
+                R.drawable.mountain_6,
+                R.drawable.land_1,
+                R.drawable.land_2,
+                R.drawable.land_3,
+                R.drawable.land_5,
+                R.drawable.car_1,
+                R.drawable.car_3,
+                R.drawable.car_5,
+                R.drawable.car_6
+        });
+
+        images.put(THIRTY_SIX, new int[]{
+                R.drawable.forest_1,
+                R.drawable.forest_2,
+                R.drawable.forest_3,
+                R.drawable.forest_4,
+                R.drawable.forest_5,
+                R.drawable.forest_6,
+                R.drawable.water_1,
+                R.drawable.water_2,
+                R.drawable.water_3,
+                R.drawable.water_4,
+                R.drawable.water_5,
+                R.drawable.animal_1,
+                R.drawable.animal_2,
+                R.drawable.animal_3,
+                R.drawable.animal_4,
+                R.drawable.desert_1,
+                R.drawable.desert_2,
+                R.drawable.desert_3,
+                R.drawable.desert_4,
+                R.drawable.mountain_1,
+                R.drawable.mountain_2,
+                R.drawable.mountain_3,
+                R.drawable.mountain_4,
+                R.drawable.mountain_5,
+                R.drawable.mountain_6,
+                R.drawable.land_1,
+                R.drawable.land_2,
+                R.drawable.land_3,
+                R.drawable.land_4,
+                R.drawable.land_5,
                 R.drawable.car_1,
                 R.drawable.car_2,
                 R.drawable.car_3,

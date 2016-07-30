@@ -8,7 +8,13 @@ public enum ImageType {
     DESERT("Desert"),
     MOUNTAIN("Mountain"),
     LANDSCAPE("Landscape"),
-    CAR("Car");
+    CAR("Car"),
+    ONE("One"),
+    FOUR("Four"),
+    NINE("Nine"),
+    SIXTEEN("Sixteen"),
+    TWENTY_FIVE("Twenty Five"),
+    THIRTY_SIX("Thirty Six");
 
     private final String label;
 

@@ -15,6 +15,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+import static android.os.Process.setThreadPriority;
+
 public class DefaultCollageLoader implements CollageLoader {
     private Resources resources;
 
@@ -47,7 +50,7 @@ public class DefaultCollageLoader implements CollageLoader {
 
     private void loadCollage(int[] ids, ImageView iv, ImageTarget it, CollageStrategy strategy) {
         if (strategy == null) {
-            strategy = new DefaultCollageStrategy();
+            strategy = new SquareCollageStrategy();
         }
 
         WeakReference<ImageView> refImageView = new WeakReference<>(iv);
@@ -79,7 +82,7 @@ public class DefaultCollageLoader implements CollageLoader {
         protected void onPreExecute() {
             ImageView imageView = refImageView.get();
             if (null == imageView) return;
-            imageView.setImageResource(android.R.color.white);
+            imageView.setImageBitmap(null);
         }
 
 
@@ -88,6 +91,7 @@ public class DefaultCollageLoader implements CollageLoader {
             List<Future<Bitmap>> futures = new ArrayList<>(ids.length);
             for (int id : ids) {
                 futures.add(executorService.submit(() -> {
+                    setThreadPriority(THREAD_PRIORITY_BACKGROUND);
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inTargetDensity = DisplayMetrics.DENSITY_MEDIUM;
                     return BitmapFactory.decodeResource(resources, id, options);

@@ -1,23 +1,36 @@
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    tools:ignore="UseCompoundDrawables">
-
-    <TextView
-        android:id="@+id/label"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:fontFamily="cursive"
-        android:gravity="center"
-        android:textSize="22sp"/>
+    android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/collage"
         android:layout_width="200dp"
         android:layout_height="200dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         tools:ignore="ContentDescription"/>
 
-</LinearLayout>
+    <View
+        android:id="@+id/separator"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_alignBottom="@id/collage"
+        android:layout_toLeftOf="@id/collage"
+        android:layout_toStartOf="@id/collage"
+        android:background="#ddd"/>
+
+    <TextView
+        android:id="@+id/label"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/separator"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@id/collage"
+        android:layout_toStartOf="@id/collage"
+        android:fontFamily="cursive"
+        android:gravity="center"
+        android:textSize="22sp"/>
+
+</RelativeLayout>
