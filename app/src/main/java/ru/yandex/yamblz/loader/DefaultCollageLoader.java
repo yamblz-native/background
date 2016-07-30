@@ -21,6 +21,9 @@ import static android.os.Process.setThreadPriority;
 
 public class DefaultCollageLoader implements CollageLoader {
     private static final String TAG = DefaultCollageLoader.class.getSimpleName();
+    private static final long MEMORY_MAX = Runtime.getRuntime().maxMemory();
+    private static final float MEMORY_USE_THRESHOLD = 0.9f;
+
     private static ExecutorService executorService = Executors.newCachedThreadPool();
 
     private Resources resources;
@@ -29,7 +32,7 @@ public class DefaultCollageLoader implements CollageLoader {
     public DefaultCollageLoader(Resources resources) {
         this.resources = resources;
 
-        int maxCacheSize = (int) (Runtime.getRuntime().maxMemory() / 1024 / 2);
+        int maxCacheSize = (int) (MEMORY_MAX / 1024 / 2);
         bitmapCache = new LruCache<Integer, Bitmap>(maxCacheSize) {
             @Override
             protected int sizeOf(Integer key, Bitmap bitmap) {
@@ -77,6 +80,14 @@ public class DefaultCollageLoader implements CollageLoader {
     }
 
 
+    /**
+     * Asynchronously loads (or gets from cache) all the images whose ids are specified.
+     * <p>
+     * There is a drawback in current architecture: since only a {@link CollageStrategy}
+     * knows all the details about collage management, we can't load only a useful
+     * part of images, nor we can load a scaled down images (the latter is also impossible
+     * since an {@link ImageTarget} is unable to tell the desired width and height).
+     */
     private class AsyncCollageLoader extends AsyncTask<Void, Void, Bitmap> {
         private int[] ids;
         private WeakReference<ImageView> refImageView;
@@ -116,7 +127,12 @@ public class DefaultCollageLoader implements CollageLoader {
                 if (bitmap == null) {
                     futures.add(executorService.submit(() -> {
                         setThreadPriority(THREAD_PRIORITY_BACKGROUND);
-                        Bitmap bmp = BitmapFactory.decodeResource(resources, id);
+
+                        Bitmap bmp = loadBitmap(id);
+                        if (bmp == null) {
+                            return null;
+                        }
+
                         bitmapCache.put(id, bmp);
                         return bmp;
                     }));
@@ -127,7 +143,10 @@ public class DefaultCollageLoader implements CollageLoader {
 
             for (Future<Bitmap> future : futures) {
                 try {
-                    bitmaps.add(future.get());
+                    Bitmap bitmap = future.get();
+                    if (bitmap != null) {
+                        bitmaps.add(bitmap);
+                    }
                 } catch (InterruptedException | ExecutionException e) {
                     Log.e(TAG, Log.getStackTraceString(e));
                 }
@@ -139,6 +158,10 @@ public class DefaultCollageLoader implements CollageLoader {
 
         @Override
         protected void onPostExecute(Bitmap bitmap) {
+            if (bitmap == null) {
+                return;
+            }
+
             ImageView imageView = refImageView.get();
             if (imageView != null) {
                 imageView.setAlpha(0f);
@@ -150,6 +173,22 @@ public class DefaultCollageLoader implements CollageLoader {
             if (imageTarget != null) {
                 imageTarget.onLoadBitmap(bitmap);
             }
+        }
+
+
+        private Bitmap loadBitmap(int resId) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeResource(resources, resId, options);
+            long bitmapSize = options.outWidth * options.outHeight * 4;
+
+            long memoryRequired = Runtime.getRuntime().totalMemory() + bitmapSize;
+            if (memoryRequired > MEMORY_MAX * MEMORY_USE_THRESHOLD) {
+                Log.d(TAG, "Could not load a new image because of exceeding memory consumption limit");
+                return null;
+            }
+
+            return BitmapFactory.decodeResource(resources, resId);
         }
     }
 }

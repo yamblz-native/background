@@ -24,30 +24,26 @@ public class SquareCollageStrategy implements CollageStrategy {
 
         Collections.shuffle(bitmaps);
 
-        if (bitmaps.size() < 4) {
-            return bitmaps.get(0);
-        }
+        int sectionsPerSide = (int) Math.sqrt(bitmaps.size());
 
-        int imgPerSide = (int) Math.sqrt(bitmaps.size());
-
-        return createSquareCollage(bitmaps, imgPerSide);
+        return createSquareCollage(bitmaps, sectionsPerSide);
     }
 
 
-    private Bitmap createSquareCollage(List<Bitmap> bitmaps, int imgPerSide) {
-        int totalSize = bitmaps.get(0).getWidth();
-        int imgSize = totalSize / imgPerSide;
+    private Bitmap createSquareCollage(List<Bitmap> bitmaps, int sectionsPerSide) {
+        int collageSize = bitmaps.get(0).getWidth();
+        int sectionSize = collageSize / sectionsPerSide;
 
-        Bitmap collage = Bitmap.createBitmap(totalSize, totalSize, ARGB_8888);
+        Bitmap collage = Bitmap.createBitmap(collageSize, collageSize, ARGB_8888);
         Canvas canvas = new Canvas(collage);
 
         Iterator<Bitmap> iterator = bitmaps.iterator();
-        for (int row = 0; row < imgPerSide; row++) {
-            for (int col = 0; col < imgPerSide; col++) {
-                int left = col * imgSize;
-                int top = row * imgSize;
-                int right = totalSize - (imgPerSide - 1 - col) * imgSize;
-                int bottom = totalSize - (imgPerSide - 1 - row) * imgSize;
+        for (int row = 0; row < sectionsPerSide; row++) {
+            for (int col = 0; col < sectionsPerSide; col++) {
+                int left = col * sectionSize;
+                int top = row * sectionSize;
+                int right = collageSize - (sectionsPerSide - 1 - col) * sectionSize;
+                int bottom = collageSize - (sectionsPerSide - 1 - row) * sectionSize;
                 canvas.drawBitmap(iterator.next(), null, new Rect(left, top, right, bottom), null);
             }
         }
