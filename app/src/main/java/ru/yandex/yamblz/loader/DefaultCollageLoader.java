@@ -95,8 +95,11 @@ public class DefaultCollageLoader implements CollageLoader {
         @Override
         protected void onPreExecute() {
             ImageView imageView = refImageView.get();
-            if (null == imageView) return;
-            imageView.setImageBitmap(null);
+            if (null == imageView) {
+                cancel(false);
+            } else {
+                imageView.setImageBitmap(null);
+            }
         }
 
 
@@ -106,8 +109,11 @@ public class DefaultCollageLoader implements CollageLoader {
             List<Bitmap> bitmaps = new ArrayList<>(ids.length);
 
             for (int id : ids) {
-                Bitmap bitmap = bitmapCache.get(id);
+                if (isCancelled()) {
+                    return null;
+                }
 
+                Bitmap bitmap = bitmapCache.get(id);
                 if (bitmap == null) {
                     futures.add(executorService.submit(() -> {
                         setThreadPriority(THREAD_PRIORITY_BACKGROUND);
@@ -135,15 +141,18 @@ public class DefaultCollageLoader implements CollageLoader {
 
 
         @Override
-        protected void onPostExecute(Bitmap image) {
+        protected void onPostExecute(Bitmap bitmap) {
             ImageView imageView = refImageView.get();
-            if (imageView == null) {
-                return;
+            if (imageView != null) {
+                imageView.setAlpha(0f);
+                imageView.setImageBitmap(bitmap);
+                imageView.animate().alpha(1).setDuration(500).start();
             }
 
-            imageView.setAlpha(0f);
-            imageView.setImageBitmap(image);
-            imageView.animate().alpha(1).setDuration(500).start();
+            ImageTarget imageTarget = refImageTarget.get();
+            if (imageTarget != null) {
+                imageTarget.onLoadBitmap(bitmap);
+            }
         }
     }
 }
