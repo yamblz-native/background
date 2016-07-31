@@ -1,7 +1,7 @@
 package ru.yandex.yamblz.handler;
 
-public interface CriticalSectionsHandler {
-
+public interface CriticalSectionsHandler
+{
     void startSection(int id);
 
     void stopSection(int id);

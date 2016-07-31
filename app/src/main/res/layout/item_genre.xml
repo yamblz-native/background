@@ -15,6 +15,7 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:contentDescription="null"
+        android:background="@drawable/ic_place_holder"
         android:scaleType="fitCenter" />
 
     <TextView

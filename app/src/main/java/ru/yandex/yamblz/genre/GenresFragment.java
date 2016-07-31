@@ -72,6 +72,7 @@ public class GenresFragment extends BaseFragment implements SwipeRefreshLayout.O
         recyclerView.setAdapter(collageAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         swipeLayout.setOnRefreshListener(this);
+        recyclerView.addOnScrollListener(new RecyclerScrollListener());
     }
 
     @Override

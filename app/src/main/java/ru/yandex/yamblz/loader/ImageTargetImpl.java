@@ -3,6 +3,7 @@ package ru.yandex.yamblz.loader;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.ImageView;
 
@@ -16,10 +17,14 @@ import ru.yandex.yamblz.loader.interfaces.ImageTarget;
 public class ImageTargetImpl implements ImageTarget
 {
     private static final long DURATION = 300;
+    private static final int EMPTY = 0;
+    private static final String TAG = "ImageTargetImpl";
+
     private final WeakReference<ImageView> weakReference;
 
     public ImageTargetImpl(ImageView imageView)
     {
+        imageView.setImageResource(EMPTY);
         weakReference = new WeakReference<>(imageView);
     }
 
@@ -30,6 +35,7 @@ public class ImageTargetImpl implements ImageTarget
 
         if (imageView != null && bitmap != null)
         {
+            Log.d(TAG, "onLoadBitmap");
             animateChange(imageView);
             imageView.setImageBitmap(bitmap);
         }

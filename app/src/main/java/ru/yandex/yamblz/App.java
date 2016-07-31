@@ -9,8 +9,9 @@ import ru.yandex.yamblz.developer_settings.DevMetricsProxy;
 import ru.yandex.yamblz.developer_settings.DeveloperSettingsModel;
 import ru.yandex.yamblz.genre.util.NetworkManager;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
-import ru.yandex.yamblz.loader.BitmapCache;
+import ru.yandex.yamblz.handler.SimpleCriticalSectionHandler;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
+import ru.yandex.yamblz.loader.CriticalSectionsCollageLoader;
 import ru.yandex.yamblz.loader.SimpleCollageLoader;
 import timber.log.Timber;
 
@@ -43,8 +44,13 @@ public class App extends Application
         }
 
         NetworkManager.init(getApplicationContext());
-        CollageLoaderManager.init(new SimpleCollageLoader(new Handler(getMainLooper())));
-        CriticalSectionsManager.init(null);
+
+        // первое задание, раскомментировать
+        //CollageLoaderManager.init(new SimpleCollageLoader(new Handler(getMainLooper())));
+
+        //второе задание, соотвественно, закомментировать
+        CriticalSectionsManager.init(new SimpleCriticalSectionHandler(new Handler(getMainLooper())));
+        CollageLoaderManager.init(new CriticalSectionsCollageLoader());
     }
 
     @NonNull

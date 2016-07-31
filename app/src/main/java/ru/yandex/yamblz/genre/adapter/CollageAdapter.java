@@ -70,7 +70,6 @@ public class CollageAdapter extends RecyclerView.Adapter<CollageAdapter.CollageI
 
         public void bind(Genre genre)
         {
-            collageContainer.setImageResource(R.drawable.ic_place_holder);
             genreTextView.setText(genre.getName());
             collageLoader.loadCollage(genre.getUrls(), collageContainer);
         }
