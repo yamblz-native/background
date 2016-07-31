@@ -2,10 +2,15 @@ package ru.yandex.yamblz.loader;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.WeakHashMap;
@@ -22,10 +27,9 @@ public class ParallelCollageLoader implements CollageLoader {
     private WeakHashMap<ImageView, Subscription> subscriptionTargets = new WeakHashMap<>();
     private CompositeSubscription subs = new CompositeSubscription();
     private CollageStrategy collageStrategy = new SimpleCollageStrategy();
-    private Context context;
 
-    public ParallelCollageLoader(Context context) {
-        this.context = context.getApplicationContext();
+    public ParallelCollageLoader() {
+
     }
 
     @Override
@@ -75,18 +79,16 @@ public class ParallelCollageLoader implements CollageLoader {
 
     private List<Observable<Bitmap>> loadBitmaps(List<String> urls) {
         List<Observable<Bitmap>> observables = new ArrayList<>();
-        for (String url : urls) {
+        for (String urlString : urls) {
             observables.add(Observable.create(subscriber -> {
                 try {
-                    Bitmap bitmap = Glide.with(context)
-                            .load(url)
-                            .asBitmap()
-                            .into(100, 100)
-                            .get();
+                    URL url = new URL(urlString);
+                    InputStream is = url.openConnection().getInputStream();
+                    Bitmap bitmap = BitmapFactory.decodeStream(is);
+                    is.close();
                     subscriber.onNext(bitmap);
                     subscriber.onCompleted();
-
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                     subscriber.onError(e);
                 }

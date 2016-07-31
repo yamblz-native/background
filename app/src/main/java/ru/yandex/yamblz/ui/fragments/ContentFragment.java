@@ -54,8 +54,6 @@ public class ContentFragment extends BaseFragment {
         presenter = new ArtistsLoadingPresenter(artistsApi);
         presenter.bindView(this);
         presenter.loadArtists();
-
-        CollageLoaderManager.init(new ParallelCollageLoader(getContext()));
     }
 
     @NonNull
