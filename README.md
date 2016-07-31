@@ -12,3 +12,6 @@
 
 Пример - при скролле списка не сетить Bitmap'ы в ImageView
 
+# Demo
+
+![](demo.gif)
