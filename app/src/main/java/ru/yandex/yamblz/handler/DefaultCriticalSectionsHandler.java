@@ -1,6 +1,6 @@
 package ru.yandex.yamblz.handler;
 
-public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
+public class DefaultCriticalSectionsHandler implements CriticalSectionsHandler {
 
     @Override
     public void startSection(int id) {

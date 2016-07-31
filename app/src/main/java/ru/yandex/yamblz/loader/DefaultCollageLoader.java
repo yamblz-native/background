@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.widget.ImageView;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
@@ -12,13 +13,10 @@ import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
-import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
 public class DefaultCollageLoader implements CollageLoader {
     private static final int MAX_COLLAGE_SIZE = 4;
-    private Subscription subscription;
-    private CompositeSubscription compositeSubscription;
 
 
     @Override
@@ -43,7 +41,7 @@ public class DefaultCollageLoader implements CollageLoader {
     public void loadCollage(List<String> urls, ImageTarget imageTarget,
                             CollageStrategy collageStrategy) {
 
-        subscription = Observable.from(urls)
+        Subscription subscription = Observable.from(urls)
                 .take(MAX_COLLAGE_SIZE)
                 .flatMap(this::loadBitmap)
                 .toList()
@@ -54,16 +52,24 @@ public class DefaultCollageLoader implements CollageLoader {
                         throwable -> Timber.d(throwable.getMessage()),
                         () -> Timber.d("Completed"));
 
+        imageTarget.setTag(subscription);
     }
 
     public Observable<Bitmap> loadBitmap(String urlString) {
         return Observable.create(subscriber -> {
+                    HttpURLConnection httpURLConnection = null;
+
                     try {
+                        httpURLConnection = (HttpURLConnection) new URL(urlString).openConnection();
                         subscriber.onNext(BitmapFactory.decodeStream(
-                                new URL(urlString).openConnection().getInputStream()));
+                                httpURLConnection.getInputStream()));
                         subscriber.onCompleted();
                     } catch (IOException e) {
                         subscriber.onError(e);
+                    } finally {
+                        if (httpURLConnection != null) {
+                            httpURLConnection.disconnect();
+                        }
                     }
                 }
         );

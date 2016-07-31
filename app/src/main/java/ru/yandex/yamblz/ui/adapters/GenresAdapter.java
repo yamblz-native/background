@@ -14,6 +14,7 @@ import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.models.Genre;
+import rx.Subscription;
 
 /**
  * Created by shmakova on 29.07.16.
@@ -34,6 +35,12 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenreViewH
 
     @Override
     public void onBindViewHolder(GenreViewHolder holder, int position) {
+        Subscription subscription = (Subscription) holder.collage.getTag();
+
+        if (subscription != null && !subscription.isUnsubscribed()) {
+            subscription.unsubscribe();
+        }
+
         Genre genre = genres.get(position);
         holder.name.setText(genre.getName());
         holder.collage.setImageDrawable(null);
