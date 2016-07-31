@@ -93,6 +93,9 @@ dependencies {
     compile libraries.supportRecyclerView
     compile libraries.supportCardView
 
+    compile libraries.okhttp
+    compile libraries.gson
+
     compile libraries.butterKnife
     apt libraries.butterKnifeCompiler
 

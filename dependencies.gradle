@@ -7,7 +7,7 @@ ext.versions = [
         compileSdk                   : 23,
         buildTools                   : '23.0.3',
 
-        androidGradlePlugin          : '2.2.0-alpha4',
+        androidGradlePlugin          : '2.2.0-alpha5',
         aptGradlePlugin              : '1.8',
         retrolambdaGradlePlugin      : '3.2.5',
         lombokGradlePlugin           : '0.2.3.a2',
@@ -66,6 +66,9 @@ ext.libraries = [
         butterKnife             : "com.jakewharton:butterknife:$versions.butterKnife",
         butterKnifeCompiler     : "com.jakewharton:butterknife-compiler:$versions.butterKnife",
         timber                  : "com.jakewharton.timber:timber:$versions.timber",
+
+        okhttp                  : "com.squareup.okhttp3:okhttp:3.4.1",
+        gson                    : "com.google.code.gson:gson:2.6.2",
 
         // Developer Tools
         stetho                  : "com.facebook.stetho:stetho:$versions.stetho",
