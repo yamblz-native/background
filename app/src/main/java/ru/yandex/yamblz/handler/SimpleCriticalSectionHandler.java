@@ -102,7 +102,10 @@ public class SimpleCriticalSectionHandler implements CriticalSectionsHandler
     }
 
     @Override
-    public void postLowPriorityTaskDelayed(Task task, int delay) {}
+    public void postLowPriorityTaskDelayed(Task task, int delay)
+    {
+        mainHandler.postDelayed(() -> postLowPriorityTask(task), delay);
+    }
 
     @Override
     public void removeLowPriorityTask(Task task)
