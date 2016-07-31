@@ -8,6 +8,8 @@ import android.widget.ImageView;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 
 import ru.yandex.yamblz.images.Cache;
@@ -46,16 +48,18 @@ public class ParallelCollageLoader implements CollageLoader {
      */
     @Nullable private Cache<String, Bitmap> mCache;
 
+    @NonNull private final Map<Object, Subscription> mListeners2subscriptions = new WeakHashMap<>();
+
     public ParallelCollageLoader(@NonNull Executor postExecutor,
                                  @NonNull Executor workerExecutor,
                                  @NonNull ImageDownloader imageDownloader,
                                  @NonNull CollageStrategy defaultStrategy,
                                  @Nullable Cache<String, Bitmap> cache) {
-        this.mPostExecutor = postExecutor;
-        this.mWorkerExecutor = workerExecutor;
-        this.mImageDownloader = imageDownloader;
-        this.mDefaultCollageStrategy = defaultStrategy;
-        this.mCache = cache;
+        mPostExecutor = postExecutor;
+        mWorkerExecutor = workerExecutor;
+        mImageDownloader = imageDownloader;
+        mDefaultCollageStrategy = defaultStrategy;
+        mCache = cache;
     }
 
     @Override
@@ -88,8 +92,23 @@ public class ParallelCollageLoader implements CollageLoader {
     private Subscription process(@NonNull List<String> urls, @NonNull Object listener,
                                  @Nullable CollageStrategy strategy) {
         Subscription subscription = new Subscription();
+        addListenerToMapAndCancelPrev(listener, subscription);
         new Job(urls, listener, subscription, strategy).doWork();
         return subscription;
+    }
+
+    private void addListenerToMapAndCancelPrev(Object listener, Subscription subscription) {
+        cancelPrevSubscription(listener);
+        mListeners2subscriptions.put(listener, subscription);
+    }
+
+    private void cancelPrevSubscription(Object listener) {
+        if(mListeners2subscriptions.containsKey(listener)) {
+            Subscription oldSubscription = mListeners2subscriptions.get(listener);
+            if(oldSubscription.isSubscribed()) {
+                oldSubscription.unsubscribe();
+            }
+        }
     }
 
     /**
@@ -113,16 +132,16 @@ public class ParallelCollageLoader implements CollageLoader {
 
         private Job(@NonNull List<String> urls, @NonNull Object listener,
                     @Nullable Subscription subscription, @Nullable CollageStrategy strategy) {
-            this.mUrls = new ArrayList<>(urls);
-            this.mListener = new WeakReference(listener);
-            this.mSubscription = subscription;
-            this.mCollageStrategy = strategy;
+            mUrls = new ArrayList<>(urls);
+            mListener = new WeakReference(listener);
+            mSubscription = subscription;
+            mCollageStrategy = strategy;
             init();
         }
 
         private void init() {
-            this.mCntOfImages = mUrls.size();
-            this.mImages = new ArrayList<>(mUrls.size());
+            mCntOfImages = mUrls.size();
+            mImages = new ArrayList<>(mUrls.size());
         }
 
         /**

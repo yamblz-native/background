@@ -28,14 +28,14 @@ public class CriticalSectionsHandlerThread implements CriticalSectionsHandler {
 
     @MainThread
     public CriticalSectionsHandlerThread(Handler postHandler) {
-        this.mPostHandler = postHandler;
+        mPostHandler = postHandler;
         initWorkerHandler();
     }
 
     private void initWorkerHandler() {
         HandlerThread handlerThread = new HandlerThread("worker");
         handlerThread.start();
-        this.mWorkerHandler = new Handler(handlerThread.getLooper());
+        mWorkerHandler = new Handler(handlerThread.getLooper());
     }
 
     @Override

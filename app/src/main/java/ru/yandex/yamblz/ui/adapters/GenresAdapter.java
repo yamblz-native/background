@@ -1,6 +1,8 @@
 package ru.yandex.yamblz.ui.adapters;
 
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -11,6 +13,8 @@ import android.widget.TextView;
 
 import java.util.Collections;
 import java.util.List;
+
+import javax.annotation.Nonnull;
 
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.handler.CriticalSectionsHandler;
@@ -28,12 +32,13 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
     private CollageStrategy mCollageStrategy;
     private CriticalSectionsHandler mCriticalSectionHandler;
 
-    public GenresAdapter(List<Genre> genres, CollageLoader collageLoader,
-                         CollageStrategy collageStrategy, CriticalSectionsHandler criticalSectionsHandler) {
-        this.mGenres = genres;
-        this.mCollageLoader = collageLoader;
-        this.mCollageStrategy = collageStrategy;
-        this.mCriticalSectionHandler = criticalSectionsHandler;
+    public GenresAdapter(@Nullable List<Genre> genres, @Nonnull CollageLoader collageLoader,
+                         @NonNull CollageStrategy collageStrategy,
+                         @Nonnull CriticalSectionsHandler criticalSectionsHandler) {
+        mGenres = genres;
+        mCollageLoader = collageLoader;
+        mCollageStrategy = collageStrategy;
+        mCriticalSectionHandler = criticalSectionsHandler;
     }
 
     @Override
@@ -45,14 +50,11 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Genre genre = mGenres.get(position);
-        if(holder.subscription != null) {
-            //unsubscribe if there was a subscription, because we don't need the result of it
-            holder.subscription.unsubscribe();
-        }
+
         if(holder.task != null) {
             mCriticalSectionHandler.removeLowPriorityTask(holder.task);
         }
-        holder.subscription = mCollageLoader.loadCollage(shuffleAndCut(Genre.getCoversForCollage(genre)),
+        mCollageLoader.loadCollage(shuffleAndCut(Genre.getCoversForCollage(genre)),
                 holder, mCollageStrategy);
 
         //setting to null, just to see how images aren't being loaded while scrolling
@@ -74,7 +76,7 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
 
     @Override
     public int getItemCount() {
-        return mGenres.size();
+        return mGenres == null ? 0 : mGenres.size();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder implements ImageTarget {
@@ -82,7 +84,6 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
         ImageView collage;
         TextView genreTV, singersTV;
         CriticalSectionsHandler criticalSectionsHandler;
-        Subscription subscription;
         Task task;
 
         public ViewHolder(View itemView, CriticalSectionsHandler criticalSectionsHandler) {
