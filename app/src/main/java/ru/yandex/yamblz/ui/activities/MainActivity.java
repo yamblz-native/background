@@ -3,6 +3,7 @@ package ru.yandex.yamblz.ui.activities;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.View;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -31,4 +32,10 @@ public class MainActivity extends BaseActivity {
                     .commit();
         }
     }
+
+    public void onClick(View v) {
+        return;
+    }
+
+
 }

@@ -3,6 +3,7 @@ package ru.yandex.yamblz.ui.fragments;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.PagerAdapter;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,10 +35,16 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSectionsHandler;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.Task;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.loader.CollageStrategyImpl;
+
+import static android.support.v7.appcompat.R.id.image;
 
 /**
  * Created by danil on 25.04.16.
@@ -80,16 +87,13 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ViewHolder
     public void onBindViewHolder(ViewHolder holder, int position) {
         holder.genres.setText(mDataset.get(position).getGenre());
         holder.artists.setText(mDataset.get(position).getNames());
-        Log.i("LoaderManager", "starts");
-        CollageLoaderManager.getLoader().loadCollage(mDataset.get(position).getImgUrls(), holder.image, new CollageStrategyImpl());
-        Log.i("LoaderManager", "finishes");
-        /*Picasso.with(context).load(cover).into(holder.image);
-        final String cover = mDataset.get(position).getCover().getSmallCoverImage();
-        if (cover != null && !cover.isEmpty()) {
-            Picasso.with(context).load(cover).into(holder.image);
-        } else {
-            Log.d("azaza", mDataset.get(position).toString());
-        }*/
+        holder.image.setImageDrawable(null);
+
+
+        Task createImages = () -> new Thread(() -> {
+            CollageLoaderManager.getLoader().loadCollage(mDataset.get(position).getImgUrls(), holder.image, new CollageStrategyImpl());
+        }).start();
+        CriticalSectionsManager.getHandler().postLowPriorityTask(createImages);
 
     }
 

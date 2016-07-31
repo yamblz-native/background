@@ -73,9 +73,6 @@ public class ArtistListFragment extends BaseFragment {
             return downloadTask;
         }
 
-        public void onClick(View view) {
-
-        }
 
         private enum Result {
             INPROGRESS, OK, NOARTIST, ERROR
