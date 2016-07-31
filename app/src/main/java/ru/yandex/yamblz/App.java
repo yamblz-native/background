@@ -10,6 +10,7 @@ import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import timber.log.Timber;
 
+
 public class App extends Application {
     private ApplicationComponent applicationComponent;
 
