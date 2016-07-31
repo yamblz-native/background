@@ -34,6 +34,7 @@ public class ContentFragment extends BaseFragment {
         View view = inflater.inflate(R.layout.fragment_content, container, false);
         ButterKnife.bind(this, view);
 
+
         new AsyncTask<Void, Void, Void>() {
             List<Genre> genreList;
 
