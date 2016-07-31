@@ -1,48 +1,81 @@
 package ru.yandex.yamblz.handler;
 
-import android.util.Log;
+import android.os.Handler;
+
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class DefaultCriticalSectionsHandler implements CriticalSectionsHandler {
-    private static final String TAG = DefaultCriticalSectionsHandler.class.getSimpleName();
+    private final Handler uiThreadHandler;
+    private final ConcurrentLinkedQueue<Task> tasks = new ConcurrentLinkedQueue<>();
+    private final Set<Integer> sections = Collections.newSetFromMap(new ConcurrentHashMap<>());
+
+    public DefaultCriticalSectionsHandler(Handler uiThreadHandler) {
+        this.uiThreadHandler = uiThreadHandler;
+    }
+
 
     @Override
     public void startSection(int id) {
-        Log.d(TAG, "startSection() " + id);
+        sections.add(id);
     }
 
 
     @Override
     public void stopSection(int id) {
-        Log.d(TAG, "stopSection() " + id);
+        sections.remove(id);
+        if (sections.isEmpty()) {
+            runTasks();
+        }
     }
 
 
     @Override
     public void stopSections() {
-        Log.d(TAG, "stopSections()");
+        sections.clear();
+        runTasks();
     }
 
 
     @Override
     public void postLowPriorityTask(Task task) {
-        Log.d(TAG, "postLowPriorityTask() " + task);
+        if (sections.isEmpty()) {
+            runTask(task);
+        } else {
+            tasks.add(task);
+        }
     }
 
 
     @Override
     public void postLowPriorityTaskDelayed(Task task, int delay) {
-        Log.d(TAG, "postLowPriorityTaskDelayed() [" + delay + "] " + task);
+        uiThreadHandler.postDelayed(() -> postLowPriorityTask(task), delay);
     }
 
 
     @Override
     public void removeLowPriorityTask(Task task) {
-        Log.d(TAG, "removeLowPriorityTask() " + task);
+        tasks.remove(task);
     }
 
 
     @Override
     public void removeLowPriorityTasks() {
-        Log.d(TAG, "removeLowPriorityTasks()");
+        tasks.clear();
+    }
+
+
+    private void runTasks() {
+        for (Task task : tasks) {
+            runTask(task);
+        }
+    }
+
+
+    private void runTask(Task task) {
+        tasks.remove(task);
+        uiThreadHandler.post(task::run);
     }
 }

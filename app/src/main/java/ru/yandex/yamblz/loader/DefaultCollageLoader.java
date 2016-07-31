@@ -11,6 +11,8 @@ import android.widget.ImageView;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,6 +30,7 @@ public class DefaultCollageLoader implements CollageLoader {
 
     private Resources resources;
     private LruCache<Integer, Bitmap> bitmapCache;
+    private Map<Object, WeakReference<AsyncCollageLoader>> asyncLoaders = new WeakHashMap<>();
 
     public DefaultCollageLoader(Resources resources) {
         this.resources = resources;
@@ -73,10 +76,23 @@ public class DefaultCollageLoader implements CollageLoader {
             strategy = new SquareCollageStrategy();
         }
 
+        // If there is a loader task for the same target, cancel it
+        Object key = (iv == null) ? it : iv;
+        WeakReference<AsyncCollageLoader> refLoader = asyncLoaders.remove(key);
+        if (refLoader != null) {
+            AsyncCollageLoader loader = refLoader.get();
+            if (loader != null) {
+                loader.cancel(false);
+            }
+        }
+
         WeakReference<ImageView> refImageView = new WeakReference<>(iv);
         WeakReference<ImageTarget> refImageTarget = new WeakReference<>(it);
 
-        new AsyncCollageLoader(ids, refImageView, refImageTarget, strategy).execute();
+        AsyncCollageLoader loader = new AsyncCollageLoader(ids, refImageView, refImageTarget, strategy);
+        loader.execute();
+
+        asyncLoaders.put(key, new WeakReference<>(loader));
     }
 
 
@@ -103,26 +119,11 @@ public class DefaultCollageLoader implements CollageLoader {
 
 
         @Override
-        protected void onPreExecute() {
-            ImageView imageView = refImageView.get();
-            if (imageView == null) {
-                cancel(false);
-            } else {
-                imageView.setImageBitmap(null);
-            }
-        }
-
-
-        @Override
         protected Bitmap doInBackground(Void... params) {
             List<Future<Bitmap>> futures = new ArrayList<>(ids.length);
             List<Bitmap> bitmaps = new ArrayList<>(ids.length);
 
             for (int id : ids) {
-                if (isCancelled()) {
-                    return null;
-                }
-
                 Bitmap bitmap = bitmapCache.get(id);
                 if (bitmap == null) {
                     futures.add(executorService.submit(() -> {
@@ -147,6 +148,7 @@ public class DefaultCollageLoader implements CollageLoader {
                     if (bitmap != null) {
                         bitmaps.add(bitmap);
                     }
+                    if (isCancelled()) return null;
                 } catch (InterruptedException | ExecutionException e) {
                     Log.e(TAG, Log.getStackTraceString(e));
                 }

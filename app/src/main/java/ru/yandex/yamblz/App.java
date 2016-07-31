@@ -2,6 +2,7 @@ package ru.yandex.yamblz;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 
 import ru.yandex.yamblz.developer_settings.DevMetricsProxy;
@@ -37,7 +38,7 @@ public class App extends Application {
         }
 
         CollageLoaderManager.init(new DefaultCollageLoader(getResources()));
-        CriticalSectionsManager.init(new DefaultCriticalSectionsHandler());
+        CriticalSectionsManager.init(new DefaultCriticalSectionsHandler(new Handler(getMainLooper())));
     }
 
     @NonNull
