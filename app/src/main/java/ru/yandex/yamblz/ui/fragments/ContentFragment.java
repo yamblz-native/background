@@ -20,41 +20,42 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.data.ArtistsApi;
 import ru.yandex.yamblz.data.Genre;
+import ru.yandex.yamblz.loader.CollageLoaderManager;
+import ru.yandex.yamblz.loader.ParallelCollageLoader;
 
 public class ContentFragment extends BaseFragment {
     @BindView(R.id.main_recycler)
     RecyclerView recycler;
 
-    ArtistsLoadingPresenter presenter;
-    String baseUrl = "http://cache-default03g.cdn.yandex.net/download.cdn.yandex.net/mobilization-2016/";
-    private Retrofit retrofit;
-    private ArtistsApi artistsApi;
+    private ArtistsLoadingPresenter presenter;
     private GenreAdapter adapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Lazy libraries initialization
+        // TODO: Use dagger
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
         OkHttpClient client = new OkHttpClient.Builder()
-//                .addInterceptor(loggingInterceptor)
                 .build();
 
-         retrofit = new Retrofit.Builder()
-                 .baseUrl(baseUrl)
+        String baseUrl = getString(R.string.base_url);
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
                 .build();
 
-        artistsApi = retrofit.create(ArtistsApi.class);
+        ArtistsApi artistsApi = retrofit.create(ArtistsApi.class);
 
         presenter = new ArtistsLoadingPresenter(artistsApi);
         presenter.bindView(this);
         presenter.loadArtists();
+
+        CollageLoaderManager.init(new ParallelCollageLoader(getContext()));
     }
 
     @NonNull
@@ -67,7 +68,7 @@ public class ContentFragment extends BaseFragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         recycler.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new GenreAdapter(getContext());
+        adapter = new GenreAdapter();
         recycler.setAdapter(adapter);
     }
 
@@ -77,7 +78,7 @@ public class ContentFragment extends BaseFragment {
         presenter.unbindView(this);
     }
 
-    public void showContent(List<Genre> genreList) {
+    void showContent(List<Genre> genreList) {
         adapter.setContent(genreList);
     }
 }
