@@ -1,6 +1,9 @@
 package ru.yandex.yamblz.ui.adapters;
 
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,22 +22,25 @@ import ru.yandex.yamblz.model.Genre;
 public class ContentGenresRecyclerAdapter extends RecyclerView.Adapter<ContentGenresRecyclerAdapter.GenreHolder> {
     private List<Genre> mGenreList;
     private LayoutInflater mLayoutInflater;
+    private Drawable mNoCollage;
 
-    public ContentGenresRecyclerAdapter(List<Genre> genreList, LayoutInflater layoutInflater) {
+    public ContentGenresRecyclerAdapter(List<Genre> genreList, LayoutInflater layoutInflater, Drawable drawable) {
         mGenreList = genreList;
         mLayoutInflater = layoutInflater;
+        mNoCollage = drawable;
     }
 
     @Override
     public GenreHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = mLayoutInflater.inflate(R.layout.list_genre_item, parent, false);
-        return new GenreHolder(view, mGenreList);
+        return new GenreHolder(view, mGenreList, mNoCollage);
     }
 
     @Override
     public void onBindViewHolder(GenreHolder holder, int position) {
         holder.bind(position);
     }
+
 
     @Override
     public int getItemCount() {
@@ -44,21 +50,26 @@ public class ContentGenresRecyclerAdapter extends RecyclerView.Adapter<ContentGe
     public class GenreHolder extends RecyclerView.ViewHolder {
         List<Genre> mGenreList;
         CollageLoader mCollageLoader = new CollageLoaderImpl();
+        Drawable mNoCollage;
 
         @BindView(R.id.list_genre_item_image)
-        ImageView mCollage;
+        ImageView mCollageImageView;
 
         @BindView(R.id.list_genre_item_text)
         TextView mText;
 
-        public GenreHolder(View itemView, List<Genre> genreList) {
+        public GenreHolder(View itemView, List<Genre> genreList, Drawable drawable) {
             super(itemView);
             mGenreList = genreList;
+            mNoCollage = drawable;
             ButterKnife.bind(this, itemView);
         }
 
         public void bind(int position) {
-            mCollageLoader.loadCollage(mGenreList.get(position).getSmallCoverUrlList(), mCollage);
+            mCollageImageView.setImageDrawable(mNoCollage);
+            mCollageLoader.loadCollage(mGenreList.get(position).getSmallCoverUrlList(), mCollageImageView);
+            mText.setText(mGenreList.get(position).getName());
+            Log.d("BIND", "Hash=" + hashCode() + "; Pos=" + position + "; Genre=" + mGenreList.get(position).getName());
         }
     }
 }

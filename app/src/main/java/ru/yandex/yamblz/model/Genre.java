@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Genre {
+public class Genre implements Comparable<Genre> {
     private String mName;
     private List<Artist> mArtistList = new ArrayList<>();
     private List<String> mSmallCoverUrlList = new ArrayList<>();
@@ -21,7 +21,6 @@ public class Genre {
     public List<Artist> getArtistList() {
         return mArtistList;
     }
-
 
     public List<String> getSmallCoverUrlList() {
         return mSmallCoverUrlList;
@@ -56,5 +55,10 @@ public class Genre {
                 "name='" + mName + '\'' + ';' +
                 mArtistList.size() + " in artistList" +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Genre another) {
+        return another.mArtistList.size() - mArtistList.size();
     }
 }

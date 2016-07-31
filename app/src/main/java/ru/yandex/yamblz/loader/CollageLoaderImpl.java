@@ -3,11 +3,12 @@ package ru.yandex.yamblz.loader;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
+import android.util.Log;
+import android.util.SparseArray;
 import android.widget.ImageView;
 
-import com.squareup.haha.perflib.Main;
-
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,31 +17,53 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import rx.Observable;
-import rx.Scheduler;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.schedulers.Schedulers;
 
 public class CollageLoaderImpl implements CollageLoader {
-    private static final int NUMBER_OF_THREADS = 4;
-    private CollageStrategy mDefaultCollageStrategy = new CollageStrategyImpl(); // Какой такой Dagger?
+    private static final int NUMBER_OF_THREADS = 2;
+    private SparseArray<Subscription> mSubscriptionMap = new SparseArray<>(); // Хранит подписки
 
     @Override
     public void loadCollage(List<String> urls, ImageView imageView) {
-        List<Bitmap> bitmapList = new ArrayList<>();
-        makeCollage(urls, bitmapList, () -> imageView.setImageBitmap(mDefaultCollageStrategy.create(bitmapList)));
+        loadCollage(urls, imageView, new CollageStrategyImpl());
     }
 
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget) {
-        List<Bitmap> bitmapList = new ArrayList<>();
-        makeCollage(urls, bitmapList, () -> imageTarget.onLoadBitmap(mDefaultCollageStrategy.create(bitmapList)));
+        loadCollage(urls, imageTarget, new CollageStrategyImpl());
     }
 
     @Override
     public void loadCollage(List<String> urls, ImageView imageView, CollageStrategy collageStrategy) {
+        WeakReference<ImageView> imageViewRef = new WeakReference<>(imageView);
+        int imageViewId = imageView.getId();
+        Subscription subscription = mSubscriptionMap.get(imageViewId);
+        if (subscription != null) {
+            subscription.unsubscribe(); // Негоже грузить 42 коллажа в одну картинковьюху
+            Log.d("UNSBSRB", "ImageViewHash=" + imageView.hashCode());
+        }
+
         List<Bitmap> bitmapList = new ArrayList<>();
-        makeCollage(urls, bitmapList, () -> imageView.setImageBitmap(collageStrategy.create(bitmapList)));
+
+        Action0 action0 = () -> { // В целом можно это делать не в onCompleted, а в onNext, тогда будет видно, как загружаются картинки
+            Bitmap collage = collageStrategy.create(bitmapList);
+            ImageView collageView = imageViewRef.get();
+            if (collageView != null) {
+                collageView.setImageBitmap(collage);
+            }
+        };
+
+        Subscription newSubscription;
+        if (urls.size() > 6) { // Можно убрать, тогда коллажи станут ну очень длинными
+            newSubscription = makeCollage(urls.subList(0, 6), bitmapList, action0);
+        } else {
+            newSubscription = makeCollage(urls, bitmapList, action0);
+        }
+
+        mSubscriptionMap.put(imageViewId, newSubscription);
     }
 
     @Override
@@ -50,8 +73,8 @@ public class CollageLoaderImpl implements CollageLoader {
     }
 
     // Как-то костыльно без rx everywhere, но не переписывать же интерфейсы?
-    private void makeCollage(List<String> urls, List<Bitmap> bitmapList, @NonNull Action0 onCompleted) {
-        collageObservable(urls)
+    private Subscription makeCollage(List<String> urls, List<Bitmap> bitmapList, @NonNull Action0 onCompleted) {
+        return collageObservable(urls)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(bitmapList::add, throwable -> {
                 }, onCompleted);
@@ -65,6 +88,7 @@ public class CollageLoaderImpl implements CollageLoader {
                 .map(this::downloadImage);
     }
 
+    // Кеширование бы, но только на диск, иначе память быстро закончится
     private Bitmap downloadImage(String url) {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(url).build();

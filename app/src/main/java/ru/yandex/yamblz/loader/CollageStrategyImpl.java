@@ -3,20 +3,17 @@ package ru.yandex.yamblz.loader;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Log;
 
 import java.util.List;
 
 public class CollageStrategyImpl implements CollageStrategy {
-    private static final int NUMBER_OF_COLUMNS = 3;
+    private static final int NUMBER_OF_COLUMNS = 2;
     private static final int IMAGE_SIZE = 300; // Размер изображения в самом коллаже. Все входящие картинки обрезаются (из левого угла) до квадрата
     private static final int COLLAGE_WIDTH = IMAGE_SIZE * NUMBER_OF_COLUMNS;
 
     @Override
     public Bitmap create(List<Bitmap> bitmaps) {
-        // Битмап ARGB_8888 размером 1500x1500 занимает 5 мегабайт, а вмещает в себя 5x5 = 25 изображений
-        // Памяти должно хватить
-        // Столбцов будет 5 штук, а строк - сколько получится
-
         int numberOfRows;
         if (bitmaps.size() >= 3) {
             numberOfRows = bitmaps.size() / NUMBER_OF_COLUMNS; // 10 / 3 = 3, одной картинки не будет, задо красивенько
@@ -40,11 +37,14 @@ public class CollageStrategyImpl implements CollageStrategy {
             } else {
                 size = currentBitmap.getHeight();
             }
-
             canvas.drawBitmap(currentBitmap, new Rect(0, 0, size, size), new Rect(left, top, left + IMAGE_SIZE, top + IMAGE_SIZE), null);
+            currentBitmap.recycle();
             left += IMAGE_SIZE;
-            currentBitmap.recycle(); // И память не забудем почистить. Вообще нехорошо вышло, bitmap`ы лучше грузить из Picasso, которая всё кеширует
+            if (IMAGE_SIZE * numberOfRows < top) {
+                break;
+            }
         }
+        Log.d("makeCollage", "BitmapsListHash=" + bitmaps.hashCode());
         canvas.save();
 
         return collage;
