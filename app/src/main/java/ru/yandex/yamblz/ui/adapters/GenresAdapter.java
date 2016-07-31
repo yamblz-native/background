@@ -36,7 +36,7 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenreViewH
     public void onBindViewHolder(GenreViewHolder holder, int position) {
         Genre genre = genres.get(position);
         holder.name.setText(genre.getName());
-        holder.collage.setImageResource(android.R.color.transparent);
+        holder.collage.setImageDrawable(null);
         CollageLoaderManager.getLoader().loadCollage(genre.getUrls(), holder.collage);
     }
 

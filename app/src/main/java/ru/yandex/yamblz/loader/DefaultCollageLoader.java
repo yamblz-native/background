@@ -9,12 +9,17 @@ import java.net.URL;
 import java.util.List;
 
 import rx.Observable;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
-public class StubCollageLoader implements CollageLoader {
+public class DefaultCollageLoader implements CollageLoader {
     private static final int MAX_COLLAGE_SIZE = 4;
+    private Subscription subscription;
+    private CompositeSubscription compositeSubscription;
+
 
     @Override
     public void loadCollage(List<String> urls, ImageView imageView) {
@@ -38,7 +43,7 @@ public class StubCollageLoader implements CollageLoader {
     public void loadCollage(List<String> urls, ImageTarget imageTarget,
                             CollageStrategy collageStrategy) {
 
-        Observable.from(urls)
+        subscription = Observable.from(urls)
                 .take(MAX_COLLAGE_SIZE)
                 .flatMap(this::loadBitmap)
                 .toList()

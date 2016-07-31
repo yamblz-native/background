@@ -19,8 +19,9 @@ public class DefaultImageTarget implements ImageTarget {
 
     @Override
     public void onLoadBitmap(Bitmap bitmap) {
-        if (weakReferenceImageView != null) {
-            ImageView imageView = weakReferenceImageView.get();
+        ImageView imageView = weakReferenceImageView.get();
+
+        if (imageView != null) {
             imageView.setImageBitmap(bitmap);
         }
     }
