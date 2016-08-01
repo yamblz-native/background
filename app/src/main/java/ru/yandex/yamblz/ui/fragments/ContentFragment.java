@@ -14,6 +14,8 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import ru.yandex.yamblz.App;
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSections;
+import ru.yandex.yamblz.handler.CriticalSectionsHandler;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.ui.adapters.CollageAdapter;
 
@@ -23,6 +25,8 @@ public class ContentFragment extends BaseFragment {
 
     @Inject
     CollageLoader collageLoader;
+    @Inject
+    CriticalSectionsHandler criticalSectionsHandler;
 
     @NonNull
     @Override
@@ -37,5 +41,16 @@ public class ContentFragment extends BaseFragment {
         rvData.setLayoutManager(new LinearLayoutManager(getContext()));
         rvData.setHasFixedSize(true);
         rvData.setAdapter(new CollageAdapter(collageLoader));
+        rvData.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if(RecyclerView.SCROLL_STATE_IDLE == newState){
+                    criticalSectionsHandler.stopSection(CriticalSections.SCROLL_STATE);
+                }else {
+                    criticalSectionsHandler.startSection(CriticalSections.SCROLL_STATE);
+                }
+            }
+        });
     }
 }

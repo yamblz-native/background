@@ -10,8 +10,11 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import okhttp3.OkHttpClient;
+import ru.yandex.yamblz.handler.CriticalSectionsHandler;
+import ru.yandex.yamblz.handler.StubCriticalSectionsHandler;
 import ru.yandex.yamblz.loader.CollageLoader;
-import ru.yandex.yamblz.loader.CollageLoaderManager;
+import ru.yandex.yamblz.loader.ExampleCollageLoader;
 
 @Module
 public class ApplicationModule {
@@ -35,9 +38,20 @@ public class ApplicationModule {
         return new Handler(Looper.getMainLooper());
     }
 
-    @Provides
-    public CollageLoader provideCollageLoader(){
-        return CollageLoaderManager.getLoader();
+
+    @Provides @Singleton
+    public OkHttpClient provideOkHttpClient(){
+        return new OkHttpClient.Builder().build();
+    }
+
+    @Provides @Singleton
+    public CollageLoader provideCollageLoader(OkHttpClient okHttpClient, CriticalSectionsHandler criticalSectionsHandler){
+        return new ExampleCollageLoader(okHttpClient, criticalSectionsHandler);
+    }
+
+    @Provides @Singleton
+    public CriticalSectionsHandler provideCriticalSectionsHandler(){
+        return new StubCriticalSectionsHandler();
     }
 
 }

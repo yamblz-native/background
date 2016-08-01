@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.widget.ImageView;
 
 import java.io.IOException;
@@ -14,12 +13,11 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.logging.HttpLoggingInterceptor;
-import ru.yandex.yamblz.BuildConfig;
+import ru.yandex.yamblz.handler.CriticalSectionsHandler;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -34,24 +32,18 @@ import rx.schedulers.Schedulers;
 public class ExampleCollageLoader implements CollageLoader {
     private final OkHttpClient okHttpClient;
     private final Bitmap placeHolder;
+    private final CriticalSectionsHandler criticalSectionsHandler;
+
 
 
     {
         placeHolder = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
         placeHolder.eraseColor(Color.rgb(255, 255, 255));
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        if (BuildConfig.DEBUG){
-            HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-                @Override
-                public void log(String message) {
-                    Log.d("OkHttp: -->", message);
-                }
-            });
-            httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
-            builder.addNetworkInterceptor(httpLoggingInterceptor);
-        }
-        okHttpClient = builder.build();
+    }
 
+    public ExampleCollageLoader(OkHttpClient okHttpClient, CriticalSectionsHandler criticalSectionsHandler) {
+        this.okHttpClient = okHttpClient;
+        this.criticalSectionsHandler = criticalSectionsHandler;
     }
 
     @Override
@@ -71,7 +63,7 @@ public class ExampleCollageLoader implements CollageLoader {
 
     @Override
     public void loadCollage(List<String> urls, final ImageTarget imageTarget, CollageStrategy collageStrategy) {
-        if (collageStrategy == null) collageStrategy = new ExampleCollageStrategy(600, 400);
+        if (collageStrategy == null) collageStrategy = new RandomCollageStrategy(600, 400);
 
         Observable.just(urls)
                 .flatMap(loadBitmaps())
@@ -102,14 +94,14 @@ public class ExampleCollageLoader implements CollageLoader {
 
             @Override
             public void onNext(Bitmap bitmap) {
-                imageTarget.onLoadBitmap(bitmap);
+                criticalSectionsHandler.postLowPriorityTask(() ->imageTarget.onLoadBitmap(bitmap));
             }
         };
     }
 
     @NonNull
     private Func1<List<Bitmap>, Bitmap> createCollage(final CollageStrategy finalCollageStrategy) {
-        return bitmaps -> finalCollageStrategy.create(bitmaps);
+        return finalCollageStrategy::create;
     }
 
     @NonNull
@@ -144,15 +136,12 @@ public class ExampleCollageLoader implements CollageLoader {
     //@RxLogObservable
     private Observable<Bitmap> loadOneBitmap(Executor executor, String bitmapUrl) {
         return Observable.just(bitmapUrl)
-                .map(new Func1<String, Bitmap>() {
-                    @Override
-                    public Bitmap call(String s) {
-                        try {
-                            return BitmapFactory.decodeStream(okHttpClient
-                                    .newCall(new Request.Builder().url(s).build()).execute().body().byteStream());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                .map(s -> {
+                    try {
+                        return BitmapFactory.decodeStream(okHttpClient
+                                .newCall(new Request.Builder().url(s).build()).execute().body().byteStream());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
                 })
                 .subscribeOn(Schedulers.from(executor));

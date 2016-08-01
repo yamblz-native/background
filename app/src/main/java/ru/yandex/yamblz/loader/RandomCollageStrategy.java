@@ -11,13 +11,13 @@ import java.util.Random;
  * Created by Александр on 25.07.2016.
  */
 
-public class ExampleCollageStrategy implements CollageStrategy {
+public class RandomCollageStrategy implements CollageStrategy {
     private final int height;
     private final int wight;
     private final Random random;
     private final float randomCoff = 0.6f;
 
-    public ExampleCollageStrategy(int height, int wight) {
+    public RandomCollageStrategy(int height, int wight) {
         this.height = height;
         this.wight = wight;
         this.random = new Random(System.currentTimeMillis() + height + wight);

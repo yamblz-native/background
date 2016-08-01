@@ -4,6 +4,9 @@ import android.widget.ImageView;
 
 import java.util.List;
 
+import rx.Observable;
+import rx.subscriptions.CompositeSubscription;
+
 public class StubCollageLoader implements CollageLoader {
 
     @Override
