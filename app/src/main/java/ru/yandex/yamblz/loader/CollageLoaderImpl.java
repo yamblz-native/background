@@ -74,7 +74,7 @@ public class CollageLoaderImpl implements CollageLoader {
         };
 
         Subscription newSubscription;
-        newSubscription = makeCollage(urls, bitmapList, action0, action1);
+        newSubscription = makeCollage(urls, action0, action1);
 
 
         mSubscriptionMap.put(imageViewId, newSubscription);
@@ -87,12 +87,17 @@ public class CollageLoaderImpl implements CollageLoader {
     }
 
     // Как-то костыльно без rx everywhere, но не переписывать же интерфейсы?
-    private Subscription makeCollage(List<String> urls, List<Bitmap> bitmapList, @NonNull Action0 onCompleted, Action1 onNext) {
+    private Subscription makeCollage(List<String> urls, @NonNull Action0 onCompleted, Action1 onNext) {
         return collageObservable(urls)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(onNext, (e) -> {
                 }, onCompleted);
     }
+
+    // Есть поток Bitmap`ов
+    // Нужно добавлять их в лист
+    // На каждый _такой-то_ Bitmap запилить коллаж
+    // Запихнуть его в ImageView
 
     private Observable<Bitmap> collageObservable(List<String> urls) {
         AtomicInteger counter = new AtomicInteger();
