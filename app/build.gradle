@@ -98,6 +98,11 @@ dependencies {
 
     compile libraries.timber
 
+    compile libraries.rxjava
+    compile libraries.rxandroid
+    compile libraries.solidstreams
+    compile libraries.solidcollections
+
     // Developer tools (Developer Settings)
     compile libraries.stetho
     compile libraries.leakCanary
