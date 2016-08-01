@@ -8,7 +8,8 @@
     android:elevation="3dp"
     android:minHeight="40dp"
     android:orientation="horizontal"
-    android:textAlignment="center">
+    android:textAlignment="center"
+    android:layout_margin="3dp">
 
     <ImageView
         android:id="@+id/cover"
@@ -17,7 +18,8 @@
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:layout_marginTop="5dp"
-        android:scaleType="centerCrop" />
+        android:scaleType="centerCrop"
+        android:layout_margin="8dp"/>
 
     <TextView
         android:id="@+id/genre"

@@ -41,7 +41,6 @@ public class ContentFragment extends BaseFragment {
     @BindView(R.id.genre_list)
     RecyclerView rv;
 
-    private Subscription singerSubs;
     private FirstRecyclerAdapter adapter;
     private JsonLoad jsonLoad;
     private Map<String, Stream<Singer>> _genres;
@@ -56,17 +55,22 @@ public class ContentFragment extends BaseFragment {
 
         _genres = new HashMap<>();
         rv.setLayoutManager(new LinearLayoutManager(getActivity()));
-        collageLoader = new StubCollageLoader(new CollageOneOrFour()); //TODO
+        collageLoader = new StubCollageLoader(new CollageOneOrFour());
         adapter = new FirstRecyclerAdapter(_genres, collageLoader);
         rv.setAdapter(adapter);
         jsonLoad = new JsonLoad();
-
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        createObservable();
     }
 
     private void createObservable() {
         Observable<List<Singer>> singerObservable = Observable.fromCallable(() -> jsonLoad.loadSingers());
-        singerSubs = singerObservable
+        singerObservable
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -87,8 +91,8 @@ public class ContentFragment extends BaseFragment {
                                 Log.w("obs", "next");
 
                                 Stream<String> genres = Stream.stream(singers).flatMap(Singer::getGenres);
-                                _genres = genres.collect(toSolidMap(it->it, it->Stream.stream(singers).
-                                        filter(value->value.getGenres().contains(it)))).asMap();
+                                _genres = genres.collect(toSolidMap(it -> it, it -> Stream.stream(singers).
+                                        filter(value -> value.getGenres().contains(it)))).asMap();
                             }
                         });
     }
@@ -98,12 +102,5 @@ public class ContentFragment extends BaseFragment {
         adapter.setSingers(_genres);
         rv.setAdapter(adapter);
     }
-
-    @OnClick(R.id.fab)
-    void startLongOperation() {
-        Log.w("Fragment", "Click");
-        createObservable();
-    }
-
 
 }
