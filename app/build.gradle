@@ -90,6 +90,8 @@ dependencies {
     compile libraries.rxjava
     compile libraries.rxandroid
 
+    compile 'com.squareup.picasso:picasso:2.5.2'
+
     compile libraries.gson
     compile libraries.okhttp
 

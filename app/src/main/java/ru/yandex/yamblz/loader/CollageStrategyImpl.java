@@ -12,11 +12,11 @@ public class CollageStrategyImpl implements CollageStrategy {
     @Override
     public Bitmap create(List<Bitmap> bitmaps) {
         if (bitmaps == null || bitmaps.size() == 0) {
-            return null;
+            return null; // Нечего на вход ерунду подавать
         }
 
-        int pictureSize = (int) (COLLAGE_SIZE / Math.floor(Math.sqrt(bitmaps.size())));
-        int realCollageSize = (int) (pictureSize * Math.ceil(Math.sqrt(bitmaps.size())));
+        int pictureSize = (int) Math.floor(COLLAGE_SIZE / Math.sqrt(bitmaps.size())); // В меньшую сторону
+        int realCollageSize = (int) (pictureSize * Math.ceil(Math.sqrt(bitmaps.size()))); // В большую сторону
 
         Bitmap collage = Bitmap.createBitmap(realCollageSize, realCollageSize, Bitmap.Config.ARGB_4444);
 

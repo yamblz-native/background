@@ -1,5 +1,6 @@
 package ru.yandex.yamblz.ui.fragments;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,12 +13,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.squareup.picasso.Picasso;
+
 import java.io.IOException;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.loader.CollageLoaderImpl;
 import ru.yandex.yamblz.model.ArtistFetcher;
 import ru.yandex.yamblz.model.ArtistLab;
 import ru.yandex.yamblz.model.Genre;
@@ -54,9 +58,10 @@ public class ContentFragment extends BaseFragment {
 
             @Override
             protected void onPostExecute(Void aVoid) {
-                Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_album_black_240dp);
-                mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                mRecyclerView.setAdapter(new ContentGenresRecyclerAdapter(genreList, inflater, drawable));
+                Context context = getContext();
+                Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_album_black_240dp);
+                mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
+                mRecyclerView.setAdapter(new ContentGenresRecyclerAdapter(genreList, inflater, drawable, new CollageLoaderImpl(Picasso.with(context.getApplicationContext()))));
             }
         }.execute();
 

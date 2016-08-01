@@ -1,7 +1,6 @@
 package ru.yandex.yamblz.ui.adapters;
 
 import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,18 +15,19 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.loader.CollageLoader;
-import ru.yandex.yamblz.loader.CollageLoaderImpl;
 import ru.yandex.yamblz.model.Genre;
 
 public class ContentGenresRecyclerAdapter extends RecyclerView.Adapter<ContentGenresRecyclerAdapter.GenreHolder> {
     private List<Genre> mGenreList;
     private LayoutInflater mLayoutInflater;
     private Drawable mNoCollage;
+    private CollageLoader mCollageLoader;
 
-    public ContentGenresRecyclerAdapter(List<Genre> genreList, LayoutInflater layoutInflater, Drawable drawable) {
+    public ContentGenresRecyclerAdapter(List<Genre> genreList, LayoutInflater layoutInflater, Drawable drawable, CollageLoader collageLoader) {
         mGenreList = genreList;
         mLayoutInflater = layoutInflater;
         mNoCollage = drawable;
+        mCollageLoader = collageLoader;
     }
 
     @Override
@@ -49,7 +49,6 @@ public class ContentGenresRecyclerAdapter extends RecyclerView.Adapter<ContentGe
 
     public class GenreHolder extends RecyclerView.ViewHolder {
         List<Genre> mGenreList;
-        CollageLoader mCollageLoader = new CollageLoaderImpl();
         Drawable mNoCollage;
 
         @BindView(R.id.list_genre_item_image)
