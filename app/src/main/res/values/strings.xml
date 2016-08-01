@@ -3,4 +3,6 @@
     <string name="content">Hello</string>
 
     <string name="blank_string"> </string>
+
+    <string name="download_error">Ошибка при загрузке, проверьте интернет-подключение</string>
 </resources>

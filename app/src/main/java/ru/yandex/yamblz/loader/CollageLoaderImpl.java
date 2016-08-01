@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.widget.ImageView;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
@@ -22,17 +21,10 @@ public class CollageLoaderImpl implements CollageLoader {
             new DefaultCollageStrategy(DEFAULT_BITMAP_SIZE);
 
     private static Observable<Bitmap> buildBitmapObservable(String url) {
-        return Observable.create(subscriber -> {
-            try {
-                subscriber.onNext(BitmapFactory.decodeStream(
-                        new URL(url)
-                                .openConnection()
-                                .getInputStream()));
-                subscriber.onCompleted();
-            } catch (IOException e) {
-                subscriber.onError(e);
-            }
-        });
+        return Observable.fromCallable(() -> BitmapFactory.decodeStream(
+                new URL(url)
+                        .openConnection()
+                        .getInputStream()));
     }
 
     @Override

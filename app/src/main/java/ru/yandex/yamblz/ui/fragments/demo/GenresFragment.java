@@ -5,9 +5,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -66,6 +68,10 @@ public class GenresFragment extends Fragment {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(adapterContent -> {
                     ((Adapter) recyclerView.getAdapter()).setArtistByGenres(adapterContent);
+                }, e -> {
+                    Log.d(this.getClass().getSimpleName(), "can't download", e);
+                    Toast.makeText(getActivity(),
+                            getString(R.string.download_error), Toast.LENGTH_SHORT).show();
                 });
 
         return view;

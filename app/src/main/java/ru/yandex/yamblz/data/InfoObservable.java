@@ -18,14 +18,7 @@ public class InfoObservable {
     private static final String TAG = InfoObservable.class.getSimpleName();
 
     public static Observable<List<Artist>> getObservable() {
-        return Observable.create(subscriber -> {
-            try {
-                subscriber.onNext(download());
-                subscriber.onCompleted();
-            } catch (IOException e) {
-                subscriber.onError(e);
-            }
-        });
+        return Observable.fromCallable(InfoObservable::download);
     }
 
     private static List<Artist> download() throws IOException {
