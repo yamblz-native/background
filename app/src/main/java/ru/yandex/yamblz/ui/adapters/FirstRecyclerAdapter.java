@@ -34,6 +34,7 @@ public class FirstRecyclerAdapter extends RecyclerAdapter {
 
     public void setSingers(Map<String, Stream<Singer>> genres) {
         Log.w("Adapter", "setSingers");
+        if (genres == null) return;
         genres_list = new ArrayList<>(genres.keySet());
         for (String genre: genres_list) {
             List<String> url = new ArrayList<>();

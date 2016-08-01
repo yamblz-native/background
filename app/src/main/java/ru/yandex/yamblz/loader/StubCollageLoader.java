@@ -14,15 +14,16 @@ import java.util.concurrent.Executors;
 import rx.Observable;
 import rx.Observer;
 import rx.Scheduler;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action;
+import rx.functions.Actions;
 import rx.schedulers.Schedulers;
 
 import static solid.collectors.ToSolidMap.toSolidMap;
 
 public class StubCollageLoader implements CollageLoader {
     private CollageStrategy collageStrategy;
-    private static final Scheduler SHED = Schedulers.from(Executors.newFixedThreadPool(4));
+    private static final Scheduler SHED_4 = Schedulers.from(Executors.newFixedThreadPool(4));
 
     public StubCollageLoader(CollageStrategy collageStrategy) {
         this.collageStrategy = collageStrategy;
@@ -43,30 +44,16 @@ public class StubCollageLoader implements CollageLoader {
 
     private void createObservable(List<String> urls, ImageTarget target) {
         List<Bitmap> collage = new ArrayList<>();
+
         Observable.from(urls)
-                .subscribeOn(SHED)
                 .take(4)
-                .map(this::getBitmapFromURL)
+                .flatMap(it -> Observable.fromCallable(()-> getBitmapFromURL(it))
+                        .subscribeOn(SHED_4))
+                .toList()
+                .observeOn(Schedulers.computation())
+                .map(bitmapList -> collageStrategy.create(bitmapList))
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Bitmap>() {
-                    @Override
-                    public void onCompleted() {
-                        Log.w("obsCollage", "complete");
-                        target.onLoadBitmap(collageStrategy.create(collage));
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.w("obsCollage", "error");
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onNext(Bitmap bitmap) {
-                        Log.w("obsCollage", "next");
-                        collage.add(bitmap);
-                    }
-                });
+                .subscribe(target::onLoadBitmap, Actions.empty());
     }
 
     @Override

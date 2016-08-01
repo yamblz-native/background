@@ -10,14 +10,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.loader.CollageOneOrFour;
@@ -28,10 +26,9 @@ import ru.yandex.yamblz.ui.adapters.FirstRecyclerAdapter;
 import rx.Observable;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Actions;
 import rx.schedulers.Schedulers;
 
-import rx.Subscription;
-import solid.collections.SolidMap;
 import solid.stream.Stream;
 
 import static solid.collectors.ToSolidMap.toSolidMap;
@@ -43,7 +40,6 @@ public class ContentFragment extends BaseFragment {
 
     private FirstRecyclerAdapter adapter;
     private JsonLoad jsonLoad;
-    private Map<String, Stream<Singer>> _genres;
     private CollageLoader collageLoader;
 
     @NonNull
@@ -53,10 +49,9 @@ public class ContentFragment extends BaseFragment {
         View view = inflater.inflate(R.layout.fragment_content, container, false);
         ButterKnife.bind(this, view);
 
-        _genres = new HashMap<>();
         rv.setLayoutManager(new LinearLayoutManager(getActivity()));
         collageLoader = new StubCollageLoader(new CollageOneOrFour());
-        adapter = new FirstRecyclerAdapter(_genres, collageLoader);
+        adapter = new FirstRecyclerAdapter(null, collageLoader);
         rv.setAdapter(adapter);
         jsonLoad = new JsonLoad();
         return view;
@@ -69,38 +64,25 @@ public class ContentFragment extends BaseFragment {
     }
 
     private void createObservable() {
-        Observable<List<Singer>> singerObservable = Observable.fromCallable(() -> jsonLoad.loadSingers());
-        singerObservable
-                .subscribeOn(Schedulers.io())
+
+        Observable.fromCallable(() -> jsonLoad.loadSingers())
+                        .subscribeOn(Schedulers.io())
+                .map(this::getGenres)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        new Observer<List<Singer>>() {
-                            @Override
-                            public void onCompleted() {
-                                Log.w("obs", "complete");
-                                displaySingers();
-                            }
-
-                            @Override
-                            public void onError(Throwable e) {
-
-                            }
-
-                            @Override
-                            public void onNext(List<Singer> singers) {
-                                Log.w("obs", "next");
-
-                                Stream<String> genres = Stream.stream(singers).flatMap(Singer::getGenres);
-                                _genres = genres.collect(toSolidMap(it -> it, it -> Stream.stream(singers).
-                                        filter(value -> value.getGenres().contains(it)))).asMap();
-                            }
-                        });
+                .subscribe(this::displaySingers, Actions.empty());
     }
 
-    private void displaySingers() {
+    private void displaySingers(Map<String, Stream<Singer>> genres) {
         Log.w("fragment", "display");
-        adapter.setSingers(_genres);
+        adapter.setSingers(genres);
         rv.setAdapter(adapter);
     }
+
+    private Map<String, Stream<Singer>> getGenres (List<Singer> singers){
+        Stream<String> genres = Stream.stream(singers).flatMap(Singer::getGenres);
+        return genres.collect(toSolidMap(it -> it, it -> Stream.stream(singers).
+                filter(value -> value.getGenres().contains(it)))).asMap();
+    }
+
 
 }
