@@ -14,10 +14,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import butterknife.BindView;
 import retrofit2.Response;
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSectionsHandler;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import ru.yandex.yamblz.managers.DataManager;
 import ru.yandex.yamblz.models.Genre;
 import ru.yandex.yamblz.network.ArtistResponse;
@@ -44,6 +47,21 @@ public class ContentFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                CriticalSectionsHandler criticalSectionsHandler = CriticalSectionsManager.getHandler();
+
+                if (newState != RecyclerView.SCROLL_STATE_IDLE) {
+                    criticalSectionsHandler.startSection(new Random().nextInt());
+                } else {
+                    criticalSectionsHandler.stopSections();
+                }
+            }
+        });
+
         dataManager = DataManager.getInstance();
         genres = new ArrayList<>();
 

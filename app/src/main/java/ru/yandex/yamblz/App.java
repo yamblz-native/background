@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import ru.yandex.yamblz.developer_settings.DevMetricsProxy;
 import ru.yandex.yamblz.developer_settings.DeveloperSettingsModel;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.DefaultCriticalSectionsHandler;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.loader.DefaultCollageLoader;
 import timber.log.Timber;
@@ -35,8 +36,8 @@ public class App extends Application {
             devMetricsProxy.apply();
         }
 
-        CollageLoaderManager.init(new DefaultCollageLoader());  // add implementation
-        CriticalSectionsManager.init(null); // add implementation
+        CollageLoaderManager.init(new DefaultCollageLoader());
+        CriticalSectionsManager.init(new DefaultCriticalSectionsHandler());
     }
 
     @NonNull

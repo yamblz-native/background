@@ -12,6 +12,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSectionsHandler;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.models.Genre;
 import rx.Subscription;
@@ -35,16 +37,26 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenreViewH
 
     @Override
     public void onBindViewHolder(GenreViewHolder holder, int position) {
+        Genre genre = genres.get(position);
+        holder.name.setText(genre.getName());
+        holder.collage.setImageDrawable(null);
+
+        CriticalSectionsHandler criticalSectionsHandler = CriticalSectionsManager.getHandler();
+
+        criticalSectionsHandler.postLowPriorityTask(() ->
+                CollageLoaderManager.getLoader().loadCollage(genre.getUrls(), holder.collage)
+        );
+    }
+
+    @Override
+    public void onViewRecycled(GenreViewHolder holder) {
+        super.onViewRecycled(holder);
         Subscription subscription = (Subscription) holder.collage.getTag();
 
         if (subscription != null && !subscription.isUnsubscribed()) {
             subscription.unsubscribe();
         }
 
-        Genre genre = genres.get(position);
-        holder.name.setText(genre.getName());
-        holder.collage.setImageDrawable(null);
-        CollageLoaderManager.getLoader().loadCollage(genre.getUrls(), holder.collage);
     }
 
     @Override

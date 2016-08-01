@@ -6,7 +6,6 @@ import android.widget.ImageView;
 import java.lang.ref.WeakReference;
 
 import rx.Subscription;
-import timber.log.Timber;
 
 /**
  * Created by shmakova on 30.07.16.

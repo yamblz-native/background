@@ -46,6 +46,7 @@ public class DefaultCollageLoader implements CollageLoader {
                 .flatMap(this::loadBitmap)
                 .toList()
                 .map(collageStrategy::create)
+                .cache()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(bitmap -> imageTarget.onLoadBitmap(bitmap),
