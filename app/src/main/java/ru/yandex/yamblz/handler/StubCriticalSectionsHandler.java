@@ -64,12 +64,10 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
     }
 
     private void runTasks(){
-        mainThreadHandler.post(() -> {
-                while(canRunNextTask()) {
-                    taskStore.poll().run();
-                }
-        });
-
+        while (canRunNextTask()) {
+            Task task = taskStore.poll();
+            mainThreadHandler.post(task::run);
+        }
     }
 
     private boolean canRunNextTask(){

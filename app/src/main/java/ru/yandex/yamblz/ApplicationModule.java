@@ -5,16 +5,20 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import ru.yandex.yamblz.handler.CriticalSectionsHandler;
 import ru.yandex.yamblz.handler.StubCriticalSectionsHandler;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.loader.ExampleCollageLoader;
+import timber.log.Timber;
 
 @Module
 public class ApplicationModule {
@@ -41,7 +45,16 @@ public class ApplicationModule {
 
     @Provides @Singleton
     public OkHttpClient provideOkHttpClient(){
-        return new OkHttpClient.Builder().build();
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.connectTimeout(2, TimeUnit.SECONDS);
+        builder.readTimeout(2, TimeUnit.SECONDS);
+        builder.writeTimeout(2, TimeUnit.SECONDS);
+        if(BuildConfig.DEBUG){
+            HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(message -> Timber.d("OkHttp Log ->> %s", message));
+            httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
+            builder.addNetworkInterceptor(httpLoggingInterceptor);
+        }
+        return builder.build();
     }
 
     @Provides @Singleton

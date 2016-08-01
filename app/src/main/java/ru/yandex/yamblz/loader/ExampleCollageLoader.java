@@ -1,5 +1,6 @@
 package ru.yandex.yamblz.loader;
 
+import android.animation.ObjectAnimator;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -10,9 +11,12 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -20,10 +24,12 @@ import ru.yandex.yamblz.handler.CriticalSectionsHandler;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import rx.Observable;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
 import rx.functions.Func2;
 import rx.schedulers.Schedulers;
+import timber.log.Timber;
 
 /**
  * Created by Александр on 25.07.2016.
@@ -33,17 +39,18 @@ public class ExampleCollageLoader implements CollageLoader {
     private final OkHttpClient okHttpClient;
     private final Bitmap placeHolder;
     private final CriticalSectionsHandler criticalSectionsHandler;
+    private final CollageStrategy defaultCollageStrategy;
+    private final Random rnd;
+    private final WeakHashMap<Object, Subscription> subscriptionWeakHashMap = new WeakHashMap<>();
 
 
-
-    {
-        placeHolder = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
-        placeHolder.eraseColor(Color.rgb(255, 255, 255));
-    }
 
     public ExampleCollageLoader(OkHttpClient okHttpClient, CriticalSectionsHandler criticalSectionsHandler) {
         this.okHttpClient = okHttpClient;
-        this.criticalSectionsHandler = criticalSectionsHandler;
+        this.criticalSectionsHandler = criticalSectionsHandler;placeHolder = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
+        placeHolder.eraseColor(Color.argb(127, 255, 255, 255));
+        defaultCollageStrategy = new RandomCollageStrategy(600, 400);
+        rnd = new Random();
     }
 
     @Override
@@ -63,14 +70,15 @@ public class ExampleCollageLoader implements CollageLoader {
 
     @Override
     public void loadCollage(List<String> urls, final ImageTarget imageTarget, CollageStrategy collageStrategy) {
-        if (collageStrategy == null) collageStrategy = new RandomCollageStrategy(600, 400);
-
-        Observable.just(urls)
+        if (subscriptionWeakHashMap.containsKey(imageTarget))
+            subscriptionWeakHashMap.get(imageTarget).unsubscribe();
+        Subscription subscribe = Observable.just(urls)
                 .flatMap(loadBitmaps())
-                .map(createCollage(collageStrategy))
+                .map(createCollage((collageStrategy == null) ? defaultCollageStrategy : collageStrategy))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.computation())
                 .subscribe(processResult(imageTarget));
+        subscriptionWeakHashMap.put(imageTarget, subscribe);
     }
 
     @NonNull
@@ -108,18 +116,10 @@ public class ExampleCollageLoader implements CollageLoader {
     private Func1<List<String>, Observable<List<Bitmap>>> loadBitmaps() {
         final Executor executor = createExecutor();
         return strings -> Observable.from(strings)
-                .flatMap(new Func1<String, Observable<Bitmap>>() {
-                    @Override
-                    public Observable<Bitmap> call(String s) {
-                        return loadOneBitmap(executor, s);
-                    }
-                })
-                .reduce(new ArrayList<Bitmap>(strings.size()), new Func2<List<Bitmap>, Bitmap, List<Bitmap>>() {
-                    @Override
-                    public List<Bitmap> call(List<Bitmap> bitmaps, Bitmap bitmap) {
-                        bitmaps.add(bitmap);
-                        return bitmaps;
-                    }
+                .flatMap((s) -> loadOneBitmap(executor, s))
+                .reduce(new ArrayList<Bitmap>(strings.size()), (store, bitmap) -> {
+                    store.add(bitmap);
+                    return store;
                 });
     }
 
@@ -136,13 +136,21 @@ public class ExampleCollageLoader implements CollageLoader {
     //@RxLogObservable
     private Observable<Bitmap> loadOneBitmap(Executor executor, String bitmapUrl) {
         return Observable.just(bitmapUrl)
-                .map(s -> {
+                .flatMap(s -> {
                     try {
-                        return BitmapFactory.decodeStream(okHttpClient
-                                .newCall(new Request.Builder().url(s).build()).execute().body().byteStream());
+                        return Observable.just(BitmapFactory.decodeStream(okHttpClient
+                                .newCall(new Request.Builder().url(s).build()).execute().body().byteStream()));
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        return Observable.error(e);
                     }
+                })
+                .onErrorResumeNext((t)->{
+                    return Observable.timer(1, TimeUnit.SECONDS)
+                            .map(aLong -> {
+                                Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
+                                bitmap.eraseColor(rnd.nextInt());
+                                return bitmap;
+                            });
                 })
                 .subscribeOn(Schedulers.from(executor));
     }
@@ -159,11 +167,10 @@ public class ExampleCollageLoader implements CollageLoader {
             ImageView imageView = wrImageView.get();
             if (imageView != null){
                 imageView.setImageBitmap(bitmap);
+            }else {
+                Timber.d("not set");
             }
         }
 
-        public void cancel(){
-            wrImageView.clear();
-        }
     }
 }

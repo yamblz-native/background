@@ -16,6 +16,7 @@ import java.util.Random;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.loader.ExampleCollageLoader;
+import ru.yandex.yamblz.loader.ImageTarget;
 
 /**
  * Created by Александр on 26.07.2016.
@@ -85,21 +86,20 @@ public class CollageAdapter extends RecyclerView.Adapter<CollageAdapter.Item> {
         private CardView cvHolder;
         private TextView tvForLinks;
         private ImageView ivForCollage;
-        private ExampleCollageLoader.ImageViewImageTarget ivit;
+        private ImageTarget imageTarget;
 
         public Item(View itemView) {
             super(itemView);
             cvHolder = (CardView) itemView.findViewById(R.id.cv_holder);
             tvForLinks = (TextView) itemView.findViewById(R.id.textHolder);
             ivForCollage = (ImageView) itemView.findViewById(R.id.collageHolder);
+            imageTarget = new ExampleCollageLoader.ImageViewImageTarget(ivForCollage);
         }
 
         public void onBind(List<String> data){
-            if(ivit != null) ivit.cancel();
             cvHolder.setOnClickListener(v -> clickListener.onClick());
             tvForLinks.setText("Number links: " + data.size());
-            ivit = new ExampleCollageLoader.ImageViewImageTarget(ivForCollage);
-            collageLoader.loadCollage(data, ivit);
+            collageLoader.loadCollage(data, imageTarget);
         }
     }
 
