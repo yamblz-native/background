@@ -14,8 +14,9 @@
     <ImageView
         android:id="@+id/list_genre_item_image"
         android:layout_width="match_parent"
+        android:adjustViewBounds="true"
         android:layout_height="wrap_content"
-        android:scaleType="centerInside"
+        android:background="#be104171"
         android:src="@drawable/ic_album_black_240dp"/>
 
 </LinearLayout>

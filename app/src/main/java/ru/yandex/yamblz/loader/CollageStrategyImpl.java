@@ -3,50 +3,44 @@ package ru.yandex.yamblz.loader;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.util.Log;
 
 import java.util.List;
 
 public class CollageStrategyImpl implements CollageStrategy {
-    private static final int NUMBER_OF_COLUMNS = 2;
-    private static final int IMAGE_SIZE = 300; // Размер изображения в самом коллаже. Все входящие картинки обрезаются (из левого угла) до квадрата
-    private static final int COLLAGE_WIDTH = IMAGE_SIZE * NUMBER_OF_COLUMNS;
+    private static final int COLLAGE_SIZE = 1500;
 
     @Override
     public Bitmap create(List<Bitmap> bitmaps) {
-        int numberOfRows;
-        if (bitmaps.size() >= 3) {
-            numberOfRows = bitmaps.size() / NUMBER_OF_COLUMNS; // 10 / 3 = 3, одной картинки не будет, задо красивенько
-        } else {
-            numberOfRows = 1;
+        if (bitmaps == null || bitmaps.size() == 0) {
+            return null;
         }
 
-        Bitmap collage = Bitmap.createBitmap(COLLAGE_WIDTH, IMAGE_SIZE * numberOfRows, Bitmap.Config.ARGB_8888);
+        int pictureSize = (int) (COLLAGE_SIZE / Math.floor(Math.sqrt(bitmaps.size())));
+        int realCollageSize = (int) (pictureSize * Math.ceil(Math.sqrt(bitmaps.size())));
+
+        Bitmap collage = Bitmap.createBitmap(realCollageSize, realCollageSize, Bitmap.Config.ARGB_4444);
 
         Canvas canvas = new Canvas(collage);
         int top = 0, left = 0;
         for (Bitmap currentBitmap : bitmaps) {
-            if (left >= COLLAGE_WIDTH) {
-                top += IMAGE_SIZE;
+            if (left >= realCollageSize) {
                 left = 0;
+                top += pictureSize;
             }
-            int size;
 
-            if (currentBitmap.getWidth() < currentBitmap.getHeight()) { // Обрезаем картинку
-                size = currentBitmap.getWidth();
+            int currentBitmapSize;
+            if (currentBitmap.getHeight() < currentBitmap.getWidth()) {
+                currentBitmapSize = currentBitmap.getHeight();
             } else {
-                size = currentBitmap.getHeight();
+                currentBitmapSize = currentBitmap.getWidth();
             }
-            canvas.drawBitmap(currentBitmap, new Rect(0, 0, size, size), new Rect(left, top, left + IMAGE_SIZE, top + IMAGE_SIZE), null);
-            currentBitmap.recycle();
-            left += IMAGE_SIZE;
-            if (IMAGE_SIZE * numberOfRows < top) {
-                break;
-            }
-        }
-        Log.d("makeCollage", "BitmapsListHash=" + bitmaps.hashCode());
-        canvas.save();
 
+            canvas.drawBitmap(currentBitmap, new Rect(0, 0, currentBitmapSize, currentBitmapSize),
+                    new Rect(left, top, left + pictureSize, top + pictureSize), null);
+            left += pictureSize;
+        }
+
+        canvas.save();
         return collage;
     }
 }

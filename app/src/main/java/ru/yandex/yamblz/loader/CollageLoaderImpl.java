@@ -20,6 +20,7 @@ import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 public class CollageLoaderImpl implements CollageLoader {
@@ -48,20 +49,33 @@ public class CollageLoaderImpl implements CollageLoader {
 
         List<Bitmap> bitmapList = new ArrayList<>();
 
-        Action0 action0 = () -> { // В целом можно это делать не в onCompleted, а в onNext, тогда будет видно, как загружаются картинки
-            Bitmap collage = collageStrategy.create(bitmapList);
-            ImageView collageView = imageViewRef.get();
-            if (collageView != null) {
-                collageView.setImageBitmap(collage);
+        Action1<? super Bitmap> action1 = new Action1<Bitmap>() {
+            private List<Bitmap> mBitmaps = new ArrayList<>();
+
+            @Override
+            public void call(Bitmap bitmap) {
+                mBitmaps.add(bitmap);
+                //Math.round(Math.sqrt(mBitmaps.size())) - Math.sqrt(mBitmaps.size()) == 0
+                if (Math.round(Math.sqrt(mBitmaps.size())) - Math.sqrt(mBitmaps.size()) == 0) {
+                    Bitmap collage = collageStrategy.create(mBitmaps);
+                    ImageView collageView = imageViewRef.get();
+                    if (collageView != null) {
+                        collageView.setImageBitmap(collage);
+                    }
+                }
+            }
+        };
+
+        Action0 action0 = new Action0() {
+            @Override
+            public void call() {
+
             }
         };
 
         Subscription newSubscription;
-        if (urls.size() > 6) { // Можно убрать, тогда коллажи станут ну очень длинными
-            newSubscription = makeCollage(urls.subList(0, 6), bitmapList, action0);
-        } else {
-            newSubscription = makeCollage(urls, bitmapList, action0);
-        }
+        newSubscription = makeCollage(urls, bitmapList, action0, action1);
+
 
         mSubscriptionMap.put(imageViewId, newSubscription);
     }
@@ -69,14 +83,14 @@ public class CollageLoaderImpl implements CollageLoader {
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget, CollageStrategy collageStrategy) {
         List<Bitmap> bitmapList = new ArrayList<>();
-        makeCollage(urls, bitmapList, () -> imageTarget.onLoadBitmap(collageStrategy.create(bitmapList)));
+        //makeCollage(urls, bitmapList, () -> imageTarget.onLoadBitmap(collageStrategy.create(bitmapList)));
     }
 
     // Как-то костыльно без rx everywhere, но не переписывать же интерфейсы?
-    private Subscription makeCollage(List<String> urls, List<Bitmap> bitmapList, @NonNull Action0 onCompleted) {
+    private Subscription makeCollage(List<String> urls, List<Bitmap> bitmapList, @NonNull Action0 onCompleted, Action1 onNext) {
         return collageObservable(urls)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(bitmapList::add, throwable -> {
+                .subscribe(onNext, (e) -> {
                 }, onCompleted);
     }
 
