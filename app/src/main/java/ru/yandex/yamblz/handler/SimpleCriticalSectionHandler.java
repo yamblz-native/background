@@ -81,7 +81,12 @@ public class SimpleCriticalSectionHandler implements CriticalSectionsHandler
     @Override
     public void removeLowPriorityTask(Task task)
     {
-        tasks.remove(task);
+        Iterator<Task> iterator = tasks.iterator();
+        while (iterator.hasNext())
+        {
+            if (iterator.next().equals(task)) iterator.remove();
+            break;
+        }
     }
 
     @Override

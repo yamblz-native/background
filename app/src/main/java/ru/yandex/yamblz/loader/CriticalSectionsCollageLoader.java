@@ -59,27 +59,31 @@ public class CriticalSectionsCollageLoader implements CollageLoader
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget, CollageStrategy strategy)
     {
-        int threadsCount = urls.size() < DEF_THREAD_COUNT ? 1 : DEF_THREAD_COUNT;
-        CountDownLatch cdl = new CountDownLatch(threadsCount);
-        List<Bitmap> bitmaps = Collections.synchronizedList(new ArrayList<>());
-        ExecutorService downloadExecutor = Executors.newFixedThreadPool(threadsCount);
-
-        clearDuplicate(imageTarget.getImageView());
-        imageTargets.add(imageTarget);
-        executors.push(downloadExecutor);
-
-        for (int i = 0; i < threadsCount; i++)
+        if (urls.size() != 0)
         {
-            ImageDownloader imgDownloader = new ImageDownloader(urls.get(i), bitmaps, cdl);
-            downloadExecutor.execute(imgDownloader);
+            int threadsCount = urls.size() < DEF_THREAD_COUNT ? 1 : DEF_THREAD_COUNT;
+
+            CountDownLatch cdl = new CountDownLatch(threadsCount);
+            List<Bitmap> bitmaps = Collections.synchronizedList(new ArrayList<>());
+            ExecutorService downloadExecutor = Executors.newFixedThreadPool(threadsCount);
+
+            clearDuplicate(imageTarget.getImageView());
+            imageTargets.add(imageTarget);
+            executors.push(downloadExecutor);
+
+            for (int i = 0; i < threadsCount; i++)
+            {
+                ImageDownloader imgDownloader = new ImageDownloader(urls.get(i), bitmaps, cdl);
+                downloadExecutor.execute(imgDownloader);
+            }
+
+            CollageConsumer collageConsumer = new CollageConsumer(
+                    bitmap -> postResult(imageTarget, bitmap),
+                    bitmaps, strategy, cdl);
+
+            downloadExecutor.execute(collageConsumer);
+            downloadExecutor.shutdown();
         }
-
-        CollageConsumer collageConsumer = new CollageConsumer(
-                bitmap -> postResult(imageTarget, bitmap),
-                bitmaps, strategy, cdl);
-
-        downloadExecutor.execute(collageConsumer);
-        downloadExecutor.shutdown();
     }
 
     private void postResult(ImageTarget imageTarget, Bitmap bitmap)
