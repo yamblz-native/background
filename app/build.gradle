@@ -91,6 +91,7 @@ dependencies {
     compile libraries.rxandroid
 
     compile libraries.gson
+    compile libraries.okhttp
     compile libraries.picasso
 
     compile libraries.supportAnnotations

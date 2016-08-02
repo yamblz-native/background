@@ -111,12 +111,12 @@ public class CollageLoaderSquare implements CollageLoader {
                     }
                 })
                 .filter(list -> Math.round(Math.sqrt(list.size())) == Math.sqrt(list.size()))        // Будем делать коллаж каждые 1, 4, 9, 25, 36... картинок, дабы было квадратненько
-                .debounce(1, TimeUnit.SECONDS)
+                .sample(1, TimeUnit.SECONDS)
                 .map(list -> list.subList(0, (int) Math.pow(Math.floor(Math.sqrt(list.size())), 2))) // См. ниже
                 .flatMap(list -> Observable.just(collageStrategy.create(list)))                      // Собсно делаем коллаж
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(onCreateCollage, Throwable::printStackTrace, clearBitmaps);               // Обработка ошибок напргяает
-        // Проблема с debounce (да и вообще со всем кодом выше) в том, что он не даёт Observable отправлять список битмапов чаще, чем раз в секунду
+        // Проблема с sample (да и вообще со всем кодом выше) в том, что он не даёт Observable отправлять список битмапов чаще, чем раз в секунду
         // Однако до него есть оператор flatMap, который всё время что-то добавляет в этот список
         // В итоге коллаж делается не из 1, 4, 9... картинок, а из сколько выйдет
         // Поэтому приходится брать корень из list.size(), округлять его вниз и возводить в квадрат
