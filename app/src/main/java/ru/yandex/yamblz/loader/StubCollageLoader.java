@@ -120,7 +120,7 @@ class StubCollageLoader implements CollageLoader {
 
             private Bitmap getBitmapFromURL(String src) {
                 try {
-                    System.out.print(Thread.currentThread());
+                   // Log.d("LoadBitmapTask",Thread.currentThread().toString());
                     URL url = new URL(src);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setDoInput(true);
