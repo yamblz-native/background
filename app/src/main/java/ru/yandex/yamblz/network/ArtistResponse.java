@@ -13,10 +13,28 @@ import java.util.List;
 public class ArtistResponse {
     @SerializedName("id")
     @Expose
-    public int id;
+    private int id;
     @SerializedName("name")
     @Expose
-    public String name;
+    private String name;
+    @SerializedName("genres")
+    @Expose
+    private List<String> genres = new ArrayList<String>();
+    @SerializedName("tracks")
+    @Expose
+    private int tracks;
+    @SerializedName("albums")
+    @Expose
+    private int albums;
+    @SerializedName("link")
+    @Expose
+    private String link;
+    @SerializedName("description")
+    @Expose
+    private String description;
+    @SerializedName("cover")
+    @Expose
+    private Cover cover;
 
     public List<String> getGenres() {
         return genres;
@@ -26,32 +44,13 @@ public class ArtistResponse {
         return cover;
     }
 
-    @SerializedName("genres")
-    @Expose
-    public List<String> genres = new ArrayList<String>();
-    @SerializedName("tracks")
-    @Expose
-    public int tracks;
-    @SerializedName("albums")
-    @Expose
-    public int albums;
-    @SerializedName("link")
-    @Expose
-    public String link;
-    @SerializedName("description")
-    @Expose
-    public String description;
-    @SerializedName("cover")
-    @Expose
-    public Cover cover;
-
     public class Cover {
         @SerializedName("small")
         @Expose
-        public String small;
+        private String small;
         @SerializedName("big")
         @Expose
-        public String big;
+        private String big;
 
         public String getSmall() {
             return small;
