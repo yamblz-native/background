@@ -40,7 +40,6 @@ public class ContentFragment extends BaseFragment {
 
     private FirstRecyclerAdapter adapter;
     private JsonLoad jsonLoad;
-    private CollageLoader collageLoader;
 
     @NonNull
     @Override
@@ -50,7 +49,7 @@ public class ContentFragment extends BaseFragment {
         ButterKnife.bind(this, view);
 
         rv.setLayoutManager(new LinearLayoutManager(getActivity()));
-        collageLoader = new StubCollageLoader(new CollageOneOrFour());
+        CollageLoader collageLoader = new StubCollageLoader(new CollageOneOrFour());
         adapter = new FirstRecyclerAdapter(null, collageLoader);
         rv.setAdapter(adapter);
         jsonLoad = new JsonLoad();
@@ -66,7 +65,7 @@ public class ContentFragment extends BaseFragment {
     private void createObservable() {
 
         Observable.fromCallable(() -> jsonLoad.loadSingers())
-                        .subscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.io())
                 .map(this::getGenres)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::displaySingers, Actions.empty());
@@ -78,7 +77,7 @@ public class ContentFragment extends BaseFragment {
         rv.setAdapter(adapter);
     }
 
-    private Map<String, Stream<Singer>> getGenres (List<Singer> singers){
+    private Map<String, Stream<Singer>> getGenres(List<Singer> singers) {
         Stream<String> genres = Stream.stream(singers).flatMap(Singer::getGenres);
         return genres.collect(toSolidMap(it -> it, it -> Stream.stream(singers).
                 filter(value -> value.getGenres().contains(it)))).asMap();

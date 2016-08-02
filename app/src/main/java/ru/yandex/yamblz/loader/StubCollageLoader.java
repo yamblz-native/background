@@ -43,11 +43,9 @@ public class StubCollageLoader implements CollageLoader {
     }
 
     private void createObservable(List<String> urls, ImageTarget target) {
-        List<Bitmap> collage = new ArrayList<>();
-
         Observable.from(urls)
                 .take(4)
-                .flatMap(it -> Observable.fromCallable(()-> getBitmapFromURL(it))
+                .flatMap(it -> Observable.fromCallable(() -> getBitmapFromURL(it))
                         .subscribeOn(SHED_4))
                 .toList()
                 .observeOn(Schedulers.computation())

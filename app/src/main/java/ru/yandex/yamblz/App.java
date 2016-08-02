@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import ru.yandex.yamblz.developer_settings.DevMetricsProxy;
 import ru.yandex.yamblz.developer_settings.DeveloperSettingsModel;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.StubCriticalSectionsHandler;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.loader.CollageOneOrFour;
 import ru.yandex.yamblz.loader.StubCollageLoader;
@@ -37,7 +38,7 @@ public class App extends Application {
         }
 
         CollageLoaderManager.init(new StubCollageLoader(new CollageOneOrFour()));
-        CriticalSectionsManager.init(null); // add implementation
+        CriticalSectionsManager.init(new StubCriticalSectionsHandler());
     }
 
     @NonNull
