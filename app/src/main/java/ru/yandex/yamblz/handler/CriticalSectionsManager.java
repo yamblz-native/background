@@ -1,7 +1,6 @@
 package ru.yandex.yamblz.handler;
 
 import android.os.Handler;
-import android.os.Looper;
 
 import static android.os.Looper.getMainLooper;
 

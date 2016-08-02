@@ -1,5 +1,8 @@
 package ru.yandex.yamblz.ui.fragments;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,6 +43,15 @@ public class ContentFragment extends BaseFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if(isOnline()){
+            initRecycler();
+        }else{
+            Toast.makeText(getContext(),"No internet connection!", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    private void initRecycler() {
         ObjectMapper mapper = new ObjectMapper();
         CriticalSectionsHandler criticalSectionsHandler = CriticalSectionsManager.getHandler();
         try {
@@ -59,9 +72,16 @@ public class ContentFragment extends BaseFragment {
                     super.onScrollStateChanged(recyclerView, newState);
                 }
             });
-
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }

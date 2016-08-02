@@ -3,28 +3,15 @@ package ru.yandex.yamblz.loader;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-import java.util.Collections;
 import java.util.List;
-
-import static java.util.Collections.*;
 
 public class DefaultCollageStrategy implements CollageStrategy {
     private final static int RESULT_MAP_SIDE = 400;
 
     @Override
     public Bitmap create(List<Bitmap> bitmaps) {
-
-
-        int bitmapsCount = bitmaps.size();
         int bitmapsToDraw;
-        int mapsInRow;
-        if (bitmapsCount >= 9) {
-            mapsInRow = 3;
-        } else if (bitmapsCount >= 4) {
-            mapsInRow = 2;
-        } else {
-            mapsInRow = 1;
-        }
+        int mapsInRow = getBitmapsInRow(bitmaps.size());
 
         bitmapsToDraw = mapsInRow * mapsInRow;
 
@@ -51,5 +38,17 @@ public class DefaultCollageStrategy implements CollageStrategy {
         }
 
         return resultBitmap;
+    }
+
+    private int getBitmapsInRow(int size) {
+        int mapsInRow;
+        if (size >= 9) {
+            mapsInRow = 3;
+        } else if (size >= 4) {
+            mapsInRow = 2;
+        } else {
+            mapsInRow = 1;
+        }
+        return mapsInRow;
     }
 }

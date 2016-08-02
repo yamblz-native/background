@@ -1,21 +1,18 @@
 package ru.yandex.yamblz.loader;
 
+import android.graphics.Bitmap;
 import android.widget.ImageView;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
 
+import rx.Observable;
 import rx.Subscription;
 
 public interface CollageLoader {
 
-    Subscription loadCollage(List<String> urls, WeakReference<ImageView> imageView);
+    Observable<Bitmap> loadCollage(List<String> urls);
 
-    Subscription loadCollage(List<String> urls, ImageTarget imageTarget);
-
-    Subscription loadCollage(List<String> urls, WeakReference<ImageView> imageView, CollageStrategy collageStrategy);
-
-    Subscription loadCollage(List<String> urls, ImageTarget imageTarget, CollageStrategy collageStrategy);
-
+    Observable<Bitmap> loadCollage(List<String> urls, CollageStrategy collageStrategy);
 
 }

@@ -1,10 +1,16 @@
 package ru.yandex.yamblz.ui.adapters;
 
+import android.graphics.Bitmap;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 
@@ -23,6 +29,7 @@ import rx.Observable;
 import rx.Subscription;
 
 import static java.util.Collections.shuffle;
+import static ru.yandex.yamblz.utils.StringUtils.getGenres;
 
 
 public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenreViewHolder> {
@@ -32,7 +39,7 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenreViewH
     private HashMap<ImageView, Task> tasksMap = new HashMap<>();
     private HashMap<ImageView, Subscription> subscriptionsMap = new HashMap<>();
     private List<Artist> artists;
-
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public GenresAdapter(List<Artist> artists) {
         this.artists = artists;
@@ -50,23 +57,43 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenreViewH
     @Override
     public void onBindViewHolder(GenreViewHolder holder, int position) {
         Artist currentArtist = artists.get(position);
-        holder.tvGenreName.setText(currentArtist.getName());
+        List<String> genres = currentArtist.getGenres();
+
+        holder.tvArtistName.setText(currentArtist.getName());
+        holder.tvGenres.setText(getGenres(genres));
         holder.ivGenreCollage.setImageBitmap(null);
+        holder.pbLoading.setVisibility(View.GONE);
 
         unsubscribe(holder.ivGenreCollage);
 
         Observable.from(artists)
-                .filter(artist -> filterGenres(artist, currentArtist.getGenres()))
+                .filter(artist -> filterGenres(artist, genres))
                 .map(artist1 -> artist1.getCover().getSmall())
                 .toList()
                 .map(this::toShuffledSubList)
-                .subscribe(it -> {
-                    Task task = () -> subscriptionsMap.put(holder.ivGenreCollage,
-                            loader.loadCollage(it, new WeakReference<>(holder.ivGenreCollage)));
+                .subscribe(it -> startDownload(it, holder),
+                        Throwable::printStackTrace);
+    }
 
-                    tasksMap.put(holder.ivGenreCollage, task);
-                    criticalSectionsHandler.postLowPriorityTask(task);
-                });
+    @Override
+    public int getItemCount() {
+        return artists.size();
+    }
+
+
+    public static class GenreViewHolder extends RecyclerView.ViewHolder {
+        ImageView ivGenreCollage;
+        TextView tvArtistName;
+        TextView tvGenres;
+        ProgressBar pbLoading;
+
+        public GenreViewHolder(View itemView) {
+            super(itemView);
+            ivGenreCollage = (ImageView) itemView.findViewById(R.id.ivGenreCollage);
+            tvArtistName = (TextView) itemView.findViewById(R.id.tvArtistName);
+            tvGenres = (TextView) itemView.findViewById(R.id.tvGenres);
+            pbLoading = (ProgressBar) itemView.findViewById(R.id.pbLoading);
+        }
     }
 
     private List<String> toShuffledSubList(List<String> links) {
@@ -83,26 +110,29 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenreViewH
         return links.subList(0, lastIndexForSublist);
     }
 
-    @Override
-    public void onViewRecycled(GenreViewHolder holder) {
-        super.onViewRecycled(holder);
-        unsubscribe(holder.ivGenreCollage);
+    private void startDownload(List<String> links, GenreViewHolder holder) {
+        ImageView targetView = holder.ivGenreCollage;
+        Task task = () -> {
+            holder.pbLoading.setVisibility(View.VISIBLE);
+            Subscription subscription =
+                    loader.loadCollage(links)
+                            .subscribe(bitmap -> showBitmapOnHolder(bitmap, holder));
+            subscriptionsMap.put(targetView, subscription);
+        };
+        tasksMap.put(targetView, task);
+        criticalSectionsHandler.postLowPriorityTask(task);
     }
 
-    @Override
-    public int getItemCount() {
-        return artists.size();
-    }
+    private void showBitmapOnHolder(Bitmap bitmap, GenreViewHolder holder) {
+        mainHandler.post(() -> {
+            holder.pbLoading.setVisibility(View.INVISIBLE);
+            holder.ivGenreCollage.setImageBitmap(bitmap);
 
-    public static class GenreViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivGenreCollage;
-        TextView tvGenreName;
-
-        public GenreViewHolder(View itemView) {
-            super(itemView);
-            ivGenreCollage = (ImageView) itemView.findViewById(R.id.ivGenreCollage);
-            tvGenreName = (TextView) itemView.findViewById(R.id.tvGenreName);
-        }
+            Animation animation = new AlphaAnimation(0, 1);
+            animation.setDuration(500);
+            holder.ivGenreCollage.setAnimation(animation);
+            animation.start();
+        });
     }
 
     private boolean filterGenres(Artist artist, List<String> targetGenres) {

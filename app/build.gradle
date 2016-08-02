@@ -12,7 +12,7 @@ android {
     buildToolsVersion versions.buildTools
 
     defaultConfig {
-        applicationId 'ru.yandex.yamblz'
+        applicationId 'ru.yandex.yamblz.background'
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
         versionCode versions.code // Notice that you may want to use BUILD_NUMBER from CI in real project with own CI.
@@ -109,7 +109,6 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-databind:2.4.1'
     compile 'com.android.support:recyclerview-v7:23.3.0'
     compile 'com.android.support:appcompat-v7:23.3.0'
-    compile 'com.android.volley:volley:1.0.0'
     compile 'io.reactivex:rxjava:1.1.6'
     compile 'io.reactivex:rxandroid:1.2.1'
 
