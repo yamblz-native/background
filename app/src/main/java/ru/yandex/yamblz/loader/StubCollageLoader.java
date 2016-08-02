@@ -17,77 +17,49 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 class StubCollageLoader implements CollageLoader {
-    private Map<String, LoadBitmapsCallback> callbacksMap;
-    private Map<String, CreateCollageTask> collageTaskMap;
+    //для одного ImageTarget возможна только одна задача на загрузку битмапов
+    private Map<ImageTarget, LoadBitmapsCallback> callbacksMap;
     private Executor collageExecutor;
     StubCollageLoader() {
         callbacksMap = new HashMap<>();
-        collageTaskMap = new HashMap<>();
         collageExecutor=new ScheduledThreadPoolExecutor(5);
     }
 
     //загрузить колаж из списка и поставить его в ImageView
     //взять defaultCollageStrategy
     @Override
-    public void loadCollage(List<String> urls, ImageView imageView, String key) {
-        loadCollage(urls, new DefaultImageTarget(imageView), key);
+    public void loadCollage(List<String> urls, ImageView imageView) {
+        loadCollage(urls, new DefaultImageTarget(imageView));
     }
 
     //загрузить
     @Override
-    public void loadCollage(List<String> urls, ImageTarget imageTarget, String key) {
-        loadCollage(urls, imageTarget,new DefaultCollageStrategy(), key);
+    public void loadCollage(List<String> urls, ImageTarget imageTarget) {
+        loadCollage(urls, imageTarget,new DefaultCollageStrategy());
     }
 
     @Override
     public void loadCollage(List<String> urls, ImageView imageView,
-                            CollageStrategy collageStrategy, String key) {
-        loadCollage(urls, new DefaultImageTarget(imageView),collageStrategy, key);
+                            CollageStrategy collageStrategy) {
+        loadCollage(urls, new DefaultImageTarget(imageView),collageStrategy);
     }
 
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget,
-                            CollageStrategy collageStrategy, String key) {
-        cancel(key);
+                            CollageStrategy collageStrategy) {
+        if(callbacksMap.containsKey(imageTarget)){
+            LoadBitmapsCallback callback=callbacksMap.get(imageTarget);
+            callback.cancel();
+            callbacksMap.remove(imageTarget);
+        }
         LoadBitmapsCallback loadBitmapsCallback = new LoadBitmapsCallback(value -> {
-            callbacksMap.remove(key);
-            CreateCollageTask execute = new CreateCollageTask(value, imageTarget, collageStrategy){
-                @Override
-                protected void onPostExecute(Bitmap bitmap) {
-                    super.onPostExecute(bitmap);
-                    collageTaskMap.remove(key);
-                }
-            };
+            callbacksMap.remove(imageTarget);
+            CreateCollageTask execute = new CreateCollageTask(value, imageTarget, collageStrategy);
             execute.executeOnExecutor(collageExecutor);
-            collageTaskMap.put(key,execute);
         });
-        callbacksMap.put(key, loadBitmapsCallback);
+        callbacksMap.put(imageTarget,loadBitmapsCallback);
         loadBitmapsCallback.load(urls);
 
-    }
-
-    @Override
-    public void cancel(String key) {
-        if (callbacksMap.containsKey(key)) {
-            LoadBitmapsCallback loadBitmapsCallback = callbacksMap.get(key);
-            loadBitmapsCallback.cancel();
-        }
-        if(collageTaskMap.containsKey(key)){
-            CreateCollageTask createCollageTask = collageTaskMap.get(key);
-            createCollageTask.cancel(true);
-        }
-    }
-
-    @Override
-    public void cancelAll() {
-        for(LoadBitmapsCallback loadBitmapsCallback: callbacksMap.values()){
-            loadBitmapsCallback.cancel();
-        }
-        for(CreateCollageTask createCollageTask:collageTaskMap.values()){
-            createCollageTask.cancel(true);
-        }
-        callbacksMap.clear();
-        collageTaskMap.clear();
     }
 
     private class LoadBitmapsCallback {

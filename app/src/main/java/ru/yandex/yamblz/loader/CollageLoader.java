@@ -6,17 +6,14 @@ import java.util.List;
 
 public interface CollageLoader {
 
-    void loadCollage(List<String> urls, ImageView imageView,String key);
+    void loadCollage(List<String> urls, ImageView imageView);
 
-    void loadCollage(List<String> urls, ImageTarget imageTarget,String key);
+    void loadCollage(List<String> urls, ImageTarget imageTarget);
 
-    void loadCollage(List<String> urls, ImageView imageView, CollageStrategy collageStrategy,String key);
+    void loadCollage(List<String> urls, ImageView imageView, CollageStrategy collageStrategy);
 
-    void loadCollage(List<String> urls, ImageTarget imageTarget, CollageStrategy collageStrategy,String key);
+    void loadCollage(List<String> urls, ImageTarget imageTarget, CollageStrategy collageStrategy);
 
-    void cancel(String key);
-
-    void cancelAll();
 
 
 

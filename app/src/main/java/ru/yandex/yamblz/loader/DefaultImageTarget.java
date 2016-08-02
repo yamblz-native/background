@@ -11,7 +11,6 @@ import ru.yandex.yamblz.handler.Task;
 
 public class DefaultImageTarget implements ImageTarget {
     private WeakReference<ImageView> imageView;
-    Task prevTask;
 
     public DefaultImageTarget(ImageView imageView) {
         this.imageView = new WeakReference<>(imageView);
@@ -19,15 +18,19 @@ public class DefaultImageTarget implements ImageTarget {
 
     @Override
     public void onLoadBitmap(Bitmap bitmap) {
-        if (prevTask != null) {
-            CriticalSectionsManager.getHandler().removeLowPriorityTask(prevTask);
-        }
-        prevTask = () -> {
-            if (imageView.get() != null) {
-                imageView.get().setImageBitmap(bitmap);
+        if(imageView.get()!=null){
+            if(imageView.get().getTag()!=null){
+                Task prevTask= (Task) imageView.get().getTag();
+                CriticalSectionsManager.getHandler().removeLowPriorityTask(prevTask);
             }
-        };
-        CriticalSectionsManager.getHandler().postLowPriorityTask(prevTask);
+            Task task = () -> {
+                if (imageView.get() != null) {
+                    imageView.get().setImageBitmap(bitmap);
+                }
+            };
+            imageView.get().setTag(task);
+            CriticalSectionsManager.getHandler().postLowPriorityTask(task);
+        }
     }
 
 }
