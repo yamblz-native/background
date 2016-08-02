@@ -3,18 +3,32 @@ package ru.yandex.yamblz.loader;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
+import java.util.Collections;
 import java.util.List;
 
+import static java.util.Collections.*;
+
 public class DefaultCollageStrategy implements CollageStrategy {
-    private final static int PIECE_SIDE = 300;
-    private final static int PIECES_IN_A_ROW = 2;
+    private final static int RESULT_MAP_SIDE = 400;
 
     @Override
     public Bitmap create(List<Bitmap> bitmaps) {
 
+
         int bitmapsCount = bitmaps.size();
-        Bitmap resultBitmap = Bitmap.createBitmap(PIECE_SIDE * PIECES_IN_A_ROW,
-                PIECE_SIDE * (bitmapsCount / PIECES_IN_A_ROW + 1),
+        int bitmapsToDraw;
+        int mapsInRow;
+        if (bitmapsCount >= 9) {
+            mapsInRow = 3;
+        } else if (bitmapsCount >= 4) {
+            mapsInRow = 2;
+        } else {
+            mapsInRow = 1;
+        }
+
+        bitmapsToDraw = mapsInRow * mapsInRow;
+
+        Bitmap resultBitmap = Bitmap.createBitmap(RESULT_MAP_SIDE, RESULT_MAP_SIDE,
                 Bitmap.Config.ARGB_8888);
 
         Canvas canvas = new Canvas(resultBitmap);
@@ -22,17 +36,20 @@ public class DefaultCollageStrategy implements CollageStrategy {
         int offsetX = 0;
         int offsetY = 0;
         int rowCounter = 0;
-        for (int i = 0; i < bitmapsCount; i++) {
-            canvas.drawBitmap(bitmaps.get(i), offsetX, offsetY, null);
+        int pieceSide = RESULT_MAP_SIDE / mapsInRow;
+        for (int i = 0; i < bitmapsToDraw; i++) {
+            Bitmap toDraw = Bitmap.createScaledBitmap(bitmaps.get(i), pieceSide, pieceSide, false);
+            canvas.drawBitmap(toDraw, offsetX, offsetY, null);
             rowCounter++;
-            if (rowCounter == PIECES_IN_A_ROW) {
-                offsetY += PIECE_SIDE;
+            if (rowCounter == mapsInRow) {
+                offsetY += pieceSide;
                 offsetX = 0;
                 rowCounter = 0;
             } else {
-                offsetX += PIECE_SIDE;
+                offsetX += pieceSide;
             }
         }
+
         return resultBitmap;
     }
 }
