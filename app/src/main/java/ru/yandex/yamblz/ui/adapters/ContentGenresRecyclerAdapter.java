@@ -14,6 +14,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSectionsHandler;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.model.Genre;
 
@@ -22,12 +24,14 @@ public class ContentGenresRecyclerAdapter extends RecyclerView.Adapter<ContentGe
     private LayoutInflater mLayoutInflater;
     private Drawable mNoCollage;
     private CollageLoader mCollageLoader;
+    private CriticalSectionsHandler mHandler;
 
     public ContentGenresRecyclerAdapter(List<Genre> genreList, LayoutInflater layoutInflater, Drawable drawable, CollageLoader collageLoader) {
         mGenreList = genreList;
         mLayoutInflater = layoutInflater;
         mNoCollage = drawable;
         mCollageLoader = collageLoader;
+        mHandler = CriticalSectionsManager.getHandler();
     }
 
     @Override
@@ -40,7 +44,6 @@ public class ContentGenresRecyclerAdapter extends RecyclerView.Adapter<ContentGe
     public void onBindViewHolder(GenreHolder holder, int position) {
         holder.bind(position);
     }
-
 
     @Override
     public int getItemCount() {
@@ -66,7 +69,7 @@ public class ContentGenresRecyclerAdapter extends RecyclerView.Adapter<ContentGe
 
         public void bind(int position) {
             mCollageImageView.setImageDrawable(mNoCollage);
-            mCollageLoader.loadCollage(mGenreList.get(position).getSmallCoverUrlList(), mCollageImageView);
+            mHandler.postLowPriorityTask(() -> mCollageLoader.loadCollage(mGenreList.get(position).getSmallCoverUrlList(), mCollageImageView));
             mText.setText(mGenreList.get(position).getName());
             Log.d("BIND", "Hash=" + hashCode() + "; Pos=" + position + "; Genre=" + mGenreList.get(position).getName());
         }
