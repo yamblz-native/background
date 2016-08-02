@@ -3,6 +3,7 @@ package ru.yandex.yamblz.handler;
 import android.os.Handler;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -15,14 +16,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SimpleCriticalSectionHandler implements CriticalSectionsHandler
 {
-    private final ConcurrentHashMap<Integer, List<Task>> queue;
+    private final List<Task> tasks;
     private final Set<Integer> sections;
     private final Handler mainHandler;
 
     public SimpleCriticalSectionHandler(Handler handler)
     {
         mainHandler = handler;
-        queue = new ConcurrentHashMap<>();
+        tasks = Collections.synchronizedList(new ArrayList<>());
         sections = new TreeSet<>();
     }
 
@@ -30,36 +31,19 @@ public class SimpleCriticalSectionHandler implements CriticalSectionsHandler
     public void startSection(int id)
     {
         sections.add(id);
-        Iterator<Entry<Integer, List<Task>>> entryIterator = queue.entrySet().iterator();
-
-        while (entryIterator.hasNext())
-        {
-            Entry<Integer, List<Task>> entry = entryIterator.next();
-            if (entry.getKey().equals(id))
-            {
-                entryIterator.remove();
-            }
-        }
     }
 
     @Override
     public void stopSection(int id)
     {
         sections.remove(id);
-        Iterator<Entry<Integer, List<Task>>> entryIterator = queue.entrySet().iterator();
 
-        while (entryIterator.hasNext())
+        for (Task task : tasks)
         {
-            Entry<Integer, List<Task>> entry = entryIterator.next();
-            if (entry.getKey().equals(id))
-            {
-                for (Task task : entry.getValue())
-                {
-                    task.run();
-                }
-                entryIterator.remove();
-            }
+            mainHandler.post(task::run);
         }
+
+        removeLowPriorityTasks();
     }
 
     @Override
@@ -67,37 +51,24 @@ public class SimpleCriticalSectionHandler implements CriticalSectionsHandler
     {
         sections.clear();
 
-        for (Entry<Integer, List<Task>> entry : queue.entrySet())
+        for (Task task : tasks)
         {
-            for (Task task : entry.getValue())
-            {
-                task.run();
-            }
+            mainHandler.post(task::run);
         }
 
-        queue.clear();
+        removeLowPriorityTasks();
     }
 
     @Override
     public void postLowPriorityTask(Task task)
     {
-        if (sections.isEmpty() || !sections.contains(task.getId()))
+        if (sections.isEmpty())
         {
             mainHandler.post(task::run);
         }
         else
         {
-            int taskId = task.getId();
-            if (queue.containsKey(taskId))
-            {
-                queue.get(taskId).add(task);
-            }
-            else
-            {
-                List<Task> tasks = new ArrayList<>();
-                tasks.add(task);
-                queue.put(taskId, tasks);
-            }
+            tasks.add(task);
         }
     }
 
@@ -110,12 +81,12 @@ public class SimpleCriticalSectionHandler implements CriticalSectionsHandler
     @Override
     public void removeLowPriorityTask(Task task)
     {
-        queue.get(task.getId()).remove(task);
+        tasks.remove(task);
     }
 
     @Override
     public void removeLowPriorityTasks()
     {
-        queue.clear();
+        tasks.clear();
     }
 }
