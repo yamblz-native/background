@@ -1,4 +1,4 @@
-package ru.yandex.yamblz.loader;
+package ru.yandex.yamblz.loader.square;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -6,7 +6,9 @@ import android.graphics.Rect;
 
 import java.util.List;
 
-public class CollageStrategyImpl implements CollageStrategy {
+import ru.yandex.yamblz.loader.CollageStrategy;
+
+public class CollageStrategySquare implements CollageStrategy {
     private static final int COLLAGE_SIZE = 1500;
 
     @Override

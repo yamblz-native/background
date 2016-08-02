@@ -21,7 +21,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
-import ru.yandex.yamblz.loader.CollageLoaderImpl;
+import ru.yandex.yamblz.loader.square.CollageLoaderSquare;
 import ru.yandex.yamblz.model.ArtistFetcher;
 import ru.yandex.yamblz.model.ArtistLab;
 import ru.yandex.yamblz.model.Genre;
@@ -61,7 +61,7 @@ public class ContentFragment extends BaseFragment {
                 Context context = getContext();
                 Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_album_black_240dp);
                 mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
-                mRecyclerView.setAdapter(new ContentGenresRecyclerAdapter(genreList, inflater, drawable, new CollageLoaderImpl(Picasso.with(context.getApplicationContext()))));
+                mRecyclerView.setAdapter(new ContentGenresRecyclerAdapter(genreList, inflater, drawable, new CollageLoaderSquare(Picasso.with(context.getApplicationContext()))));
             }
         }.execute();
 
