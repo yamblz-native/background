@@ -44,7 +44,7 @@ class SimpleCollageStrategy implements CollageStrategy {
                 comboImage.drawBitmap(bitmaps.get(0), 0f, 0f, null);
                 comboImage.drawBitmap(bitmaps.get(1), 0f, height / 2, null);
                 comboImage.drawBitmap(bitmaps.get(2), width / 2, 0f, null);
-                comboImage.drawBitmap(bitmaps.get(3), width / 2, bitmaps.get(1).getHeight(), null);
+                comboImage.drawBitmap(bitmaps.get(3), width / 2, height / 2, null);
                 break;
         }
 

@@ -22,6 +22,7 @@ import ru.yandex.yamblz.data.ArtistsApi;
 import ru.yandex.yamblz.data.Genre;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.loader.ParallelCollageLoader;
+import timber.log.Timber;
 
 public class ContentFragment extends BaseFragment {
     @BindView(R.id.main_recycler)
@@ -68,6 +69,12 @@ public class ContentFragment extends BaseFragment {
         recycler.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new GenreAdapter();
         recycler.setAdapter(adapter);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        adapter.reset();
     }
 
     @Override

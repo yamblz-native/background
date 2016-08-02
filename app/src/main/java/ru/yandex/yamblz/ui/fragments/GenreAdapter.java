@@ -1,6 +1,5 @@
 package ru.yandex.yamblz.ui.fragments;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,7 +16,7 @@ import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.data.Genre;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
-import ru.yandex.yamblz.loader.ParallelCollageLoader;
+import timber.log.Timber;
 
 import static java.lang.Thread.sleep;
 
@@ -44,6 +43,10 @@ class GenreAdapter extends RecyclerView.Adapter {
         notifyDataSetChanged();
     }
 
+    public void reset() {
+        imagesLoader.destroyAll();
+    }
+
     @Override
     public boolean onFailedToRecycleView(RecyclerView.ViewHolder holder) {
         return true;
@@ -54,7 +57,7 @@ class GenreAdapter extends RecyclerView.Adapter {
         switch (viewType) {
             case PLACEHOLDER:
                 View placeholder = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_placeholder, parent, false);
-                return new ProgrssHolder(placeholder);
+                return new ProgressHolder(placeholder);
             case GENRE:
                 View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_artists_genre, parent, false);
                 return new GenreHolder(view);
@@ -101,8 +104,8 @@ class GenreAdapter extends RecyclerView.Adapter {
         }
     }
 
-    private static class ProgrssHolder extends RecyclerView.ViewHolder {
-        ProgrssHolder(View itemView) {
+    private static class ProgressHolder extends RecyclerView.ViewHolder {
+        ProgressHolder(View itemView) {
             super(itemView);
         }
     }

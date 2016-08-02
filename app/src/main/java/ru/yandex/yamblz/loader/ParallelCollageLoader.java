@@ -42,14 +42,17 @@ public class ParallelCollageLoader implements CollageLoader {
         loadCollage(urls, imageTarget, this.collageStrategy);
     }
 
+    // Для параллельной загрузки еще можно использовать операторы .groupBy и
     @Override
     public void loadCollage(List<String> urls, ImageView imageView, CollageStrategy collageStrategy) {
+        if (subs == null) subs = new CompositeSubscription();
         if (subscriptionTargets.get(imageView) != null) {
             subs.remove(subscriptionTargets.get(imageView));
         }
         Subscription subscription = Observable.zip(loadBitmaps(urls),
                 args -> {
                     List<Bitmap> loadedBitmaps = new ArrayList<>();
+                    // Вот тут хз, наверняка можно как-то лаконичнее написать
                     for (Object o : args) {
                         if (o instanceof Bitmap) {
                             loadedBitmaps.add((Bitmap) o);
@@ -60,6 +63,7 @@ public class ParallelCollageLoader implements CollageLoader {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(collage -> {
+                            //TODO: Сделать так, чтобы только при первой загрузке изображения происходило выцветание
                             imageView.setAlpha(0f);
                             imageView.setImageBitmap(collage);
                             imageView.animate()
@@ -80,21 +84,30 @@ public class ParallelCollageLoader implements CollageLoader {
     private List<Observable<Bitmap>> loadBitmaps(List<String> urls) {
         List<Observable<Bitmap>> observables = new ArrayList<>();
         for (String urlString : urls) {
-            observables.add(Observable.create(subscriber -> {
+            observables.add(Observable.fromCallable(() -> {
+                InputStream in = null;
                 try {
-                    URL url = new URL(urlString);
-                    InputStream is = url.openConnection().getInputStream();
-                    Bitmap bitmap = BitmapFactory.decodeStream(is);
-                    is.close();
-                    subscriber.onNext(bitmap);
-                    subscriber.onCompleted();
-                } catch (IOException e) {
+                    in = new java.net.URL(urlString).openStream();
+                    return BitmapFactory.decodeStream(in);
+                } catch (Exception e) {
                     e.printStackTrace();
-                    subscriber.onError(e);
+                } finally {
+                    if (in != null) in.close();
                 }
+                return null;
             }));
         }
 
         return observables;
     }
+
+    @Override
+    public void destroyAll() {
+        if (subs != null) {
+            subs.clear();
+            subs = null;
+        }
+        subscriptionTargets.clear();
+    }
+
 }
