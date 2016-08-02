@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import java.util.Map;
 import java.util.Queue;
@@ -29,6 +30,7 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
 
     @Override
     public void startSection(int id) {
+        Log.w("Handler", "started section " + id);
         sections.add(id);
     }
 
@@ -44,6 +46,7 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
 
     @Override
     public void stopSections() {
+        Log.w("Handler", "stopped sections");
         sections.clear();
         for (Task task: tasks) {
             tasks.remove(task);
