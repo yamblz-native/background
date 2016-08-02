@@ -14,4 +14,7 @@ public interface CollageLoader {
 
     void loadCollage(List<String> urls, ImageTarget imageTarget, CollageStrategy collageStrategy);
 
+
+
+
 }
