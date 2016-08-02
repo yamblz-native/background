@@ -22,7 +22,6 @@ public class ContentFragment extends BaseFragment {
     @BindView(R.id.rv_genres) RecyclerView rv;
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         return inflater.inflate(R.layout.fragment_content, container, false);
     }
 

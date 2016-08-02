@@ -44,7 +44,6 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.MyViewHold
         ImageView collage;
         TextView textView;
         ImageTarget imageTarget;
-        private String prevGenre=null;
         MyViewHolder(View itemView) {
             super(itemView);
             collage= (ImageView) itemView.findViewById(R.id.image_collage);
@@ -53,13 +52,9 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.MyViewHold
         }
 
         void bind(String genre){
-            if(prevGenre!=null){
-                CollageLoaderManager.getLoader().cancel(prevGenre);
-            }
-            prevGenre=genre;
             collage.setImageDrawable(new ColorDrawable(Color.BLACK));
             textView.setText(genre);
-            CollageLoaderManager.getLoader().loadCollage(DataSingleton.get().getImagesForGenre(genre),imageTarget,genre);
+            CollageLoaderManager.getLoader().loadCollage(DataSingleton.get().getImagesForGenre(genre),imageTarget);
         }
     }
 }

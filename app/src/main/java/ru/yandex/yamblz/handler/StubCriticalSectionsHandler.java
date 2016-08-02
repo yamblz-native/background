@@ -4,31 +4,32 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-import android.util.SparseArray;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
     private static final String TAG = "StubCritSectHandler";
     private final MyHandler mainHandler;
-    private SparseArray<Object> sparseArray;
+    private Set<Integer> sparseArray;
 
     public StubCriticalSectionsHandler() {
-        sparseArray = new SparseArray<>();
+        sparseArray = new HashSet<>();
         mainHandler = new MyHandler(Looper.getMainLooper());
     }
 
     @Override
     public void startSection(int id) {
-        sparseArray.put(id, null);
+        sparseArray.add(id);
         checkSections();
     }
 
     @Override
     public void stopSection(int id) {
-        sparseArray.delete(id);
+        sparseArray.remove(id);
         checkSections();
     }
 
