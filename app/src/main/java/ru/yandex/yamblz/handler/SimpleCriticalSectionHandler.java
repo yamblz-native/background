@@ -1,6 +1,7 @@
 package ru.yandex.yamblz.handler;
 
 import android.os.Handler;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +41,8 @@ public class SimpleCriticalSectionHandler implements CriticalSectionsHandler
 
         for (Task task : tasks)
         {
-            mainHandler.post(task::run);
+            if (sections.isEmpty()) mainHandler.post(task::run);
+            else break;
         }
 
         removeLowPriorityTasks();
@@ -53,7 +55,8 @@ public class SimpleCriticalSectionHandler implements CriticalSectionsHandler
 
         for (Task task : tasks)
         {
-            mainHandler.post(task::run);
+            if (sections.isEmpty()) mainHandler.post(task::run);
+            else break;
         }
 
         removeLowPriorityTasks();
@@ -62,14 +65,8 @@ public class SimpleCriticalSectionHandler implements CriticalSectionsHandler
     @Override
     public void postLowPriorityTask(Task task)
     {
-        if (sections.isEmpty())
-        {
-            mainHandler.post(task::run);
-        }
-        else
-        {
-            tasks.add(task);
-        }
+        if (sections.isEmpty()) mainHandler.post(task::run);
+        else tasks.add(task);
     }
 
     @Override
