@@ -105,12 +105,10 @@ dependencies {
     compile libraries.lynx
     compile libraries.processPhoenix
 
-    compile 'com.fasterxml.jackson.core:jackson-core:2.4.1'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.4.1'
-    compile 'com.android.support:recyclerview-v7:23.3.0'
-    compile 'com.android.support:appcompat-v7:23.3.0'
-    compile 'io.reactivex:rxjava:1.1.6'
-    compile 'io.reactivex:rxandroid:1.2.1'
+    compile libraries.jacksonCore
+    compile libraries.jacksonDatabind
+    compile libraries.rxjava
+    compile libraries.rxandroid
 
 
     testCompile libraries.junit
