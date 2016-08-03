@@ -46,17 +46,16 @@ public class DefaultCollageLoader implements CollageLoader {
                 .flatMap(this::loadBitmap)
                 .toList()
                 .map(collageStrategy::create)
-                .cache()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(bitmap -> imageTarget.onLoadBitmap(bitmap),
+                .subscribe(imageTarget::onLoadBitmap,
                         throwable -> Timber.d(throwable.getMessage()),
                         () -> Timber.d("Completed"));
 
         imageTarget.setTag(subscription);
     }
 
-    public Observable<Bitmap> loadBitmap(String urlString) {
+    private Observable<Bitmap> loadBitmap(String urlString) {
         return Observable.create(subscriber -> {
                     HttpURLConnection httpURLConnection = null;
 
