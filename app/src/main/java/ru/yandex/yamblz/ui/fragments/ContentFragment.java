@@ -76,7 +76,6 @@ public class ContentFragment extends BaseFragment {
         adapter = new GenreAdapter();
         recycler.setAdapter(adapter);
         recycler.addOnScrollListener(scrollingListener);
-        Looper.myQueue().addIdleHandler(CriticalSectionsManager.getHandler());
     }
 
     @Override
@@ -111,7 +110,6 @@ public class ContentFragment extends BaseFragment {
                     break;
                 case SCROLL_STATE_DRAGGING:
                     if (!scrollingStarted) {
-//                        Looper.myQueue().removeIdleHandler(CriticalSectionsManager.getHandler());
                         CriticalSectionsManager.getHandler().startSection(0);
                         scrollingStarted = true;
                     }

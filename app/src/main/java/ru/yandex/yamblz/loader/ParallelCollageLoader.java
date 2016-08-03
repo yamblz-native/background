@@ -3,6 +3,7 @@ package ru.yandex.yamblz.loader;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Looper;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -73,6 +74,7 @@ public class ParallelCollageLoader implements CollageLoader {
                                         .alpha(1);
 
                             });
+                            Looper.myQueue().addIdleHandler(CriticalSectionsManager.getHandler());
 
                         },
                         Throwable::printStackTrace

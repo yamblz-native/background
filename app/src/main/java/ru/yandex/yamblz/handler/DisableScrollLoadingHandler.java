@@ -42,7 +42,7 @@ public class DisableScrollLoadingHandler implements CriticalSectionsHandler {
         runningSections.clear();
     }
 
-    private void runTasks() {
+    synchronized private void runTasks() {
         for (Task task : tasks) {
             task.run();
             removeLowPriorityTask(task);
@@ -71,9 +71,7 @@ public class DisableScrollLoadingHandler implements CriticalSectionsHandler {
 
     @Override
     public boolean queueIdle() {
-        Timber.d("Queue idle is called");
         runTasks();
-        // TODO:
-        return runningSections.size() == 0;
+        return runningSections.size() == 0 && tasks.size() != 0;
     }
 }
