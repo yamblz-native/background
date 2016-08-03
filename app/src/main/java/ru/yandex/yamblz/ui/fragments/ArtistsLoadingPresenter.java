@@ -16,13 +16,10 @@ import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
-/**
- * Created by aleien on 31.07.16.
- */
 
-public class ArtistsLoadingPresenter extends Presenter<ContentFragment> {
+class ArtistsLoadingPresenter extends Presenter<ContentFragment> {
 
-    CompositeSubscription subs = new CompositeSubscription();
+    private CompositeSubscription subs = new CompositeSubscription();
     private ArtistsApi artistsApi;
 
     ArtistsLoadingPresenter(ArtistsApi artistsApi) {
@@ -34,8 +31,13 @@ public class ArtistsLoadingPresenter extends Presenter<ContentFragment> {
                 .subscribeOn(Schedulers.io())
                 .map(this::extractGenres)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(list -> view().showContent(list),
+                .subscribe(this::showContent,
                         Throwable::printStackTrace));
+    }
+
+    private void showContent(List<Genre> list) {
+        ContentFragment view = view();
+        if (view != null) view.showContent(list);
     }
 
     private List<Genre> extractGenres(List<Artist> artistsList) {
@@ -58,7 +60,6 @@ public class ArtistsLoadingPresenter extends Presenter<ContentFragment> {
         }
 
         for (Map.Entry<String, List<Artist>> entry : genres.entrySet()) {
-//            Timber.d("Key = %s, Value = %s", entry.getKey(), entry.getValue());
             genreList.add(new Genre(entry.getKey(), entry.getValue()));
         }
 

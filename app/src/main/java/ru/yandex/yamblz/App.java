@@ -36,9 +36,7 @@ public class App extends Application {
             devMetricsProxy.apply();
         }
 
-        Timber.plant(new Timber.DebugTree());
-
-        CollageLoaderManager.init(new ParallelCollageLoader(this));
+        CollageLoaderManager.init(new ParallelCollageLoader());
         CriticalSectionsManager.init(new DisableScrollLoadingHandler()); // add implementation
     }
 

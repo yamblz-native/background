@@ -1,21 +1,17 @@
 package ru.yandex.yamblz.ui.fragments;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import okhttp3.OkHttpClient;
@@ -27,6 +23,7 @@ import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.data.ArtistsApi;
 import ru.yandex.yamblz.data.Genre;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.loader.CollageLoaderManager;
 import timber.log.Timber;
 
 import static android.support.v7.widget.RecyclerView.SCROLL_STATE_DRAGGING;
@@ -62,7 +59,7 @@ public class ContentFragment extends BaseFragment {
 
         presenter = new ArtistsLoadingPresenter(artistsApi);
         presenter.bindView(this);
-        Log.d("TAG", "Loading artists");
+        Timber.d("Loading artists");
         presenter.loadArtists();
     }
 
@@ -84,8 +81,7 @@ public class ContentFragment extends BaseFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // TODO: Фрагмент управляет очисткой лоадеров через адаптер. Нехорошо.
-        adapter.reset();
+        CollageLoaderManager.getLoader().destroyAll();
     }
 
     @Override

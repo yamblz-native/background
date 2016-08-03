@@ -1,28 +1,19 @@
 package ru.yandex.yamblz.handler;
 
 import android.os.Handler;
-import android.os.MessageQueue;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import timber.log.Timber;
 
-/**
- * Created by aleien on 31.07.16.
- */
 
 public class DisableScrollLoadingHandler implements CriticalSectionsHandler {
     private Set<Integer> runningSections = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
-    List<Task> tasks = new CopyOnWriteArrayList<>();
+    private List<Task> tasks = new CopyOnWriteArrayList<>();
 
     @Override
     public void startSection(int id) {

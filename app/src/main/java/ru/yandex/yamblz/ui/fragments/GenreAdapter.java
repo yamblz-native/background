@@ -17,12 +17,6 @@ import ru.yandex.yamblz.data.Genre;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 
-import static java.lang.Thread.sleep;
-
-/**
- * Created by aleien on 31.07.16.
- */
-
 class GenreAdapter extends RecyclerView.Adapter {
     private final static int PLACEHOLDER = 0;
     private final static int GENRE = 1;
@@ -40,11 +34,6 @@ class GenreAdapter extends RecyclerView.Adapter {
         }
 
         notifyDataSetChanged();
-    }
-
-    // Лажа
-    public void reset() {
-        imagesLoader.destroyAll();
     }
 
     @Override
