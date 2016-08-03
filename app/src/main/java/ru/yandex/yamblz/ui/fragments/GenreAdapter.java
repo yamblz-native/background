@@ -43,6 +43,7 @@ class GenreAdapter extends RecyclerView.Adapter {
         notifyDataSetChanged();
     }
 
+    // Лажа
     public void reset() {
         imagesLoader.destroyAll();
     }

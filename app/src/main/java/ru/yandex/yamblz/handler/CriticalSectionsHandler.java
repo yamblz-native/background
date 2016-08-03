@@ -1,6 +1,8 @@
 package ru.yandex.yamblz.handler;
 
-public interface CriticalSectionsHandler {
+import android.os.MessageQueue;
+
+public interface CriticalSectionsHandler extends MessageQueue.IdleHandler  {
 
     void startSection(int id);
 

@@ -1,10 +1,14 @@
 package ru.yandex.yamblz.ui.fragments;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,9 +24,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.data.ArtistsApi;
 import ru.yandex.yamblz.data.Genre;
-import ru.yandex.yamblz.loader.CollageLoaderManager;
-import ru.yandex.yamblz.loader.ParallelCollageLoader;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import timber.log.Timber;
+
+import static android.support.v7.widget.RecyclerView.SCROLL_STATE_DRAGGING;
+import static android.support.v7.widget.RecyclerView.SCROLL_STATE_IDLE;
 
 public class ContentFragment extends BaseFragment {
     @BindView(R.id.main_recycler)
@@ -69,11 +75,14 @@ public class ContentFragment extends BaseFragment {
         recycler.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new GenreAdapter();
         recycler.setAdapter(adapter);
+        recycler.addOnScrollListener(scrollingListener);
+        Looper.myQueue().addIdleHandler(CriticalSectionsManager.getHandler());
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        // TODO: Фрагмент управляет очисткой лоадеров через адаптер. Нехорошо.
         adapter.reset();
     }
 
@@ -86,4 +95,28 @@ public class ContentFragment extends BaseFragment {
     void showContent(List<Genre> genreList) {
         adapter.setContent(genreList);
     }
+
+    private OnScrollListener scrollingListener = new OnScrollListener() {
+        boolean scrollingStarted;
+
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+            switch (newState) {
+                case SCROLL_STATE_IDLE:
+                    Timber.d("Scroll state idle");
+                    CriticalSectionsManager.getHandler().stopSection(0);
+                    Looper.myQueue().addIdleHandler(CriticalSectionsManager.getHandler());
+                    scrollingStarted = false;
+                    break;
+                case SCROLL_STATE_DRAGGING:
+                    if (!scrollingStarted) {
+//                        Looper.myQueue().removeIdleHandler(CriticalSectionsManager.getHandler());
+                        CriticalSectionsManager.getHandler().startSection(0);
+                        scrollingStarted = true;
+                    }
+                    break;
+            }
+        }
+    };
 }

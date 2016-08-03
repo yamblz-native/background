@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import ru.yandex.yamblz.developer_settings.DevMetricsProxy;
 import ru.yandex.yamblz.developer_settings.DeveloperSettingsModel;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.DisableScrollLoadingHandler;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.loader.ParallelCollageLoader;
 import timber.log.Timber;
@@ -38,7 +39,7 @@ public class App extends Application {
         Timber.plant(new Timber.DebugTree());
 
         CollageLoaderManager.init(new ParallelCollageLoader());
-        CriticalSectionsManager.init(null); // add implementation
+        CriticalSectionsManager.init(new DisableScrollLoadingHandler()); // add implementation
     }
 
     @NonNull

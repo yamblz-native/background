@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.Task;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -64,10 +66,13 @@ public class ParallelCollageLoader implements CollageLoader {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(collage -> {
                             //TODO: Сделать так, чтобы только при первой загрузке изображения происходило выцветание
-                            imageView.setAlpha(0f);
-                            imageView.setImageBitmap(collage);
-                            imageView.animate()
-                                    .alpha(1);
+                            CriticalSectionsManager.getHandler().postLowPriorityTask(() -> {
+                                imageView.setAlpha(0f);
+                                imageView.setImageBitmap(collage);
+                                imageView.animate()
+                                        .alpha(1);
+
+                            });
 
                         },
                         Throwable::printStackTrace
@@ -101,6 +106,8 @@ public class ParallelCollageLoader implements CollageLoader {
         return observables;
     }
 
+    // TODO: Можно ли как-то автоматизировать очистку подписок?
+    // Нехорошо, что фрагмент управляет очисткой подписок. Мб вынести метод в менеджер?
     @Override
     public void destroyAll() {
         if (subs != null) {

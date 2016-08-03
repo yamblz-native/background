@@ -36,4 +36,9 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
     public void removeLowPriorityTasks() {
 
     }
+
+    @Override
+    public boolean queueIdle() {
+        return false;
+    }
 }
