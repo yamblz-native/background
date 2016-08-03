@@ -16,7 +16,6 @@ import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.data.Genre;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
-import timber.log.Timber;
 
 import static java.lang.Thread.sleep;
 
@@ -72,7 +71,7 @@ class GenreAdapter extends RecyclerView.Adapter {
         if (holder instanceof GenreHolder) {
             GenreHolder genreHolder = (GenreHolder) holder;
             genreHolder.genre.setText(genres.get(position).getName());
-            genreHolder.image.setImageResource(R.color.d2m_transparent);
+            genreHolder.image.setImageResource(R.color.colorGray);
             imagesLoader.loadCollage(genres.get(position).getCollageUrls(), genreHolder.image);
         }
     }

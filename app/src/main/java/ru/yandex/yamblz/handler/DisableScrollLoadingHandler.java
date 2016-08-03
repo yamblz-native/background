@@ -71,7 +71,8 @@ public class DisableScrollLoadingHandler implements CriticalSectionsHandler {
 
     @Override
     public boolean queueIdle() {
-        runTasks();
+        Timber.d("Trying to run tasks, tasks size: %d", tasks.size());
+        if (runningSections.size() == 0) runTasks();
         return runningSections.size() == 0 && tasks.size() != 0;
     }
 }

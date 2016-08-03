@@ -9,11 +9,13 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import okhttp3.OkHttpClient;
@@ -60,6 +62,7 @@ public class ContentFragment extends BaseFragment {
 
         presenter = new ArtistsLoadingPresenter(artistsApi);
         presenter.bindView(this);
+        Log.d("TAG", "Loading artists");
         presenter.loadArtists();
     }
 
@@ -103,13 +106,14 @@ public class ContentFragment extends BaseFragment {
             super.onScrollStateChanged(recyclerView, newState);
             switch (newState) {
                 case SCROLL_STATE_IDLE:
-                    Timber.d("Scroll state idle");
+                    Timber.d("Stopped scrolling");
                     CriticalSectionsManager.getHandler().stopSection(0);
                     Looper.myQueue().addIdleHandler(CriticalSectionsManager.getHandler());
                     scrollingStarted = false;
                     break;
                 case SCROLL_STATE_DRAGGING:
                     if (!scrollingStarted) {
+                        Timber.d("Started scrolling");
                         CriticalSectionsManager.getHandler().startSection(0);
                         scrollingStarted = true;
                     }

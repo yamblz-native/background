@@ -38,7 +38,7 @@ public class App extends Application {
 
         Timber.plant(new Timber.DebugTree());
 
-        CollageLoaderManager.init(new ParallelCollageLoader());
+        CollageLoaderManager.init(new ParallelCollageLoader(this));
         CriticalSectionsManager.init(new DisableScrollLoadingHandler()); // add implementation
     }
 
