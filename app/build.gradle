@@ -98,6 +98,19 @@ dependencies {
 
     compile libraries.timber
 
+    compile (libraries.retrofit) {
+        exclude module: 'okhttp'
+    }
+    compile libraries.converterGson
+    compile libraries.adapterRxJava
+    compile libraries.gson
+    compile libraries.okhttp
+    compile libraries.glide
+    compile libraries.okhttpLogging
+
+    compile libraries.rxJava
+    compile libraries.rxAndroid
+
     // Developer tools (Developer Settings)
     compile libraries.stetho
     compile libraries.leakCanary
