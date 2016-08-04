@@ -1,7 +1,7 @@
 package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
-import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.util.LruCache;
 import android.widget.ImageView;
 
@@ -21,13 +21,15 @@ import static ru.yandex.yamblz.utils.Utils.loadBitmapFromUrl;
 
 
 public class ParallelCollageLoader implements CollageLoader {
-    private WeakHashMap<ImageView, Subscription> subscriptionImages = new WeakHashMap<>();
-    private  WeakHashMap<ImageTarget, Subscription> subscriptionTargets = new WeakHashMap<>();
-    private CompositeSubscription subs = new CompositeSubscription();
-    private CollageStrategy collageStrategy = new SimpleCollageStrategy();
-    private LruCache<List<String>, Bitmap> memoryCache;
+    @NonNull private final WeakHashMap<ImageTarget, Subscription> subscriptionTargets;
+    @NonNull private final CompositeSubscription subs;
+    @NonNull private final CollageStrategy collageStrategy;
+    @NonNull private final LruCache<List<String>, Bitmap> memoryCache;
 
     public ParallelCollageLoader() {
+        subscriptionTargets = new WeakHashMap<>();
+        subs = new CompositeSubscription();
+        collageStrategy = new SimpleCollageStrategy();
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
         final int cacheSize = maxMemory / 8;
         memoryCache = new LruCache<>(cacheSize);
@@ -43,59 +45,22 @@ public class ParallelCollageLoader implements CollageLoader {
         loadCollage(urls, imageTarget, this.collageStrategy);
     }
 
-    // Для параллельной загрузки еще можно использовать операторы .groupBy или связку .flatMap().toList().toBlocking()
-    // Очень длинный метод. Ну прямо очень. Фу.
     @Override
-    public void loadCollage(List<String> urls, ImageView imageView, CollageStrategy collageStrategy) {
-        if (subs == null) subs = new CompositeSubscription();
-        if (subscriptionImages.get(imageView) != null) {
-            subs.remove(subscriptionImages.get(imageView));
-        }
-        Bitmap cachedCollage = memoryCache.get(urls);
-        if (cachedCollage != null) {
-            Timber.d("Cache hit! Adding task to handler");
-            loadBitmap(imageView, cachedCollage);
-        } else {
-            Subscription subscription = Observable.zip(loadBitmaps(urls),
-                    args -> {
-                        List<Bitmap> loadedBitmaps = new ArrayList<>();
-                        // Вот тут хз, наверняка можно как-то лаконичнее написать
-                        for (Object o : args) {
-                            if (o instanceof Bitmap) {
-                                loadedBitmaps.add((Bitmap) o);
-                            }
-                        }
-                        return collageStrategy.create(loadedBitmaps);
-                    })
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(collage -> {
-                                memoryCache.put(urls, collage);
-                                Timber.d("Image loaded! Adding task to handler");
-                                loadBitmap(imageView, collage);
-
-                            },
-                            Throwable::printStackTrace
-                    );
-            subs.add(subscription);
-            subscriptionImages.put(imageView, subscription);
-        }
+    public void loadCollage(List<String> urls, final ImageView imageView, CollageStrategy collageStrategy) {
+        ImageTarget target = bitmap -> {
+            imageView.setAlpha(0f);
+            imageView.setImageBitmap(bitmap);
+            imageView.animate().alpha(1);
+        };
+        loadCollage(urls, target, collageStrategy);
     }
 
-    private void loadBitmap(ImageView imageView, Bitmap cachedCollage) {
-        CriticalSectionsManager.getHandler().postLowPriorityTask(() -> {
-            imageView.setAlpha(0f);
-            imageView.setImageBitmap(cachedCollage);
-            imageView.animate()
-                    .alpha(1);
-
-        });
-        Looper.myQueue().addIdleHandler(CriticalSectionsManager.getHandler());
+    private void loadBitmap(ImageTarget imageTarget, Bitmap cachedCollage) {
+        CriticalSectionsManager.getHandler().postLowPriorityTask(() -> imageTarget.onLoadBitmap(cachedCollage));
     }
 
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget, CollageStrategy collageStrategy) {
-        if (subs == null) subs = new CompositeSubscription();
         Subscription s = subscriptionTargets.get(imageTarget);
         if (s != null) {
             subs.remove(s);
@@ -103,26 +68,20 @@ public class ParallelCollageLoader implements CollageLoader {
         Bitmap cachedCollage = memoryCache.get(urls);
         if (cachedCollage != null) {
             Timber.d("Cache hit! Adding task to handler");
-            imageTarget.onLoadBitmap(cachedCollage);
+            loadBitmap(imageTarget, cachedCollage);
         } else {
             Subscription subscription = Observable.zip(loadBitmaps(urls),
-                    args -> {
-                        List<Bitmap> loadedBitmaps = new ArrayList<>();
-                        // Вот тут хз, наверняка можно как-то лаконичнее написать
-                        for (Object o : args) {
-                            if (o instanceof Bitmap) {
-                                loadedBitmaps.add((Bitmap) o);
-                            }
-                        }
-                        return collageStrategy.create(loadedBitmaps);
-                    })
+                    args -> args)
+                    .flatMap(Observable::from)
+                    .map(o -> (Bitmap) o)
+                    .toList()
+                    .map(collageStrategy::create)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(collage -> {
                                 memoryCache.put(urls, collage);
                                 Timber.d("Image loaded! Adding task to handler");
-                                imageTarget.onLoadBitmap(collage);
-
+                                loadBitmap(imageTarget, collage);
                             },
                             Throwable::printStackTrace
                     );
@@ -141,17 +100,10 @@ public class ParallelCollageLoader implements CollageLoader {
         return observables;
     }
 
-
-    // TODO: Можно ли как-то автоматизировать очистку подписок?
-    // Нехорошо, что фрагмент управляет очисткой подписок. Мб вынести метод в менеджер?
-    // Нужно это как-то автоматизировать
     @Override
     public void destroyAll() {
-        if (subs != null) {
-            subs.clear();
-            subs = null;
-        }
-        subscriptionImages.clear();
+        subs.clear();
+        subscriptionTargets.clear();
     }
 
 }

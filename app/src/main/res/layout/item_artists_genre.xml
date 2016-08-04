@@ -17,14 +17,15 @@
             android:id="@+id/item_image"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            tools:background="#61b393" />
+            tools:background="#61b393"
+            android:contentDescription="@string/content_desc_artist_image" />
 
         <TextView
             android:id="@+id/item_genres"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:textSize="18dp"
+            android:textSize="18sp"
             tools:text="#genre_1, #genre_2" />
 
     </LinearLayout>

@@ -1,8 +1,8 @@
 package ru.yandex.yamblz.ui.fragments;
 
+import android.support.annotation.NonNull;
+
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,15 +14,14 @@ import ru.yandex.yamblz.ui.presenters.Presenter;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
-import timber.log.Timber;
 
 
 class ArtistsLoadingPresenter extends Presenter<ContentFragment> {
 
-    private CompositeSubscription subs = new CompositeSubscription();
-    private ArtistsApi artistsApi;
+    @NonNull private final CompositeSubscription subs = new CompositeSubscription();
+    @NonNull private final ArtistsApi artistsApi;
 
-    ArtistsLoadingPresenter(ArtistsApi artistsApi) {
+    ArtistsLoadingPresenter(@NonNull ArtistsApi artistsApi) {
         this.artistsApi = artistsApi;
     }
 

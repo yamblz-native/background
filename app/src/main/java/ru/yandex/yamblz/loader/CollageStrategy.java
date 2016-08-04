@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 
 import java.util.List;
 
-public interface CollageStrategy {
+interface CollageStrategy {
 
     Bitmap create(List<Bitmap> bitmaps);
 }

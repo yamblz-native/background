@@ -1,7 +1,6 @@
 package ru.yandex.yamblz.ui.fragments;
 
 import android.os.Bundle;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -94,7 +93,7 @@ public class ContentFragment extends BaseFragment {
         adapter.setContent(genreList);
     }
 
-    private OnScrollListener scrollingListener = new OnScrollListener() {
+    private final OnScrollListener scrollingListener = new OnScrollListener() {
         boolean scrollingStarted;
 
         @Override
@@ -104,7 +103,6 @@ public class ContentFragment extends BaseFragment {
                 case SCROLL_STATE_IDLE:
                     Timber.d("Stopped scrolling");
                     CriticalSectionsManager.getHandler().stopSection(0);
-                    Looper.myQueue().addIdleHandler(CriticalSectionsManager.getHandler());
                     scrollingStarted = false;
                     break;
                 case SCROLL_STATE_DRAGGING:

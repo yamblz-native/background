@@ -2,7 +2,7 @@ package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
 
-public interface ImageTarget {
+interface ImageTarget {
 
     void onLoadBitmap(Bitmap bitmap);
 }

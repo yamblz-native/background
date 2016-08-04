@@ -2,14 +2,8 @@ package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 
 import java.util.List;
-
-/**
- * Created by aleien on 31.07.16.
- *
- */
 
 class SimpleCollageStrategy implements CollageStrategy {
     @Override

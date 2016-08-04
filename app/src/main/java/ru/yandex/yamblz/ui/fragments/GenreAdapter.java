@@ -20,15 +20,14 @@ import ru.yandex.yamblz.loader.CollageLoaderManager;
 class GenreAdapter extends RecyclerView.Adapter {
     private final static int PLACEHOLDER = 0;
     private final static int GENRE = 1;
-    private CollageLoader imagesLoader;
-
-    private List<Genre> genres = new ArrayList<>();
+    private final CollageLoader imagesLoader;
+    private final List<Genre> genres = new ArrayList<>();
 
     GenreAdapter() {
         imagesLoader = CollageLoaderManager.getLoader();
     }
 
-    public void setContent(List<Genre> genreList) {
+    void setContent(List<Genre> genreList) {
         if (genreList != null && genreList.size() != 0) {
             this.genres.addAll(genreList);
         }

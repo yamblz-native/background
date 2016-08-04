@@ -6,11 +6,11 @@ public class Artist {
     public final int id;
     public final String name;
     public final List<String> genres;
-    public final int tracks;
-    public final int albums;
-    public final String link;
-    public final String description;
-    public final Cover cover;
+    private final int tracks;
+    private final int albums;
+    private final String link;
+    private final String description;
+    final Cover cover;
 
     public Artist(int id, String name, List<String> genres, int tracks, int albums, String link, String description, Cover cover) {
         this.id = id;
@@ -23,9 +23,9 @@ public class Artist {
         this.cover = cover;
     }
 
-    public static class Cover {
-        public final String small;
-        public final String big;
+    static class Cover {
+        final String small;
+        final String big;
 
         public Cover(String small, String big) {
             this.small = small;
