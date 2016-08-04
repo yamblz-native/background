@@ -35,11 +35,13 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
     @Override
     public void stopSection(int id) {
         criticalSectionStore.remove(id);
+        runTasks();
     }
 
     @Override
     public void stopSections() {
         criticalSectionStore.clear();
+        runTasks();
     }
 
     @Override
