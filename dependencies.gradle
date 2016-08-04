@@ -7,7 +7,7 @@ ext.versions = [
         compileSdk                   : 23,
         buildTools                   : '23.0.3',
 
-        androidGradlePlugin          : '2.2.0-alpha4',
+        androidGradlePlugin          : '2.1.2',
         aptGradlePlugin              : '1.8',
         retrolambdaGradlePlugin      : '3.2.5',
         lombokGradlePlugin           : '0.2.3.a2',
@@ -85,4 +85,14 @@ ext.libraries = [
         supportTestRules        : "com.android.support.test:rules:$versions.supportTestRunner",
         espressoCore            : "com.android.support.test.espresso:espresso-core:$versions.espresso",
         espressoContrib         : "com.android.support.test.espresso:espresso-contrib:$versions.espresso",
+
+        //
+        retrofit                : "com.squareup.retrofit:retrofit:2.0.0-beta1",
+        retrofitAdapter         : "com.squareup.retrofit:adapter-rxjava:2.0.0-beta1",
+        jacksonConverter        : "com.squareup.retrofit:converter-jackson:2.0.0-beta1",
+        jacksonDatabind         : "com.fasterxml.jackson.core:jackson-databind:2.7.0",
+        jacksonAnnotations      : "com.fasterxml.jackson.core:jackson-annotations:2.7.3",
+        rxjava                  : "io.reactivex:rxjava:1.0.14",
+        rxandroid               : "io.reactivex:rxandroid:1.0.1",
+        universalImageLoader    : "com.nostra13.universalimageloader:universal-image-loader:1.9.5",
 ]

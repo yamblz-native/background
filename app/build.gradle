@@ -105,6 +105,16 @@ dependencies {
     compile libraries.lynx
     compile libraries.processPhoenix
 
+    compile libraries.rxjava
+    compile libraries.rxandroid
+    compile libraries.jacksonConverter
+    compile libraries.jacksonDatabind
+    compile libraries.jacksonAnnotations
+    compile libraries.retrofit
+    compile libraries.retrofitAdapter
+    compile libraries.retrofitAdapter
+    compile libraries.universalImageLoader
+
     testCompile libraries.junit
     testCompile libraries.robolectric
     testCompile libraries.assertJ
