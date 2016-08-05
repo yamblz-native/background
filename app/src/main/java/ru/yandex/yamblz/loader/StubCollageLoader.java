@@ -28,4 +28,9 @@ public class StubCollageLoader implements CollageLoader {
 
     }
 
+    @Override
+    public void destroyAll() {
+
+    }
+
 }
