@@ -86,6 +86,7 @@ android {
 dependencies {
     compile libraries.dagger
     apt libraries.daggerCompiler
+    compile 'com.jakewharton.rxbinding:rxbinding-design:0.4.0'
 
     compile libraries.supportAnnotations
     compile libraries.supportAppCompat
