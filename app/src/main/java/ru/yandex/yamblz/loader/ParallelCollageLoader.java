@@ -5,19 +5,17 @@ import android.support.annotation.NonNull;
 import android.util.LruCache;
 import android.widget.ImageView;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.WeakHashMap;
 
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.utils.Utils;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
-
-import static ru.yandex.yamblz.utils.Utils.loadBitmapFromUrl;
 
 
 public class ParallelCollageLoader implements CollageLoader {
@@ -70,34 +68,18 @@ public class ParallelCollageLoader implements CollageLoader {
             Timber.d("Cache hit! Adding task to handler");
             loadBitmap(imageTarget, cachedCollage);
         } else {
-            Subscription subscription = Observable.zip(loadBitmaps(urls),
-                    args -> args)
-                    .flatMap(Observable::from)
-                    .map(o -> (Bitmap) o)
+            Subscription subscription = Observable.from(urls)
+                    .flatMap(url -> Utils.loadBitmapAsync(url).subscribeOn(Schedulers.io()))
                     .toList()
                     .map(collageStrategy::create)
-                    .subscribeOn(Schedulers.io())
+                    .doOnNext(collage -> memoryCache.put(urls, collage))
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(collage -> {
-                                memoryCache.put(urls, collage);
-                                Timber.d("Image loaded! Adding task to handler");
-                                loadBitmap(imageTarget, collage);
-                            },
+                    .subscribe(collage -> loadBitmap(imageTarget, collage),
                             Throwable::printStackTrace
                     );
             subs.add(subscription);
             subscriptionTargets.put(imageTarget, subscription);
-
         }
-    }
-
-    private List<Observable<Bitmap>> loadBitmaps(List<String> urls) {
-        List<Observable<Bitmap>> observables = new ArrayList<>();
-        for (String urlString : urls) {
-            observables.add(Observable.fromCallable(() -> loadBitmapFromUrl(urlString)));
-        }
-
-        return observables;
     }
 
     @Override
