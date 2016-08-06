@@ -105,6 +105,21 @@ dependencies {
     compile libraries.lynx
     compile libraries.processPhoenix
 
+    // okhttp
+    compile 'com.squareup.okhttp3:okhttp:3.4.1'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.4.1'
+
+    // RxJava
+    compile 'io.reactivex:rxjava:1.1.8'
+
+    // RxAndroid
+    compile 'io.reactivex:rxandroid:1.2.1'
+
+    // retrofit + stuff
+    compile 'com.squareup.retrofit2:retrofit:2.1.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.1.0'
+    compile 'com.squareup.retrofit2:adapter-rxjava:2.1.0'
+
     testCompile libraries.junit
     testCompile libraries.robolectric
     testCompile libraries.assertJ
@@ -121,6 +136,7 @@ dependencies {
         exclude module: 'recyclerview-v7'
         exclude module: 'support-v4'
     }
+    compile 'javax.annotation:javax.annotation-api:1.2'
 }
 
 configurations.all {

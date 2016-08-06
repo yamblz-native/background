@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/card_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/card_margin">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center">
+
+                <ProgressBar
+                    android:id="@+id/progress_bar"
+                    android:layout_width="@dimen/progress_loader_wh"
+                    android:layout_height="@dimen/progress_loader_wh"
+                    android:layout_gravity="center"
+                    android:indeterminateDrawable="@drawable/red_progress"
+                    android:visibility="visible" />
+
+                <ImageView
+                    android:id="@+id/genres_image_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:adjustViewBounds="true"
+                    android:src="@android:drawable/ic_menu_gallery" />
+            </FrameLayout>
+
+
+            <TextView
+                android:id="@+id/genres_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/textview_margin_top"
+                android:text="Жанр"
+                android:textColor="@color/black"
+                android:textSize="@dimen/text_size_genre"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/artists_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_margin="@dimen/textview_margin_top"
+                android:text="А тут будет список артистов с таким ж жанром"
+                android:textColor="@color/black"
+                android:textSize="@dimen/text_size_list_artist" />
+
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+</FrameLayout>
