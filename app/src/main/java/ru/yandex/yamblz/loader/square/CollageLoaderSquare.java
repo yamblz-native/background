@@ -1,6 +1,7 @@
 package ru.yandex.yamblz.loader.square;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.util.SparseArray;
 import android.widget.ImageView;
@@ -14,9 +15,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.loader.CollageStrategy;
 import ru.yandex.yamblz.loader.ImageTarget;
+import ru.yandex.yamblz.loader.ImageTargetWithId;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -27,8 +32,9 @@ import rx.schedulers.Schedulers;
 
 public class CollageLoaderSquare implements CollageLoader {
     private static final int NUMBER_OF_THREADS = 2;
-    private Picasso mPicasso;
-    private SparseArray<Subscription> mSubscriptionMap = new SparseArray<>(); // Хранит подписки
+    private final CollageStrategySquare DEFAULT_COLLAGE_STRATEGY = new CollageStrategySquare();
+    private final Picasso mPicasso;
+    private final SparseArray<Subscription> mSubscriptionMap = new SparseArray<>(); // Хранит подписки
 
     public CollageLoaderSquare(Picasso picasso) {
         mPicasso = picasso;
@@ -36,52 +42,55 @@ public class CollageLoaderSquare implements CollageLoader {
 
     @Override
     public void loadCollage(List<String> urls, ImageView imageView) {
-        loadCollage(urls, imageView, new CollageStrategySquare());
+        loadCollage(urls, imageView, DEFAULT_COLLAGE_STRATEGY);
     }
 
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget) {
-        loadCollage(urls, imageTarget, new CollageStrategySquare());
+        loadCollage(urls, imageTarget, DEFAULT_COLLAGE_STRATEGY);
     }
 
     @Override
     public void loadCollage(List<String> urls, ImageView imageView, CollageStrategy collageStrategy) {
-        int imageViewId = imageView.hashCode();
-        Subscription subscription = mSubscriptionMap.get(imageViewId);
-        if (subscription != null) {
-            subscription.unsubscribe(); // Негоже грузить 42 коллажа в одно КартинкоПредставление
-            Log.d("CollageLoader", "Unsubscribe. ImageViewHash=" + imageView.hashCode());
-        }
+        WeakReference<ImageView> imageViewWeakReference = new WeakReference<>(imageView);
+        ImageTarget imageTarget = new ImageTargetWithId() {
+            @Override
+            public void onLoadBitmap(Bitmap bitmap) {
+                ImageView targetImageView = imageViewWeakReference.get();
+                if (targetImageView != null) {
+                    targetImageView.setImageBitmap(bitmap);
+                }
+            }
 
-        WeakReference<ImageView> imageViewRef = new WeakReference<>(imageView);
-        Action1<Bitmap> onCreateCollage = bitmap -> {
-            ImageView collageImageView = imageViewRef.get();
-            if (collageImageView != null) {
-                collageImageView.setImageBitmap(bitmap);
+            @Override
+            public int getId() {
+                ImageView targetImageView = imageViewWeakReference.get();
+                if (targetImageView != null) {
+                    return targetImageView.hashCode();
+                } else {
+                    return super.getId();
+                }
             }
         };
 
-        Subscription newSubscription = makeCollage(urls, onCreateCollage, collageStrategy);
-        mSubscriptionMap.put(imageViewId, newSubscription);
+        loadCollage(urls, imageTarget, collageStrategy);
     }
 
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget, CollageStrategy collageStrategy) {
-        WeakReference<ImageTarget> imageTargetRef = new WeakReference<>(imageTarget);
-        int imageTargetId = imageTarget.hashCode();
-        Subscription subscription = mSubscriptionMap.get(imageTargetId);
-        if (subscription != null) {
-            subscription.unsubscribe(); // Негоже грузить 42 коллажа в одно картинкоПредставление
-            Log.d("CollageLoader", "Unsubscribe. ImageTargetHash=" + imageTarget.hashCode());
+        int imageTargetId;
+        if (imageTarget instanceof ImageTargetWithId) {
+            imageTargetId = ((ImageTargetWithId) imageTarget).getId();
+        } else {
+            imageTargetId = imageTarget.hashCode();
         }
 
+        Subscription subscription = mSubscriptionMap.get(imageTargetId);
+        if (subscription != null) {
+            subscription.unsubscribe();
+        }
 
-        Action1<Bitmap> onCreateCollage = bitmap -> {
-            ImageTarget collageImageTarget = imageTargetRef.get();
-            if (collageImageTarget != null) {
-                collageImageTarget.onLoadBitmap(bitmap);
-            }
-        };
+        Action1<Bitmap> onCreateCollage = imageTarget::onLoadBitmap;
 
         Subscription newSubscription = makeCollage(urls, onCreateCollage, collageStrategy);
         mSubscriptionMap.put(imageTargetId, newSubscription);
@@ -91,7 +100,7 @@ public class CollageLoaderSquare implements CollageLoader {
         final AtomicInteger counter = new AtomicInteger();
         final List<Bitmap> bitmapList = new CopyOnWriteArrayList<>();        // Скорость?..
         // Чистим за собой
-        // onComplete после unsubscribe не вызывается, но GC всё равно всё собирает =)
+        // onComplete после unsubscribe не вызывается, но GC всё равно всё собирает
         final Action0 clearBitmaps = () -> {
             for (Bitmap bitmap : bitmapList) {
                 bitmap.recycle();

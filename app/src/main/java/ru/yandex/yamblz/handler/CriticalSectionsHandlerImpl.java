@@ -27,16 +27,14 @@ public class CriticalSectionsHandlerImpl implements CriticalSectionsHandler {
     @Override
     public void stopSection(int id) {
         mSectionArray.delete(id);
-        if (mSectionArray.size() == 0) {
-            while (!mTaskQueue.isEmpty()) {
-                mHandler.post(mTaskQueue.poll()::run);
-            }
-        }
+        doNext();
     }
+
 
     @Override
     public void stopSections() {
         mSectionArray.clear();
+        doNext();
     }
 
     @Override
@@ -66,6 +64,19 @@ public class CriticalSectionsHandlerImpl implements CriticalSectionsHandler {
     public void removeLowPriorityTasks() {
         while (!mTaskQueue.isEmpty()) {
             mHandler.removeCallbacks(mTaskQueue.poll()::run);
+        }
+    }
+
+    private void doNext() {
+        if (mSectionArray.size() == 0) {
+            Task task = mTaskQueue.poll();
+            if (task != null) {
+                Task anotherTask = () -> {
+                    task.run();
+                    doNext();
+                };
+                mHandler.post(anotherTask::run);
+            }
         }
     }
 }
