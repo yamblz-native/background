@@ -8,9 +8,9 @@ public interface CriticalSectionsHandler {
 
     void stopSections();
 
-    void postLowPriorityTask(Task task);
+    Task postLowPriorityTask(Task task);
 
-    void postLowPriorityTaskDelayed(Task task, int delay);
+    Task postLowPriorityTaskDelayed(Task task, int delay);
 
     void removeLowPriorityTask(Task task);
 

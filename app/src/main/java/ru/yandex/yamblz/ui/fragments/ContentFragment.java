@@ -4,8 +4,9 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,8 @@ import ru.yandex.yamblz.BuildConfig;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.api.YandexArtistApi;
 import ru.yandex.yamblz.api.YandexArtistResponse;
+import ru.yandex.yamblz.handler.CriticalSectionsHandler;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import ru.yandex.yamblz.models.Genre;
 import ru.yandex.yamblz.ui.adapters.GenreRecyclerViewAdapter;
 import rx.Observable;
@@ -35,12 +38,12 @@ import rx.schedulers.Schedulers;
 
 public class ContentFragment extends BaseFragment {
 
+    private static final String TAG_SAVE_ARRAY = "save array";
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
     private YandexArtistApi artistApi;
     private List<Genre> genreList;
     private GenreRecyclerViewAdapter adapter;
-    private static final String TAG_SAVE_ARRAY = "save array";
 
     @NonNull
     @Override
@@ -55,8 +58,11 @@ public class ContentFragment extends BaseFragment {
 
         adapter = new GenreRecyclerViewAdapter();
         recyclerView.setAdapter(adapter);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+//        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
+//        recyclerView.setLayoutManager(gridLayoutManager);
+
+        StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, OrientationHelper.VERTICAL);
+        recyclerView.setLayoutManager(staggeredGridLayoutManager);
         genreList = new ArrayList<>();
 
         if (savedInstanceState == null) {
@@ -83,6 +89,19 @@ public class ContentFragment extends BaseFragment {
             genreList = savedInstanceState.getParcelableArrayList(TAG_SAVE_ARRAY);
             if (genreList != null) adapter.addAllData(genreList);
         }
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                CriticalSectionsHandler criticalSectionsHandler = CriticalSectionsManager.getHandler();
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    criticalSectionsHandler.stopSections();
+                } else {
+                    criticalSectionsHandler.startSection(1);
+                }
+            }
+        });
 
 
     }

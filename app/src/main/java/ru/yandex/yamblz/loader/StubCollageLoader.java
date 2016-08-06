@@ -23,19 +23,19 @@ public class StubCollageLoader implements CollageLoader {
     }
 
     @Override
-    public void loadCollage(List<String> urls, ImageView imageView) {
-        loadCollage(urls, new MyImageViewTarget(imageView), new MyCollageStrategy());
+    public Subscription loadCollage(List<String> urls, ImageView imageView) {
+        return loadCollage(urls, new MyImageViewTarget(imageView), new MyCollageStrategy());
     }
 
     @Override
-    public void loadCollage(List<String> urls, ImageTarget imageTarget) {
-        loadCollage(urls, imageTarget, new MyCollageStrategy());
+    public Subscription loadCollage(List<String> urls, ImageTarget imageTarget) {
+        return loadCollage(urls, imageTarget, new MyCollageStrategy());
     }
 
     @Override
-    public void loadCollage(List<String> urls, ImageView imageView,
-                            CollageStrategy collageStrategy) {
-        loadCollage(urls, new MyImageViewTarget(imageView), collageStrategy);
+    public Subscription loadCollage(List<String> urls, ImageView imageView,
+                                    CollageStrategy collageStrategy) {
+        return loadCollage(urls, new MyImageViewTarget(imageView), collageStrategy);
 
     }
 

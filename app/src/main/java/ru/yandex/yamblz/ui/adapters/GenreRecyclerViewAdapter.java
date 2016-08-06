@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -13,6 +14,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.Task;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.loader.MyCollageStrategy;
 import ru.yandex.yamblz.loader.MyImageViewTarget;
@@ -20,7 +23,7 @@ import ru.yandex.yamblz.models.Genre;
 import rx.Subscription;
 
 /**
- * Created by user on 02.08.16.
+ * Created by SerG3z on 02.08.16.
  */
 
 public class GenreRecyclerViewAdapter extends RecyclerView.Adapter<GenreRecyclerViewAdapter.ViewHolder> {
@@ -51,10 +54,6 @@ public class GenreRecyclerViewAdapter extends RecyclerView.Adapter<GenreRecycler
         notifyDataSetChanged();
     }
 
-    public List<Genre> getAllData() {
-        return genreList;
-    }
-
     public Genre getItem(int position) {
         return genreList.get(position);
     }
@@ -62,7 +61,14 @@ public class GenreRecyclerViewAdapter extends RecyclerView.Adapter<GenreRecycler
     @Override
     public void onViewRecycled(ViewHolder holder) {
         super.onViewRecycled(holder);
-        holder.getSubscription().unsubscribe();
+        Subscription subscription = holder.getSubscription();
+        if (subscription != null) {
+            subscription.unsubscribe();
+        }
+        Task task = holder.getTask();
+        if (task != null) {
+            CriticalSectionsManager.getHandler().removeLowPriorityTask(task);
+        }
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -73,12 +79,10 @@ public class GenreRecyclerViewAdapter extends RecyclerView.Adapter<GenreRecycler
         TextView artistList;
         @BindView(R.id.genres_text_view)
         TextView genreTextView;
-
-        public Subscription getSubscription() {
-            return subscription;
-        }
-
+        @BindView(R.id.progress_bar)
+        ProgressBar progressBar;
         private Subscription subscription;
+        private Task task;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -91,7 +95,19 @@ public class GenreRecyclerViewAdapter extends RecyclerView.Adapter<GenreRecycler
             genreTextView.setText(genre.getGenre());
             artistList.setText(genre.getListArtist().toString());
 
-            subscription = CollageLoaderManager.getLoader().loadCollage(genre.getImageUrls(), new MyImageViewTarget(genreImageView), new MyCollageStrategy());
+            task = CriticalSectionsManager.getHandler().postLowPriorityTask(() ->
+                    subscription = CollageLoaderManager
+                            .getLoader()
+                            .loadCollage(genre.getImageUrls(),
+                                    new MyImageViewTarget(genreImageView), new MyCollageStrategy()));
+        }
+
+        Subscription getSubscription() {
+            return subscription;
+        }
+
+        Task getTask() {
+            return task;
         }
     }
 }
