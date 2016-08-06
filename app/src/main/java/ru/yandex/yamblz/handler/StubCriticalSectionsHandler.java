@@ -16,7 +16,7 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
     private Queue<Task> taskQueue;
     private Set<Integer> criticalSections;
 
-    StubCriticalSectionsHandler() {
+    public StubCriticalSectionsHandler() {
         mainHandler = new Handler(Looper.getMainLooper());
         taskQueue = new ConcurrentLinkedQueue<>();
         criticalSections = new HashSet<>();
