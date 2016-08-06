@@ -121,6 +121,8 @@ dependencies {
         exclude module: 'recyclerview-v7'
         exclude module: 'support-v4'
     }
+
+    compile libraries.gson
 }
 
 configurations.all {
