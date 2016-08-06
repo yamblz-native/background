@@ -84,6 +84,10 @@ android {
 
 // Libraries declared in dependencies.gradle in the root of the project
 dependencies {
+    compile 'com.google.code.gson:gson:2.6.1'
+    compile 'com.squareup.retrofit2:retrofit:2.0.1'
+    compile 'com.squareup.retrofit2:converter-gson:2.0.1'
+
     compile libraries.dagger
     apt libraries.daggerCompiler
 
