@@ -27,6 +27,10 @@ public class Artist {
             this.big = big;
         }
 
+        public String getSmall() {
+            return small;
+        }
+
         @Override
         public String toString() {
             return "Cover{" +

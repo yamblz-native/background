@@ -35,7 +35,7 @@ public class ContentFragment extends BaseFragment implements LoaderManager.Loade
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
-        rv.setAdapter(new GenresAdapter());
+        rv.setAdapter(new GenresAdapter(getContext()));
     }
 
     @Override
