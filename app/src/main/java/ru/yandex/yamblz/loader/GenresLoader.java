@@ -2,14 +2,13 @@ package ru.yandex.yamblz.loader;
 
 import android.support.v4.content.AsyncTaskLoader;
 import android.content.Context;
-import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import ru.yandex.yamblz.data.Artist;
-import ru.yandex.yamblz.data.Genre;
+import ru.yandex.yamblz.models.Artist;
+import ru.yandex.yamblz.models.Genre;
 
 /**
  * Created by grin3s on 06.08.16.

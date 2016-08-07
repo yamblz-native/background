@@ -1,4 +1,4 @@
-package ru.yandex.yamblz.data;
+package ru.yandex.yamblz.models;
 
 import java.util.ArrayList;
 import java.util.Arrays;

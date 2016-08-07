@@ -1,13 +1,8 @@
 package ru.yandex.yamblz.ui.adapters;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.media.tv.TvContract;
 import android.os.Handler;
-import android.support.annotation.MainThread;
-import android.support.v7.app.ActionBar;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -29,8 +23,9 @@ import butterknife.ButterKnife;
 import ru.yandex.yamblz.App;
 import ru.yandex.yamblz.ApplicationModule;
 import ru.yandex.yamblz.R;
-import ru.yandex.yamblz.data.Artist;
-import ru.yandex.yamblz.data.Genre;
+import ru.yandex.yamblz.images.ImageCache;
+import ru.yandex.yamblz.models.Artist;
+import ru.yandex.yamblz.models.Genre;
 import ru.yandex.yamblz.loader.AsyncLoader;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.loader.ImageTarget;
@@ -68,7 +63,7 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenresHold
 
     @Override
     public void onBindViewHolder(GenresHolder holder, int position) {
-        holder.bind(genreList.get(position));
+        holder.bind(genreList.get(position), position);
     }
 
     @Override
@@ -77,7 +72,12 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenresHold
     }
 
     public static class GenresHolder extends RecyclerView.ViewHolder implements ImageTarget {
-        @Inject @Named(ApplicationModule.MAIN_THREAD_POOL_EXECUTOR)
+        private static final String COLLAGE_CACHE_KEY_TEMPLATE = "collage:";
+
+        @Inject @Named(ApplicationModule.IMAGE_CACHE)
+        ImageCache imageCache;
+
+        @Inject @Named(ApplicationModule.THREAD_POOL_EXECUTOR)
         ThreadPoolExecutor executor;
 
         @Inject @Named(ApplicationModule.MAIN_THREAD_HANDLER)
@@ -94,7 +94,7 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenresHold
 
         CollageLoader currentAsyncLoader;
 
-        int counter = 0;
+        int currentLoadingPosition;
 
         public GenresHolder(View itemView, Context context) {
             super(itemView);
@@ -102,8 +102,7 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenresHold
             App.get(context).applicationComponent().inject(this);
         }
 
-        void bind(Genre genre) {
-            Log.d("BIND", "bind");
+        void bind(Genre genre, int position) {
             genreTextView.setText(genre.getName());
             StringBuilder builder = new StringBuilder();
             List<Artist> artistList = genre.getArtistList();
@@ -119,19 +118,34 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenresHold
                 imageUrls.add(artist.getCover().getSmall());
             }
 
-            genreImageView.setImageBitmap(null);
+            Bitmap cachedCollage = fetchCollageFromCache(position);
+            if (cachedCollage != null) {
+                genreImageView.setImageBitmap(cachedCollage);
+            }
+            else {
+                genreImageView.setImageBitmap(null);
 
-            /*
-                here we use the trick from https://developer.android.com/training/displaying-bitmaps/process-bitmap.html
-                remembering the AsyncLoader that was last and comparing it to the one that finished in onLoadBitmap
-             */
-            currentAsyncLoader = new ThreadedCollageLoader(executor, mainThreadHandler);
-            currentAsyncLoader.loadCollage(imageUrls, this);
+                //here we use the trick from https://developer.android.com/training/displaying-bitmaps/process-bitmap.html
+                //remembering the AsyncLoader that was last and comparing it to the one that finished in onLoadBitmap
+
+                currentAsyncLoader = new ThreadedCollageLoader(executor, mainThreadHandler);
+                currentLoadingPosition = position;
+                currentAsyncLoader.loadCollage(imageUrls, this);
+            }
+        }
+
+        private String getCacheKeyForPosition(int position) {
+            return COLLAGE_CACHE_KEY_TEMPLATE + position;
+        }
+
+        private Bitmap fetchCollageFromCache(int position) {
+            return imageCache.get(getCacheKeyForPosition(position));
         }
 
         @Override
         public void onLoadBitmap(Bitmap bitmap, AsyncLoader asyncLoader) {
             if (asyncLoader == currentAsyncLoader) {
+                imageCache.put(getCacheKeyForPosition(currentLoadingPosition), bitmap);
                 genreImageView.setImageBitmap(bitmap);
             }
         }

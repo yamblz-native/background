@@ -1,4 +1,4 @@
-package ru.yandex.yamblz.network;
+package ru.yandex.yamblz.images;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

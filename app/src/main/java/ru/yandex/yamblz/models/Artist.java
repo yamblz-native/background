@@ -1,6 +1,4 @@
-package ru.yandex.yamblz.data;
-
-import android.util.Log;
+package ru.yandex.yamblz.models;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;

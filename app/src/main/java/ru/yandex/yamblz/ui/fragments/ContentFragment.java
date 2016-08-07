@@ -15,7 +15,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import ru.yandex.yamblz.R;
-import ru.yandex.yamblz.data.Genre;
+import ru.yandex.yamblz.models.Genre;
 import ru.yandex.yamblz.loader.GenresLoader;
 import ru.yandex.yamblz.ui.adapters.GenresAdapter;
 
