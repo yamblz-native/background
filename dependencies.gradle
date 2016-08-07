@@ -7,7 +7,7 @@ ext.versions = [
         compileSdk                   : 23,
         buildTools                   : '23.0.3',
 
-        androidGradlePlugin          : '2.2.0-alpha4',
+        androidGradlePlugin          : '2.2.0-alpha6',
         aptGradlePlugin              : '1.8',
         retrolambdaGradlePlugin      : '3.2.5',
         lombokGradlePlugin           : '0.2.3.a2',
@@ -37,6 +37,8 @@ ext.versions = [
         equalsVerifier               : '1.7.5',
         mockito                      : '1.10.19',
         supportTestRunner            : '0.5',
+
+        gson                         : '2.7'
 ]
 
 ext.gradlePlugins = [
@@ -85,4 +87,6 @@ ext.libraries = [
         supportTestRules        : "com.android.support.test:rules:$versions.supportTestRunner",
         espressoCore            : "com.android.support.test.espresso:espresso-core:$versions.espresso",
         espressoContrib         : "com.android.support.test.espresso:espresso-contrib:$versions.espresso",
+
+        gson                    : "com.google.code.gson:gson:$versions.gson",
 ]

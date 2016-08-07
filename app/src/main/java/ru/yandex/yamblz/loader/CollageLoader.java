@@ -4,14 +4,14 @@ import android.widget.ImageView;
 
 import java.util.List;
 
-public interface CollageLoader {
+public abstract class CollageLoader implements AsyncLoader{
 
-    void loadCollage(List<String> urls, ImageView imageView);
+    public abstract void loadCollage(List<String> urls, ImageView imageView);
 
-    void loadCollage(List<String> urls, ImageTarget imageTarget);
+    public abstract void loadCollage(List<String> urls, ImageTarget imageTarget);
 
-    void loadCollage(List<String> urls, ImageView imageView, CollageStrategy collageStrategy);
+    public abstract void loadCollage(List<String> urls, ImageView imageView, CollageStrategy collageStrategy);
 
-    void loadCollage(List<String> urls, ImageTarget imageTarget, CollageStrategy collageStrategy);
+    public abstract void loadCollage(List<String> urls, ImageTarget imageTarget, CollageStrategy collageStrategy);
 
 }
