@@ -62,7 +62,7 @@ public class ContentFragment extends BaseFragment implements LoaderManager.Loade
 
     @Override
     public void onLoaderReset(Loader<List<Genre>> loader) {
-        ((GenresAdapter) rv.getAdapter()).resetData();
+        
     }
 
     private static class RecyclerScrollListener extends RecyclerView.OnScrollListener {
