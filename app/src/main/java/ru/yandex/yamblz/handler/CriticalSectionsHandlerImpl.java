@@ -4,10 +4,10 @@ import android.os.Handler;
 import android.os.HandlerThread;
 
 import java.util.HashSet;
-import java.util.LinkedHashMap;
+
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.TreeMap;
+
 
 public class CriticalSectionsHandlerImpl implements CriticalSectionsHandler {
 
@@ -16,9 +16,13 @@ public class CriticalSectionsHandlerImpl implements CriticalSectionsHandler {
     private Queue<Task> lowPriorityTasksQueue = new LinkedList<>();
 
     private Handler mainThreadHandler;
+    private Handler waitingHandler;
 
     public CriticalSectionsHandlerImpl(Handler mainThreadHandler) {
         this.mainThreadHandler = mainThreadHandler;
+        HandlerThread waitingThread = new HandlerThread("waiting");
+        waitingThread.start();
+        waitingHandler = new Handler(waitingThread.getLooper());
     }
 
     @Override
@@ -47,22 +51,30 @@ public class CriticalSectionsHandlerImpl implements CriticalSectionsHandler {
         else {
             mainThreadHandler.post(task::run);
         }
-
     }
 
     @Override
     public void postLowPriorityTaskDelayed(Task task, int delay) {
-
+        waitingHandler.postDelayed(() -> {
+            if (isInSection()) {
+                lowPriorityTasksQueue.add(task);
+            }
+            else {
+                mainThreadHandler.post(task::run);
+            }
+        }, delay);
+        tasksInQueue.add(task);
     }
 
     @Override
     public void removeLowPriorityTask(Task task) {
-
+        tasksInQueue.remove(task);
     }
 
     @Override
     public void removeLowPriorityTasks() {
-
+        tasksInQueue.clear();
+        lowPriorityTasksQueue.clear();
     }
 
     boolean isInSection() {
