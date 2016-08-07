@@ -7,6 +7,7 @@ import android.widget.ImageView;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -41,7 +42,7 @@ public class ThreadedCollageLoader extends CollageLoader {
 
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget) {
-        loadCollage(urls, imageTarget, new DumbCollageStrategy());
+        loadCollage(urls, imageTarget, new PowerOfTwoCollageStrategy());
     }
 
     @Override
@@ -65,7 +66,6 @@ public class ThreadedCollageLoader extends CollageLoader {
             List<Future<Bitmap>> futures = new ArrayList<>();
             for (String url : urls) {
                 futures.add(mExecutor.submit(new ImageDownloadTask(url)));
-                break;
             }
             List<Bitmap> bitmapList = new ArrayList<>();
             try {
@@ -73,6 +73,7 @@ public class ThreadedCollageLoader extends CollageLoader {
                     bitmapList.add(future.get());
                 }
                 Log.d("POST", "POST2");
+                Collections.shuffle(bitmapList);
                 Bitmap collageBitmap = collageStrategy.create(bitmapList);
                 mainThreadHandler.post(() -> {
                     ImageTarget imageTarget = imageTargetRef.get();

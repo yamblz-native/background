@@ -120,15 +120,20 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenresHold
             }
 
             genreImageView.setImageBitmap(null);
+
+            /*
+                here we use the trick from https://developer.android.com/training/displaying-bitmaps/process-bitmap.html
+                remembering the AsyncLoader that was last and comparing it to the one that finished in onLoadBitmap
+             */
             currentAsyncLoader = new ThreadedCollageLoader(executor, mainThreadHandler);
             currentAsyncLoader.loadCollage(imageUrls, this);
         }
 
         @Override
         public void onLoadBitmap(Bitmap bitmap, AsyncLoader asyncLoader) {
-            counter++;
-            Log.d("COUNTER", Integer.toString(counter));
-            genreImageView.setImageBitmap(bitmap);
+            if (asyncLoader == currentAsyncLoader) {
+                genreImageView.setImageBitmap(bitmap);
+            }
         }
     }
 
