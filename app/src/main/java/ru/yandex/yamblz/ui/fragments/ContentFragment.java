@@ -13,8 +13,14 @@ import android.view.ViewGroup;
 
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import butterknife.BindView;
+import ru.yandex.yamblz.App;
+import ru.yandex.yamblz.ApplicationModule;
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSectionsHandler;
 import ru.yandex.yamblz.models.Genre;
 import ru.yandex.yamblz.loader.GenresLoader;
 import ru.yandex.yamblz.ui.adapters.GenresAdapter;
@@ -23,10 +29,14 @@ public class ContentFragment extends BaseFragment implements LoaderManager.Loade
     @BindView(R.id.rv)
     RecyclerView rv;
 
+    @Inject @Named(ApplicationModule.MAIN_THREAD_CRITICAL_SECTIONS_HANDLER)
+    CriticalSectionsHandler criticalSectionsHandler;
+
     @NonNull
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_content, container, false);
+        App.get(getContext()).applicationComponent().inject(this);
         getLoaderManager().initLoader(0, null, this);
         return rootView;
     }
@@ -36,6 +46,7 @@ public class ContentFragment extends BaseFragment implements LoaderManager.Loade
         super.onViewCreated(view, savedInstanceState);
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         rv.setAdapter(new GenresAdapter(getContext()));
+        rv.setOnScrollListener(new RecyclerScrollListener(criticalSectionsHandler));
     }
 
     @Override
@@ -51,5 +62,28 @@ public class ContentFragment extends BaseFragment implements LoaderManager.Loade
     @Override
     public void onLoaderReset(Loader<List<Genre>> loader) {
         ((GenresAdapter) rv.getAdapter()).resetData();
+    }
+
+    private static class RecyclerScrollListener extends RecyclerView.OnScrollListener {
+        CriticalSectionsHandler criticalSectionsHandler;
+
+        public RecyclerScrollListener(CriticalSectionsHandler criticalSectionsHandler) {
+            this.criticalSectionsHandler = criticalSectionsHandler;
+        }
+
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+            switch (newState) {
+                case RecyclerView.SCROLL_STATE_DRAGGING:
+                    criticalSectionsHandler.startSection(0);
+                    break;
+                case RecyclerView.SCROLL_STATE_IDLE:
+                    criticalSectionsHandler.stopSection(0);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }

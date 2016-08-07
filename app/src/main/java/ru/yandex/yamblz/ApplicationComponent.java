@@ -17,6 +17,7 @@ import ru.yandex.yamblz.developer_settings.LeakCanaryProxy;
 import ru.yandex.yamblz.images.ImageCache;
 import ru.yandex.yamblz.ui.activities.MainActivity;
 import ru.yandex.yamblz.ui.adapters.GenresAdapter;
+import ru.yandex.yamblz.ui.fragments.ContentFragment;
 
 @Singleton
 @Component(modules = {
@@ -45,6 +46,9 @@ public interface ApplicationComponent {
     @Named(ApplicationModule.IMAGE_CACHE) @Singleton
     ImageCache imageCache();
 
+
+
     void inject(@NonNull MainActivity mainActivity);
     void inject(@NonNull GenresAdapter.GenresHolder genresHolder);
+    void inject(@NonNull ContentFragment contentFragment);
 }

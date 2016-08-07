@@ -14,6 +14,8 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import ru.yandex.yamblz.handler.CriticalSectionsHandler;
+import ru.yandex.yamblz.handler.CriticalSectionsHandlerImpl;
 import ru.yandex.yamblz.images.ImageCache;
 
 @Module
@@ -22,6 +24,7 @@ public class ApplicationModule {
     public static final String MAIN_THREAD_HANDLER = "main_thread_handler";
     public static final String THREAD_POOL_EXECUTOR = "main_thread_pool_executor";
     public static final String IMAGE_CACHE = "image_cache";
+    public static final String MAIN_THREAD_CRITICAL_SECTIONS_HANDLER = "image_cache";
 
     @NonNull
     private final Application application;
@@ -50,6 +53,11 @@ public class ApplicationModule {
     public ImageCache provideImageCache() {
         int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
         return new ImageCache(maxMemory / 8);
+    }
+
+    @Provides @Named(MAIN_THREAD_CRITICAL_SECTIONS_HANDLER) @Singleton
+    public CriticalSectionsHandler provideMainThreadCriticalSectionHandler(@Named(MAIN_THREAD_HANDLER) Handler mainThreadHandler) {
+        return new CriticalSectionsHandlerImpl(mainThreadHandler);
     }
 
 }

@@ -23,6 +23,8 @@ import butterknife.ButterKnife;
 import ru.yandex.yamblz.App;
 import ru.yandex.yamblz.ApplicationModule;
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSectionsHandler;
+import ru.yandex.yamblz.handler.Task;
 import ru.yandex.yamblz.images.ImageCache;
 import ru.yandex.yamblz.models.Artist;
 import ru.yandex.yamblz.models.Genre;
@@ -83,6 +85,9 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenresHold
         @Inject @Named(ApplicationModule.MAIN_THREAD_HANDLER)
         Handler mainThreadHandler;
 
+        @Inject @Named(ApplicationModule.MAIN_THREAD_CRITICAL_SECTIONS_HANDLER)
+        CriticalSectionsHandler criticalSectionsHandler;
+
         @BindView(R.id.genre_textview)
         TextView genreTextView;
 
@@ -128,7 +133,7 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenresHold
         @Override
         public void onLoadBitmap(Bitmap bitmap, AsyncLoader asyncLoader) {
             if (asyncLoader == currentAsyncLoader) {
-                genreImageView.setImageBitmap(bitmap);
+                criticalSectionsHandler.postLowPriorityTask(() -> genreImageView.setImageBitmap(bitmap));
             }
         }
     }
