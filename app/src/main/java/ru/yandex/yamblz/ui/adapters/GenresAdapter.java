@@ -94,8 +94,6 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenresHold
 
         CollageLoader currentAsyncLoader;
 
-        int currentLoadingPosition;
-
         public GenresHolder(View itemView, Context context) {
             super(itemView);
             ButterKnife.bind(this, itemView);
@@ -118,34 +116,18 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.GenresHold
                 imageUrls.add(artist.getCover().getSmall());
             }
 
-            Bitmap cachedCollage = fetchCollageFromCache(position);
-            if (cachedCollage != null) {
-                genreImageView.setImageBitmap(cachedCollage);
-            }
-            else {
-                genreImageView.setImageBitmap(null);
+            genreImageView.setImageBitmap(null);
 
-                //here we use the trick from https://developer.android.com/training/displaying-bitmaps/process-bitmap.html
-                //remembering the AsyncLoader that was last and comparing it to the one that finished in onLoadBitmap
+            //here we use the trick from https://developer.android.com/training/displaying-bitmaps/process-bitmap.html
+            //remembering the AsyncLoader that was last and comparing it to the one that finished in onLoadBitmap
 
-                currentAsyncLoader = new ThreadedCollageLoader(executor, mainThreadHandler);
-                currentLoadingPosition = position;
-                currentAsyncLoader.loadCollage(imageUrls, this);
-            }
-        }
-
-        private String getCacheKeyForPosition(int position) {
-            return COLLAGE_CACHE_KEY_TEMPLATE + position;
-        }
-
-        private Bitmap fetchCollageFromCache(int position) {
-            return imageCache.get(getCacheKeyForPosition(position));
+            currentAsyncLoader = new ThreadedCollageLoader(executor, mainThreadHandler, imageCache);
+            currentAsyncLoader.loadCollage(imageUrls, this);
         }
 
         @Override
         public void onLoadBitmap(Bitmap bitmap, AsyncLoader asyncLoader) {
             if (asyncLoader == currentAsyncLoader) {
-                imageCache.put(getCacheKeyForPosition(currentLoadingPosition), bitmap);
                 genreImageView.setImageBitmap(bitmap);
             }
         }

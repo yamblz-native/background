@@ -2,6 +2,7 @@ package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.widget.ImageView;
 
 import java.lang.ref.WeakReference;
@@ -14,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import ru.yandex.yamblz.images.ImageCache;
 import ru.yandex.yamblz.images.ImageDownloadTask;
 
 /**
@@ -33,10 +35,13 @@ public class ThreadedCollageLoader extends CollageLoader {
     List<String> urls;
     CollageStrategy collageStrategy;
 
+    ImageCache imageCache;
 
-    public ThreadedCollageLoader(ThreadPoolExecutor mExecutor, Handler mainThreadHandler) {
+
+    public ThreadedCollageLoader(ThreadPoolExecutor mExecutor, Handler mainThreadHandler, ImageCache imageCache) {
         this.mExecutor = mExecutor;
         this.mainThreadHandler = mainThreadHandler;
+        this.imageCache = imageCache;
     }
 
     @Override
@@ -65,27 +70,38 @@ public class ThreadedCollageLoader extends CollageLoader {
     private class MakeCollageTask implements Runnable {
         @Override
         public void run() {
-            List<Future<Bitmap>> futures = new ArrayList<>();
-            for (String url : urls) {
-                futures.add(mExecutor.submit(new ImageDownloadTask(url)));
-            }
-            List<Bitmap> bitmapList = new ArrayList<>();
-            try {
-                for (Future<Bitmap> future : futures) {
-                    bitmapList.add(future.get());
+            String cacheKey = TextUtils.join("", urls);
+            Bitmap cachedCollage = imageCache.get(cacheKey);
+            if (cachedCollage == null) {
+                List<Future<Bitmap>> futures = new ArrayList<>();
+                for (String url : urls) {
+                    futures.add(mExecutor.submit(new ImageDownloadTask(url)));
                 }
-                Collections.shuffle(bitmapList);
-                Bitmap collageBitmap = collageStrategy.create(bitmapList);
-                mainThreadHandler.post(() -> {
-                    ImageTarget imageTarget = imageTargetRef.get();
-                    if (imageTarget != null) {
-                        // TODO: put this into ui thread queue
-                        imageTarget.onLoadBitmap(collageBitmap, ThreadedCollageLoader.this);
+                List<Bitmap> bitmapList = new ArrayList<>();
+                try {
+                    for (Future<Bitmap> future : futures) {
+                        bitmapList.add(future.get());
                     }
-                });
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+                    Collections.shuffle(bitmapList);
+                    Bitmap collageBitmap = collageStrategy.create(bitmapList);
+                    imageCache.put(cacheKey, collageBitmap);
+                    postResult(collageBitmap);
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
             }
+            else {
+                postResult(cachedCollage);
+            }
+        }
+
+        private void postResult(Bitmap bitmap) {
+            mainThreadHandler.post(() -> {
+                ImageTarget imageTarget = imageTargetRef.get();
+                if (imageTarget != null) {
+                    imageTarget.onLoadBitmap(bitmap, ThreadedCollageLoader.this);
+                }
+            });
         }
     }
 
