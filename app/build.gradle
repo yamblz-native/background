@@ -86,6 +86,7 @@ android {
 dependencies {
     compile libraries.dagger
     apt libraries.daggerCompiler
+    compile 'com.jakewharton.rxbinding:rxbinding-design:0.4.0'
 
     compile libraries.supportAnnotations
     compile libraries.supportAppCompat
@@ -104,6 +105,16 @@ dependencies {
     compile libraries.tinyDancer
     compile libraries.lynx
     compile libraries.processPhoenix
+
+    compile libraries.rxjava
+    compile libraries.rxandroid
+    compile libraries.jacksonConverter
+    compile libraries.jacksonDatabind
+    compile libraries.jacksonAnnotations
+    compile libraries.retrofit
+    compile libraries.retrofitAdapter
+    compile libraries.retrofitAdapter
+    compile libraries.universalImageLoader
 
     testCompile libraries.junit
     testCompile libraries.robolectric
