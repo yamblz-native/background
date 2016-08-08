@@ -18,7 +18,7 @@ import rx.plugins.RxJavaPlugins;
 
 public class ApiServices {
 
-    public final static String API_URL = "http://cache-default04e.cdn.yandex.net/download.cdn.yandex.net/";
+    public final static String API_URL = "http://download.cdn.yandex.net/";
 
     private final ApiWebService webService;
 
