@@ -30,7 +30,6 @@ public class JsonLoad {
     }
 
     public List<Singer> getSinger() throws IOException {
-        Log.w("Loader", "loading");
         URL url = new URL("http://cache-spb05.cdn.yandex.net/download.cdn.yandex.net/mobilization-2016/artists.json");
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();

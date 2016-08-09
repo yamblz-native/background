@@ -75,16 +75,15 @@ public class StubCriticalSectionsHandler implements CriticalSectionsHandler {
             handler.postDelayed(delayedTask, delay);
             delayed.put(task, delayedTask);
         }
-
     }
 
     @Override
     public void removeLowPriorityTask(Task task) {
+        Log.w("HANDLER", "REMOVING");
         tasks.remove(task);
         Runnable r = delayed.remove(task);
         if (r != null)
             handler.removeCallbacks(r);
-
     }
 
     @Override

@@ -15,7 +15,6 @@ public class CollageOneOrFour implements CollageStrategy {
 
     @Override
     public Bitmap create(List<Bitmap> bitmaps) {
-        Log.w("Collage", "creating collage from bitmaps");
         if (bitmaps == null) return null;
         Bitmap bitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888);
         if (bitmaps.size() > 0 && bitmaps.size() < 4) {

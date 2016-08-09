@@ -1,6 +1,7 @@
 package ru.yandex.yamblz.ui.adapters;
 
 import android.content.Intent;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -22,33 +23,43 @@ public class FirstRecyclerAdapter extends RecyclerAdapter {
     private CollageLoader collageLoader;
     private Map<String, List<String>> urls; // genre -> list of urls
     private CriticalSectionsHandler sectionsHandler;
-    private SparseArray<Task> startedDownloads;
+    private Map<RecyclerView.ViewHolder, Task> startedDownloads;
 
     public FirstRecyclerAdapter(Map<String, Stream<Singer>> s, CollageLoader loader) {
         Log.w("Adapter", "constructor");
         collageLoader = loader;
         sectionsHandler = CriticalSectionsManager.getHandler();
         urls = new HashMap<>();
-        startedDownloads = new SparseArray<>();
+        startedDownloads = new HashMap<>();
         setSingers(s);
     }
 
     @Override
     public void onBindViewHolder(GroupsViewHolder holder, int position) {
-        Log.w("Adapter", "onBind");
         holder.genre.get().setText(genres_list.get(position));
         holder.cover.get().setImageBitmap(null);
-        startedDownloads.remove(position);
-        Task newTask = () -> collageLoader.loadCollage(urls.get(genres_list.get(position)), holder.cover.get());
+        Task old = startedDownloads.get(holder);
+        if (old != null) {
+            sectionsHandler.removeLowPriorityTask(old);
+        }
+        startedDownloads.remove(holder);
+        Task newTask = () -> holder.setSubscription(collageLoader.loadCollage(urls.get(genres_list.get(position)),
+                holder.cover.get()));
+        startedDownloads.put(holder, newTask);
         sectionsHandler.postLowPriorityTask(newTask);
-        startedDownloads.put(position, newTask);
+    }
+
+    @Override
+    public void onViewRecycled(GroupsViewHolder holder) {
+        super.onViewRecycled(holder);
+        if (holder.subscription != null)
+            holder.subscription.unsubscribe();
     }
 
     public void setSingers(Map<String, Stream<Singer>> genres) {
-        Log.w("Adapter", "setSingers");
         if (genres == null) return;
         genres_list = new ArrayList<>(genres.keySet());
-        for (String genre: genres_list) {
+        for (String genre : genres_list) {
             List<String> url = new ArrayList<>();
             Stream<Singer> stream = genres.get(genre);
             stream.forEach(singer -> url.add(singer.getCover_small()));
