@@ -1,8 +1,6 @@
 package ru.yandex.yamblz.loader.square;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Log;
 import android.util.SparseArray;
 import android.widget.ImageView;
 
@@ -15,13 +13,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import ru.yandex.yamblz.loader.CollageLoader;
 import ru.yandex.yamblz.loader.CollageStrategy;
 import ru.yandex.yamblz.loader.ImageTarget;
-import ru.yandex.yamblz.loader.ImageTargetWithId;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -53,7 +47,7 @@ public class CollageLoaderSquare implements CollageLoader {
     @Override
     public void loadCollage(List<String> urls, ImageView imageView, CollageStrategy collageStrategy) {
         WeakReference<ImageView> imageViewWeakReference = new WeakReference<>(imageView);
-        ImageTarget imageTarget = new ImageTargetWithId() {
+        ImageTarget imageTarget = new ImageTarget() {
             @Override
             public void onLoadBitmap(Bitmap bitmap) {
                 ImageView targetImageView = imageViewWeakReference.get();
@@ -63,12 +57,12 @@ public class CollageLoaderSquare implements CollageLoader {
             }
 
             @Override
-            public int getId() {
+            public int hashCode() { // Раньше тут был костыль, но теперь его нет
                 ImageView targetImageView = imageViewWeakReference.get();
                 if (targetImageView != null) {
                     return targetImageView.hashCode();
                 } else {
-                    return super.getId();
+                    return 0;
                 }
             }
         };
@@ -78,12 +72,7 @@ public class CollageLoaderSquare implements CollageLoader {
 
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget, CollageStrategy collageStrategy) {
-        int imageTargetId;
-        if (imageTarget instanceof ImageTargetWithId) {
-            imageTargetId = ((ImageTargetWithId) imageTarget).getId();
-        } else {
-            imageTargetId = imageTarget.hashCode();
-        }
+        int imageTargetId = imageTarget.hashCode();
 
         Subscription subscription = mSubscriptionMap.get(imageTargetId);
         if (subscription != null) {
