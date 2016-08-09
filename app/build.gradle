@@ -105,6 +105,16 @@ dependencies {
     compile libraries.lynx
     compile libraries.processPhoenix
 
+    compile 'io.reactivex:rxandroid:1.2.0'
+    // Because RxAndroid releases are few and far between, it is recommended you also
+    // explicitly depend on RxJava's latest version for bug fixes and new features.
+    compile 'io.reactivex:rxjava:1.1.4'
+    compile 'io.reactivex:rxjava-math:1.0.0'
+    compile 'io.reactivex:rxjava-math:1.0.0'
+    def solidVersion = '2.0.3'
+    compile "info.android15.solid:streams:$solidVersion"
+    compile "info.android15.solid:collections:$solidVersion"
+
     testCompile libraries.junit
     testCompile libraries.robolectric
     testCompile libraries.assertJ
