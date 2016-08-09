@@ -10,7 +10,7 @@ public class CollageLoaderManager {
 
     public static CollageLoader getLoader() {
         if (sCollageLoader == null) {
-            sCollageLoader = new StubCollageLoader();
+            throw new RuntimeException("Надо было инициализировать");
         }
         return sCollageLoader;
     }
