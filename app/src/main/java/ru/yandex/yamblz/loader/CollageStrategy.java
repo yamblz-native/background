@@ -7,4 +7,5 @@ import java.util.List;
 public interface CollageStrategy {
 
     Bitmap create(List<Bitmap> bitmaps);
+
 }

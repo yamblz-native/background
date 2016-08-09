@@ -3,6 +3,7 @@ package ru.yandex.yamblz.ui.activities;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.View;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -10,7 +11,7 @@ import javax.inject.Named;
 import ru.yandex.yamblz.App;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.developer_settings.DeveloperSettingsModule;
-import ru.yandex.yamblz.ui.fragments.ContentFragment;
+import ru.yandex.yamblz.ui.fragments.ArtistListFragment;
 import ru.yandex.yamblz.ui.other.ViewModifier;
 
 public class MainActivity extends BaseActivity {
@@ -27,10 +28,14 @@ public class MainActivity extends BaseActivity {
         setContentView(viewModifier.modify(getLayoutInflater().inflate(R.layout.activity_main, null)));
 
         if (savedInstanceState == null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.main_frame_layout, new ContentFragment())
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_frame_layout, new ArtistListFragment())
                     .commit();
         }
     }
+
+    public void onClick(View v) {
+        return;
+    }
+
+
 }
