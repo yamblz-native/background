@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
 import ru.yandex.yamblz.ui.parser.MyJsonParser;
 
 
@@ -38,6 +39,19 @@ public class ArtistListFragment extends BaseFragment {
             LinearLayout linearLayout = (LinearLayout) inflater.inflate(R.layout.fragment_content, container, false);
 
             mRecyclerView = (RecyclerView) linearLayout.findViewById(R.id.my_recycler_view);
+            mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+                    if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                        Log.i("criticalSection", "start");
+                        CriticalSectionsManager.getHandler().startSection(228);
+                    } else if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                        Log.i("criticalSection", "stop");
+                        CriticalSectionsManager.getHandler().stopSection(228);
+                    }
+                }
+            });
             mLayoutManager = new LinearLayoutManager(getActivity());
             mRecyclerView.setLayoutManager(mLayoutManager);
             mAdapter = new ArtistAdapter(getActivity());
