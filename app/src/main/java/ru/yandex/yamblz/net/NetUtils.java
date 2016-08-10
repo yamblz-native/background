@@ -17,7 +17,6 @@ import rx.Observable;
 public class NetUtils {
     public static Observable<Bitmap> loadBitmap(String src) {
         return Observable.fromCallable(() -> getBitmapFromURL(src));
-
     }
 
     public static Bitmap getBitmapFromURL(String src) {

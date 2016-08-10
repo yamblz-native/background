@@ -12,12 +12,19 @@ import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class CollageLoaderImpl implements CollageLoader {
     public static final int MAX_IMAGES_PER_COLLAGE = 16;
 
     private static CollageStrategy collageStrategy = new CollageStrategySquareImpl();
-    private LruCache<List<String>, Bitmap> collageCache = new LruCache<>(10);
+    CompositeSubscription subs;
+    private LruCache<List<String>, Bitmap> collageCache;
+
+    public CollageLoaderImpl() {
+        this.collageCache = new LruCache<>(20);
+        this.subs = new CompositeSubscription();
+    }
 
     @Override
     public void loadCollage(List<String> urls, ImageView imageView) {
@@ -33,16 +40,20 @@ public class CollageLoaderImpl implements CollageLoader {
     @Override
     public void loadCollage(List<String> urls, ImageView imageView,
                             CollageStrategy collageStrategy) {
-        final Subscription subscription = Observable.concat(
+        final Subscription subscription = loadCollageObservable(urls, collageStrategy)
+                .subscribe(imageView::setImageBitmap);
+
+        subs.add(subscription);
+    }
+
+    private Observable<Bitmap> loadCollageObservable(List<String> urls, CollageStrategy collageStrategy) {
+        return Observable.concat(
                 Observable.fromCallable(() -> collageCache.get(urls))
                         .filter(cache -> cache != null),
                 downloadAndCreateCollage(collageStrategy, urls))
                 .takeFirst(bitmap -> true)
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(imageView::setImageBitmap);
-
-//        imageView.setTag(subscription);
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     @NonNull
@@ -59,7 +70,15 @@ public class CollageLoaderImpl implements CollageLoader {
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget,
                             CollageStrategy collageStrategy) {
+        final Subscription subscription = loadCollageObservable(urls, collageStrategy)
+                .subscribe(imageTarget::onLoadBitmap);
 
+        subs.add(subscription);
     }
 
+    @Override
+    public void abortLoading() {
+        subs.unsubscribe();
+        subs = new CompositeSubscription();
+    }
 }

@@ -125,6 +125,7 @@ public class GenresPresenter extends Presenter<GenresFragment> {
 
     public void startScrolling() {
         CriticalSectionsManager.getHandler().startSection(420);
+        CollageLoaderManager.getLoader().abortLoading();
     }
 
     public void stopScrolling() {
@@ -140,6 +141,9 @@ public class GenresPresenter extends Presenter<GenresFragment> {
     public void unbindView(@NonNull GenresFragment view) {
         super.unbindView(view);
         loadGenres.unsubscribe();
+        CollageLoaderManager.getLoader().abortLoading();
+        CriticalSectionsManager.getHandler().stopSections();
+        CriticalSectionsManager.getHandler().removeLowPriorityTasks();
     }
 }
 
