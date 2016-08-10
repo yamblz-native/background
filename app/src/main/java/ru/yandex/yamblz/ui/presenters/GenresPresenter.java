@@ -13,6 +13,7 @@ import ru.yandex.yamblz.App;
 import ru.yandex.yamblz.data.Genre;
 import ru.yandex.yamblz.data.Performer;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.Task;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.net.IPerformer;
 import ru.yandex.yamblz.ui.fragments.GenresFragment;
@@ -111,8 +112,15 @@ public class GenresPresenter extends Presenter<GenresFragment> {
             view.setRefreshing(false);
     }
 
-    public void retrieveGenreSmallImage(Genre genre, ImageView toPost) {
-        CriticalSectionsManager.getHandler().postLowPriorityTask(() -> CollageLoaderManager.getLoader().loadCollage(genre.getUrls(), toPost));
+    public Task retrieveGenreSmallImage(Genre genre, ImageView toPost) {
+        final Task task = () -> CollageLoaderManager.getLoader().loadCollage(genre.getUrls(), toPost);
+        toPost.setTag(task);
+        CriticalSectionsManager.getHandler().postLowPriorityTask(task);
+        return task;
+    }
+
+    public void removeTask(Task task) {
+        CriticalSectionsManager.getHandler().removeLowPriorityTask(task);
     }
 
     public void startScrolling() {

@@ -13,7 +13,8 @@ import java.util.List;
 
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.data.Genre;
-import rx.Subscription;
+import ru.yandex.yamblz.handler.Task;
+
 
 /**
  * Created by dalexiv on 4/21/16.
@@ -24,11 +25,11 @@ import rx.Subscription;
 public class PerformersAdapter extends RecyclerView.Adapter<PerformersAdapter.ViewHolder> {
     private List<Genre> dataset;
     private Fragment fragment;
-    private IRetrieveGenreImage iRetrieveGenreImage;
+    private ILoadImage iLoadImage;
 
-    public PerformersAdapter(Fragment fragment, IRetrieveGenreImage iRetrieveGenreImage) {
+    public PerformersAdapter(Fragment fragment, ILoadImage iLoadImage) {
         this.fragment = fragment;
-        this.iRetrieveGenreImage = iRetrieveGenreImage;
+        this.iLoadImage = iLoadImage;
         this.dataset = new ArrayList<>();
     }
 
@@ -43,16 +44,25 @@ public class PerformersAdapter extends RecyclerView.Adapter<PerformersAdapter.Vi
     public void onBindViewHolder(ViewHolder holder, int position) {
         Genre genre = dataset.get(position);
 
-        // Removing old image and cancelling old subscription
+        // Removing old image
         holder.imageView.setImageResource(0);
-        final Object tag = holder.imageView.getTag();
-        if (tag instanceof Subscription) {
-            Subscription sub = (Subscription) tag;
-            if (!sub.isUnsubscribed())
-                sub.unsubscribe();
+
+//        // Cancelling old subscription
+//        final Object subscriptionTag = holder.imageView.getTag();
+//        if (subscriptionTag instanceof Subscription) {
+//            Subscription sub = (Subscription) subscriptionTag;
+//            if (!sub.isUnsubscribed())
+//                sub.unsubscribe();
+//        }
+
+        // Removing old tasks
+        final Object taskTag = holder.imageView.getTag();
+        if (taskTag instanceof Task) {
+            iLoadImage.removeOldTask((Task) taskTag);
         }
+
         // Just redirect call to presenter
-        iRetrieveGenreImage.postDownloadingTask(genre, holder.imageView);
+        iLoadImage.postDownloadingTask(genre, holder.imageView);
         // Setting various text fields
         holder.textViewName.setText(genre.getName());
     }

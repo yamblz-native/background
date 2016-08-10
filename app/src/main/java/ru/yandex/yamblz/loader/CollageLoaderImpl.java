@@ -9,11 +9,13 @@ import java.util.List;
 
 import ru.yandex.yamblz.net.NetUtils;
 import rx.Observable;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class CollageLoaderImpl implements CollageLoader {
     public static final int MAX_IMAGES_PER_COLLAGE = 16;
+
     private static CollageStrategy collageStrategy = new CollageStrategySquareImpl();
     private LruCache<List<String>, Bitmap> collageCache = new LruCache<>(10);
 
@@ -31,14 +33,16 @@ public class CollageLoaderImpl implements CollageLoader {
     @Override
     public void loadCollage(List<String> urls, ImageView imageView,
                             CollageStrategy collageStrategy) {
-        imageView.setTag(Observable.concat(
+        final Subscription subscription = Observable.concat(
                 Observable.fromCallable(() -> collageCache.get(urls))
                         .filter(cache -> cache != null),
                 downloadAndCreateCollage(collageStrategy, urls))
                 .takeFirst(bitmap -> true)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(imageView::setImageBitmap));
+                .subscribe(imageView::setImageBitmap);
+
+//        imageView.setTag(subscription);
     }
 
     @NonNull

@@ -31,13 +31,17 @@ public class CriticalSectionsHandlerImpl implements CriticalSectionsHandler {
 
     @Override
     public void postLowPriorityTask(Task task) {
-       executeTaskIfPossible(task);
+        taskStack.push(task);
+        executeTaskIfPossible(task);
     }
 
     @Override
     public void postLowPriorityTaskDelayed(Task task, int delay) {
         new Handler(Looper.myLooper())
-                .postDelayed(() -> executeTaskIfPossible(task), delay);
+                .postDelayed(() -> {
+                    taskStack.push(task);
+                    executeTaskIfPossible(task);
+                }, delay);
     }
 
     @Override
@@ -51,17 +55,16 @@ public class CriticalSectionsHandlerImpl implements CriticalSectionsHandler {
     }
 
     private void executeTaskIfPossible(Task task) {
-        if (sections.isEmpty())
+        if (sections.isEmpty()) {
+            taskStack.remove(task);
             task.run();
-        else
-            taskStack.push(task);
+        }
     }
 
     private void executeAllTaskIfPossible() {
         while (!taskStack.isEmpty()) {
-            final Task currentTask = taskStack.pop();
-            executeTaskIfPossible(currentTask);
-            taskStack.remove(currentTask);
+            Task task = taskStack.pop();
+            task.run();
         }
     }
 }

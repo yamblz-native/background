@@ -24,7 +24,7 @@ import ru.yandex.yamblz.App;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.data.Genre;
 import ru.yandex.yamblz.handler.Task;
-import ru.yandex.yamblz.ui.adapters.IRetrieveGenreImage;
+import ru.yandex.yamblz.ui.adapters.ILoadImage;
 import ru.yandex.yamblz.ui.adapters.PerformersAdapter;
 import ru.yandex.yamblz.ui.presenters.GenresPresenter;
 
@@ -84,15 +84,15 @@ public class GenresFragment extends BaseFragment implements IDisplayPerformers {
 
     private void configureRecyclerViewAndAdapter() {
         // Initializing adapter
-        adapter = new PerformersAdapter(this, new IRetrieveGenreImage() {
+        adapter = new PerformersAdapter(this, new ILoadImage() {
             @Override
-            public void postDownloadingTask(Genre genre, ImageView toPost) {
-                presenter.retrieveGenreSmallImage(genre, toPost);
+            public Task postDownloadingTask(Genre genre, ImageView toPost) {
+                return presenter.retrieveGenreSmallImage(genre, toPost);
             }
 
             @Override
             public void removeOldTask(Task task) {
-
+                presenter.removeTask(task);
             }
         });
 

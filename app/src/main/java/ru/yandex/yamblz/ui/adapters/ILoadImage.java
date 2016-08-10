@@ -8,7 +8,7 @@ import ru.yandex.yamblz.handler.Task;
 /**
  * Created by dalexiv on 8/8/16.
  */
-public interface IRetrieveGenreImage {
-    void postDownloadingTask(Genre genre, ImageView toPost);
+public interface ILoadImage {
+    Task postDownloadingTask(Genre genre, ImageView toPost);
     void removeOldTask(Task task);
 }
