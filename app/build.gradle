@@ -87,6 +87,22 @@ dependencies {
     compile libraries.dagger
     apt libraries.daggerCompiler
 
+//    compile libraries.retrofit
+//    сompile libraries.retrofitAdapter
+//    сompile libraries.retrofitConverterGson
+//    сompile libraries.retrofitLoggingInterceptor
+
+    // Retrofit
+    // TODO refactor
+    compile 'com.squareup.retrofit2:adapter-rxjava:2.0.0-beta3'
+    compile 'com.squareup.retrofit2:retrofit:2.0.0-beta3'
+    compile 'com.squareup.retrofit2:converter-gson:2.0.0-beta3'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.0.0-RC1'
+
+    // Rx
+    compile 'com.jakewharton.rxbinding:rxbinding:0.3.0'
+    compile 'io.reactivex:rxandroid:1.0.1'
+
     compile libraries.supportAnnotations
     compile libraries.supportAppCompat
     compile libraries.supportDesign

@@ -7,7 +7,7 @@ ext.versions = [
         compileSdk                   : 23,
         buildTools                   : '23.0.3',
 
-        androidGradlePlugin          : '2.2.0-alpha4',
+        androidGradlePlugin          : '2.2.0-alpha6',
         aptGradlePlugin              : '1.8',
         retrolambdaGradlePlugin      : '3.2.5',
         lombokGradlePlugin           : '0.2.3.a2',
@@ -19,6 +19,9 @@ ext.versions = [
         versionsGradlePlugin         : '0.13.0',
 
         dagger                       : '2.4',
+
+        retrofit                     : '2.0.0-beta4',
+        retrofitLoggingInterceptor   : '3.2.0',
 
         supportLibs                  : '23.1.1',
         butterKnife                  : '8.0.1',
@@ -52,37 +55,43 @@ ext.gradlePlugins = [
 ]
 
 ext.libraries = [
-        dagger                  : "com.google.dagger:dagger:$versions.dagger",
-        daggerCompiler          : "com.google.dagger:dagger-compiler:$versions.dagger",
+        dagger                   : "com.google.dagger:dagger:$versions.dagger",
+        daggerCompiler           : "com.google.dagger:dagger-compiler:$versions.dagger",
 
-        autoValue               : "com.google.auto.value:auto-value:$versions.autoValue",
+        // Retro
+        retrofit                 : "com.squareup.retrofit2:retrofit:$versions.retrofit",
+        retrofitAdapter          : "com.squareup.retrofit2:adapter-rxjava:$versions.retrofit",
+        retrofitConverterGson    : "com.squareup.retrofit2:converter-gson:$versions.retrofit",
+        okHttp3LoggingInterceptor: "com.squareup.okhttp3:logging-interceptor:$versions.retrofitLoggingInterceptor",
 
-        supportAnnotations      : "com.android.support:support-annotations:$versions.supportLibs",
-        supportAppCompat        : "com.android.support:appcompat-v7:$versions.supportLibs",
-        supportDesign           : "com.android.support:design:$versions.supportLibs",
-        supportRecyclerView     : "com.android.support:recyclerview-v7:$versions.supportLibs",
-        supportCardView         : "com.android.support:cardview-v7:$versions.supportLibs",
+        autoValue                : "com.google.auto.value:auto-value:$versions.autoValue",
 
-        butterKnife             : "com.jakewharton:butterknife:$versions.butterKnife",
-        butterKnifeCompiler     : "com.jakewharton:butterknife-compiler:$versions.butterKnife",
-        timber                  : "com.jakewharton.timber:timber:$versions.timber",
+        supportAnnotations       : "com.android.support:support-annotations:$versions.supportLibs",
+        supportAppCompat         : "com.android.support:appcompat-v7:$versions.supportLibs",
+        supportDesign            : "com.android.support:design:$versions.supportLibs",
+        supportRecyclerView      : "com.android.support:recyclerview-v7:$versions.supportLibs",
+        supportCardView          : "com.android.support:cardview-v7:$versions.supportLibs",
+
+        butterKnife              : "com.jakewharton:butterknife:$versions.butterKnife",
+        butterKnifeCompiler      : "com.jakewharton:butterknife-compiler:$versions.butterKnife",
+        timber                   : "com.jakewharton.timber:timber:$versions.timber",
 
         // Developer Tools
-        stetho                  : "com.facebook.stetho:stetho:$versions.stetho",
-        leakCanary              : "com.squareup.leakcanary:leakcanary-android:$versions.leakCanary",
-        tinyDancer              : "com.github.brianPlummer:tinydancer:$versions.tinyDancer",
-        lynx                    : "com.github.pedrovgs:lynx:$versions.lynx",
-        devMetricsNoOp          : "com.frogermcs.androiddevmetrics:androiddevmetrics-runtime-noop:$versions.androidDevMetricsGradlePlugin",
-        processPhoenix          : "com.jakewharton:process-phoenix:$versions.processPhoenix",
+        stetho                   : "com.facebook.stetho:stetho:$versions.stetho",
+        leakCanary               : "com.squareup.leakcanary:leakcanary-android:$versions.leakCanary",
+        tinyDancer               : "com.github.brianPlummer:tinydancer:$versions.tinyDancer",
+        lynx                     : "com.github.pedrovgs:lynx:$versions.lynx",
+        devMetricsNoOp           : "com.frogermcs.androiddevmetrics:androiddevmetrics-runtime-noop:$versions.androidDevMetricsGradlePlugin",
+        processPhoenix           : "com.jakewharton:process-phoenix:$versions.processPhoenix",
 
         // Test dependencies
-        junit                   : "junit:junit:$versions.junit",
-        robolectric             : "org.robolectric:robolectric:$versions.robolectric",
-        assertJ                 : "org.assertj:assertj-core:$versions.assertJ",
-        equalsVerifier          : "nl.jqno.equalsverifier:equalsverifier:$versions.equalsVerifier",
-        mockitoCore             : "org.mockito:mockito-core:$versions.mockito",
-        supportTestRunner       : "com.android.support.test:runner:$versions.supportTestRunner",
-        supportTestRules        : "com.android.support.test:rules:$versions.supportTestRunner",
-        espressoCore            : "com.android.support.test.espresso:espresso-core:$versions.espresso",
-        espressoContrib         : "com.android.support.test.espresso:espresso-contrib:$versions.espresso",
+        junit                    : "junit:junit:$versions.junit",
+        robolectric              : "org.robolectric:robolectric:$versions.robolectric",
+        assertJ                  : "org.assertj:assertj-core:$versions.assertJ",
+        equalsVerifier           : "nl.jqno.equalsverifier:equalsverifier:$versions.equalsVerifier",
+        mockitoCore              : "org.mockito:mockito-core:$versions.mockito",
+        supportTestRunner        : "com.android.support.test:runner:$versions.supportTestRunner",
+        supportTestRules         : "com.android.support.test:rules:$versions.supportTestRunner",
+        espressoCore             : "com.android.support.test.espresso:espresso-core:$versions.espresso",
+        espressoContrib          : "com.android.support.test.espresso:espresso-contrib:$versions.espresso",
 ]
