@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
+import java.util.WeakHashMap;
 
 import rx.Observable;
 import rx.Subscription;
@@ -22,7 +22,7 @@ import rx.subscriptions.CompositeSubscription;
 public class DefaultCollageLoader implements CollageLoader {
     private CollageStrategy defaultStrategy = new SquareCollageStrategy();
     private CompositeSubscription compositeSubscription;
-    private HashMap<Object, Subscription> subscriptionsMap = new HashMap<>();
+    private WeakHashMap<Object, Subscription> subscriptionsMap = new WeakHashMap<>();
 
 
     // Начитался https://habrahabr.ru/post/265997/
@@ -60,7 +60,7 @@ public class DefaultCollageLoader implements CollageLoader {
             subscriptionsMap.remove(o);
         }
         Subscription loading = Observable.from(urls)
-                .observeOn(Schedulers.io())
+                .subscribeOn(Schedulers.io())
                 .map(this::getBitmapFromURL)
                 .toList()
                 .doOnNext(t ->
