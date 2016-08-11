@@ -8,20 +8,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import ru.yandex.yamblz.R;
-import ru.yandex.yamblz.handler.CriticalSectionsManager;
-import ru.yandex.yamblz.handler.Task;
 import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.model.Genre;
 
 
 public class GenreAdapter extends RecyclerView.Adapter<GenreAdapter.GenreHolder> {
-    private Map<ImageView, WeakReference<Task>> loadingTasks = new WeakHashMap<>();
 
 
     protected boolean mIsLoading = false;
@@ -56,14 +50,8 @@ public class GenreAdapter extends RecyclerView.Adapter<GenreAdapter.GenreHolder>
         holder.photoView.setImageDrawable(null);
         holder.titleView.setText(genres.get(position).getName());
         holder.descView.setText(genres.get(position).getArtistString());
-        if (loadingTasks.containsKey(holder.photoView)) {
-            CriticalSectionsManager.getHandler()
-                    .removeLowPriorityTask(loadingTasks.get(holder.photoView).get());
-        }
-        Task task = () -> CollageLoaderManager.getLoader()
+        CollageLoaderManager.getLoader()
                 .loadCollage(genres.get(position).getArtistsPhotos(), holder.photoView);
-        CriticalSectionsManager.getHandler().postLowPriorityTask(task);
-        loadingTasks.put(holder.photoView, new WeakReference<>(task));
     }
 
 

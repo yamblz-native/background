@@ -8,12 +8,15 @@ import android.widget.ImageView;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.handler.Task;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -25,6 +28,8 @@ public class DefaultCollageLoader implements CollageLoader {
     private CompositeSubscription compositeSubscription;
     private Map<Object, Subscription> subscriptionsMap = new WeakHashMap<>();
     private LruCache<List<String>, Bitmap> bitmapCache;
+
+    private Map<ImageTarget, WeakReference<Task>> loadingTasks = new WeakHashMap<>();
 
 
     // Начитался https://habrahabr.ru/post/265997/
@@ -65,13 +70,23 @@ public class DefaultCollageLoader implements CollageLoader {
             subscriptionsMap.remove(imageTarget);
         }
 
+
         Subscription loading = Observable
                 .concat(collageFromCache(urls), collageFromNetwork(urls, collageStrategy))
                 .first(bitmap -> bitmap != null)
                 .doOnNext(bitmap -> bitmapCache.put(urls, bitmap))
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        imageTarget::onLoadBitmap,
+                        (bitmap) -> {
+                            if (loadingTasks.containsKey(imageTarget)) {
+                                CriticalSectionsManager.getHandler()
+                                        .removeLowPriorityTask(loadingTasks.get(imageTarget).get());
+                            }
+                            Task task = () -> imageTarget.onLoadBitmap(bitmap);
+                            CriticalSectionsManager.getHandler().postLowPriorityTask(task);
+                            loadingTasks.put(imageTarget, new WeakReference<>(task));
+                        },
                         e -> Log.e("E:DefaultCollageLoader", "Collage downloading failed: " + e),
                         () -> Log.d("D:DefaultCollageLoader", "Collage downloading completed")
                 );
