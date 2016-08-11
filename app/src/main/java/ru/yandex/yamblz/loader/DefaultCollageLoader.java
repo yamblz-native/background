@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.WeakHashMap;
 
 import rx.Observable;
@@ -22,7 +23,7 @@ import rx.subscriptions.CompositeSubscription;
 public class DefaultCollageLoader implements CollageLoader {
     private CollageStrategy defaultStrategy = new SquareCollageStrategy();
     private CompositeSubscription compositeSubscription;
-    private WeakHashMap<Object, Subscription> subscriptionsMap = new WeakHashMap<>();
+    private Map<Object, Subscription> subscriptionsMap = new WeakHashMap<>();
 
 
     // Начитался https://habrahabr.ru/post/265997/
