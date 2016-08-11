@@ -33,9 +33,7 @@ public class DefaultCriticalSectionsHandler implements CriticalSectionsHandler {
 
     @Override
     public void stopSections() {
-        for (Integer section : sections) {
-            stopSection(section);
-        }
+        sections.clear();
         runTasks();
     }
 

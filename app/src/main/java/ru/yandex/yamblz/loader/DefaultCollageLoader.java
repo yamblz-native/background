@@ -17,7 +17,6 @@ import java.util.WeakHashMap;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -44,7 +43,7 @@ public class DefaultCollageLoader implements CollageLoader {
 
     @Override
     public void loadCollage(List<String> urls, ImageView imageView) {
-        loadCollage(urls, imageView, defaultStrategy);
+        loadCollage(urls, new SimpleImageTarget(imageView), defaultStrategy);
     }
 
     @Override
@@ -55,53 +54,47 @@ public class DefaultCollageLoader implements CollageLoader {
     @Override
     public void loadCollage(List<String> urls, ImageView imageView,
                             CollageStrategy collageStrategy) {
-        loadCollage(urls, imageView, bitmap -> imageView.setImageBitmap((Bitmap) bitmap), collageStrategy);
+        loadCollage(urls, new SimpleImageTarget(imageView), collageStrategy);
     }
 
     @Override
     public void loadCollage(List<String> urls, ImageTarget imageTarget,
                             CollageStrategy collageStrategy) {
-        loadCollage(urls, imageTarget, bitmap -> imageTarget.onLoadBitmap((Bitmap) bitmap), collageStrategy);
-    }
-
-    //Работает, но такое ощущение, что можно лучше) хочу критики
-    private void loadCollage(List<String> urls, Object o, Action1 setBitmap,
-                             CollageStrategy collageStrategy) {
-        if (subscriptionsMap.containsKey(o)) {
-            compositeSubscription.remove(subscriptionsMap.get(o));
-            subscriptionsMap.remove(o);
+        if (subscriptionsMap.containsKey(imageTarget)) {
+            compositeSubscription.remove(subscriptionsMap.get(imageTarget));
+            subscriptionsMap.remove(imageTarget);
         }
 
-
         Subscription loading = Observable
-                .concat(fromCache(urls), fromNetwork(urls, collageStrategy))
+                .concat(collageFromCache(urls), collageFromNetwork(urls, collageStrategy))
                 .first(bitmap -> bitmap != null)
                 .doOnNext(bitmap -> bitmapCache.put(urls, bitmap))
+                .doOnNext(t ->
+                        Log.e("THREAD", " " + Thread.currentThread().toString()))
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(setBitmap,
+                .subscribe(
+                        imageTarget::onLoadBitmap,
                         e -> Log.e("E:DefaultCollageLoader", "Collage downloading failed: " + e),
                         () -> Log.d("D:DefaultCollageLoader", "Collage downloading completed")
                 );
-        subscriptionsMap.put(o, loading);
+        subscriptionsMap.put(imageTarget, loading);
         compositeSubscription.add(loading);
     }
 
-
-    private Observable<Bitmap> fromCache(List<String> urls) {
+    private Observable<Bitmap> collageFromCache(List<String> urls) {
         return Observable.create(subscriber -> {
             subscriber.onNext(bitmapCache.get(urls));
             subscriber.onCompleted();
         });
     }
 
-    private Observable<Bitmap> fromNetwork(List<String> urls, CollageStrategy collageStrategy) {
+    private Observable<Bitmap> collageFromNetwork(List<String> urls, CollageStrategy collageStrategy) {
         return Observable.from(urls)
                 .subscribeOn(Schedulers.io())
                 .map(this::getBitmapFromURL)
                 .toList()
                 .map(collageStrategy::create);
     }
-
 
     private Bitmap getBitmapFromURL(String src) {
         InputStream inputStream = null;
@@ -116,10 +109,13 @@ public class DefaultCollageLoader implements CollageLoader {
             Log.e("E:DefaultCollageLoader", "Image downloading failed: " + src);
             return null;
         } finally {
-            //Что-то мне не совсем это нравится, прокомментируешь?
             try {
-                connection.disconnect();
-                inputStream.close();
+                if (connection != null) {
+                    connection.disconnect();
+                }
+                if (inputStream != null) {
+                    inputStream.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
