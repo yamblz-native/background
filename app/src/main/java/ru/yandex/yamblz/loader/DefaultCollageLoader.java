@@ -15,13 +15,14 @@ import java.util.List;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
 public class DefaultCollageLoader implements CollageLoader {
     private CollageStrategy defaultStrategy = new SquareCollageStrategy();
     private CompositeSubscription compositeSubscription;
-    private HashMap<ImageView, Subscription> subscriptionsMap = new HashMap<>();
+    private HashMap<Object, Subscription> subscriptionsMap = new HashMap<>();
 
 
     // Начитался https://habrahabr.ru/post/265997/
@@ -42,8 +43,21 @@ public class DefaultCollageLoader implements CollageLoader {
     @Override
     public void loadCollage(List<String> urls, ImageView imageView,
                             CollageStrategy collageStrategy) {
-        if (subscriptionsMap.containsKey(imageView)) {
-            compositeSubscription.remove(subscriptionsMap.get(imageView));
+        loadCollage(urls, imageView, bitmap -> imageView.setImageBitmap((Bitmap) bitmap), collageStrategy);
+    }
+
+    @Override
+    public void loadCollage(List<String> urls, ImageTarget imageTarget,
+                            CollageStrategy collageStrategy) {
+        loadCollage(urls, imageTarget, bitmap -> imageTarget.onLoadBitmap((Bitmap) bitmap), collageStrategy);
+    }
+
+    //Работает, но такое ощущение, что можно лучше) хочу критики
+    private void loadCollage(List<String> urls, Object o, Action1 setBitmap,
+                             CollageStrategy collageStrategy) {
+        if (subscriptionsMap.containsKey(o)) {
+            compositeSubscription.remove(subscriptionsMap.get(o));
+            subscriptionsMap.remove(o);
         }
         Subscription loading = Observable.from(urls)
                 .observeOn(Schedulers.io())
@@ -53,19 +67,12 @@ public class DefaultCollageLoader implements CollageLoader {
                         Log.e("THREAD", " " + Thread.currentThread().toString()))
                 .map(collageStrategy::create)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        imageView::setImageBitmap,
+                .subscribe(setBitmap,
                         e -> Log.e("E:DefaultCollageLoader", "Collage downloading failed: " + e),
                         () -> Log.d("D:DefaultCollageLoader", "Collage downloading completed")
                 );
-        subscriptionsMap.put(imageView, loading);
+        subscriptionsMap.put(o, loading);
         compositeSubscription.add(loading);
-    }
-
-    @Override
-    public void loadCollage(List<String> urls, ImageTarget imageTarget,
-                            CollageStrategy collageStrategy) {
-
     }
 
     private Bitmap getBitmapFromURL(String src) {
