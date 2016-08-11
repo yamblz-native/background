@@ -69,8 +69,6 @@ public class DefaultCollageLoader implements CollageLoader {
                 .concat(collageFromCache(urls), collageFromNetwork(urls, collageStrategy))
                 .first(bitmap -> bitmap != null)
                 .doOnNext(bitmap -> bitmapCache.put(urls, bitmap))
-                .doOnNext(t ->
-                        Log.e("THREAD", " " + Thread.currentThread().toString()))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         imageTarget::onLoadBitmap,
@@ -90,13 +88,19 @@ public class DefaultCollageLoader implements CollageLoader {
 
     private Observable<Bitmap> collageFromNetwork(List<String> urls, CollageStrategy collageStrategy) {
         return Observable.from(urls)
-                .subscribeOn(Schedulers.io())
-                .map(this::getBitmapFromURL)
+                .flatMap(url -> getBitmapObservableFromURL(url).subscribeOn(Schedulers.io()))
                 .toList()
                 .map(collageStrategy::create);
     }
 
+    private Observable<Bitmap> getBitmapObservableFromURL(String url) {
+        return Observable.fromCallable(
+                () -> getBitmapFromURL(url)
+        );
+    }
+
     private Bitmap getBitmapFromURL(String src) {
+        Log.e("THREAD", " " + Thread.currentThread().toString());
         InputStream inputStream = null;
         HttpURLConnection connection = null;
         try {
