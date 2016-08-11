@@ -2,6 +2,7 @@ package ru.yandex.yamblz.loader;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.v4.util.LruCache;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -24,11 +25,21 @@ public class DefaultCollageLoader implements CollageLoader {
     private CollageStrategy defaultStrategy = new SquareCollageStrategy();
     private CompositeSubscription compositeSubscription;
     private Map<Object, Subscription> subscriptionsMap = new WeakHashMap<>();
+    private LruCache<List<String>, Bitmap> bitmapCache;
 
 
     // Начитался https://habrahabr.ru/post/265997/
     public DefaultCollageLoader(CompositeSubscription compositeSubscription) {
         this.compositeSubscription = compositeSubscription;
+
+        int cacheSize = (int) (Runtime.getRuntime().maxMemory());
+
+        bitmapCache = new LruCache<List<String>, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(List<String> key, Bitmap value) {
+                return value.getByteCount();
+            }
+        };
     }
 
     @Override
@@ -60,13 +71,12 @@ public class DefaultCollageLoader implements CollageLoader {
             compositeSubscription.remove(subscriptionsMap.get(o));
             subscriptionsMap.remove(o);
         }
-        Subscription loading = Observable.from(urls)
-                .subscribeOn(Schedulers.io())
-                .map(this::getBitmapFromURL)
-                .toList()
-                .doOnNext(t ->
-                        Log.e("THREAD", " " + Thread.currentThread().toString()))
-                .map(collageStrategy::create)
+
+
+        Subscription loading = Observable
+                .concat(fromCache(urls), fromNetwork(urls, collageStrategy))
+                .first(bitmap -> bitmap != null)
+                .doOnNext(bitmap -> bitmapCache.put(urls, bitmap))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(setBitmap,
                         e -> Log.e("E:DefaultCollageLoader", "Collage downloading failed: " + e),
@@ -75,6 +85,23 @@ public class DefaultCollageLoader implements CollageLoader {
         subscriptionsMap.put(o, loading);
         compositeSubscription.add(loading);
     }
+
+
+    private Observable<Bitmap> fromCache(List<String> urls) {
+        return Observable.create(subscriber -> {
+            subscriber.onNext(bitmapCache.get(urls));
+            subscriber.onCompleted();
+        });
+    }
+
+    private Observable<Bitmap> fromNetwork(List<String> urls, CollageStrategy collageStrategy) {
+        return Observable.from(urls)
+                .subscribeOn(Schedulers.io())
+                .map(this::getBitmapFromURL)
+                .toList()
+                .map(collageStrategy::create);
+    }
+
 
     private Bitmap getBitmapFromURL(String src) {
         InputStream inputStream = null;
