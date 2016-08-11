@@ -11,6 +11,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.loader.CollageLoaderManager;
 import ru.yandex.yamblz.model.Genre;
 
 
@@ -46,15 +47,11 @@ public class GenreAdapter extends RecyclerView.Adapter<GenreAdapter.GenreHolder>
 
     @Override
     public void onBindViewHolder(GenreHolder holder, int position) {
-        //Фото
-//        String photo = genres.get(position).getSmallCover();
-//        this.mImageLoader.load(photo)
-//                .fit().centerCrop()
-//                .into(holder).photoView;
-//        holder.photoView.setp
-        //Имя
+        holder.photoView.setImageDrawable(null);
         holder.titleView.setText(genres.get(position).getName());
         holder.descView.setText(genres.get(position).getArtistString());
+        CollageLoaderManager.getLoader()
+                .loadCollage(genres.get(position).getArtistsPhotos(), holder.photoView);
     }
 
 

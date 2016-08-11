@@ -17,6 +17,9 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import ru.yandex.yamblz.R;
+import ru.yandex.yamblz.handler.CriticalSectionsManager;
+import ru.yandex.yamblz.loader.CollageLoaderManager;
+import ru.yandex.yamblz.loader.DefaultCollageLoader;
 import ru.yandex.yamblz.model.Artist;
 import ru.yandex.yamblz.model.ArtistsService;
 import ru.yandex.yamblz.model.Genre;
@@ -25,10 +28,20 @@ import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class ContentFragment extends BaseFragment {
     @BindView(R.id.genres_list)
     RecyclerView recyclerView;
+
+    private CompositeSubscription compositeSubscription = new CompositeSubscription();
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        CollageLoaderManager.init(new DefaultCollageLoader(compositeSubscription));
+        CriticalSectionsManager.init(null); // add implementation
+    }
 
     @Nullable
     @Override
@@ -45,6 +58,7 @@ public class ContentFragment extends BaseFragment {
         Retrofit retrofit = new Retrofit.Builder()
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
+                //http://download.cdn.yandex.net/mobilization-2016/artists.json
                 .baseUrl("http://download.cdn.yandex.net/")
                 .build();
         ArtistsService artistsService = retrofit.create(ArtistsService.class);
@@ -53,19 +67,7 @@ public class ContentFragment extends BaseFragment {
         artistsObservable
                 .subscribeOn(Schedulers.io())
                 .flatMapIterable(artists -> artists)
-                .flatMap(new Func1<Artist, Observable<Genre>>() {
-                    @Override
-                    public Observable<Genre> call(Artist artist) {
-                        List<Genre> artistGenres = new ArrayList<>();
-                        List<Artist> forGenre = new ArrayList<>();
-                        forGenre.add(artist);
-
-                        for (String genre : artist.getGenres()) {
-                            artistGenres.add(new Genre(genre, forGenre));
-                        }
-                        return Observable.from(artistGenres);
-                    }
-                })
+                .flatMap(genresWithArtist)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         genre -> {
@@ -77,13 +79,12 @@ public class ContentFragment extends BaseFragment {
                             }
                             genres.add(genre);
                         },
-                        e -> Log.e("RX ERROR", "not good in download"),
+                        e -> Log.e("RX artists->genres ", "not good in download" + e),
                         () -> {
                             recyclerView.requestLayout();
-                            Log.e("RX ERROR", "goood");
+                            Log.e("RX artists->genres ", "goood");
                         }
                 );
-
         recyclerView.setAdapter(new GenreAdapter(genres));
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -92,5 +93,17 @@ public class ContentFragment extends BaseFragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        compositeSubscription.unsubscribe();
     }
+
+    private Func1<Artist, Observable<Genre>> genresWithArtist = artist -> {
+        List<Genre> artistGenres = new ArrayList<>();
+        List<Artist> forGenre = new ArrayList<>();
+        forGenre.add(artist);
+
+        for (String genre : artist.getGenres()) {
+            artistGenres.add(new Genre(genre, forGenre));
+        }
+        return Observable.from(artistGenres);
+    };
 }
