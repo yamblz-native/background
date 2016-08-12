@@ -1,4 +1,7 @@
 <resources>
-    <string name="app_name">Yamblz</string>
+    <string name="app_name">Background</string>
     <string name="content">Hello</string>
+    <string name="collage">collage</string>
+    <string name="network_error">Net error</string>
+    <string name="mapping_error">mapping error</string>
 </resources>
