@@ -20,8 +20,8 @@ ext.versions = [
 
         dagger                       : '2.4',
 
-        retrofit                     : '2.0.0-beta4',
-        retrofitLoggingInterceptor   : '3.2.0',
+        retrofit                     : '2.0.0-beta3',
+        retrofitLoggingInterceptor   : '3.0.0-RC1',
 
         supportLibs                  : '23.1.1',
         butterKnife                  : '8.0.1',

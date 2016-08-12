@@ -27,9 +27,11 @@ public class NetUtils {
             connection.connect();
             InputStream input = connection.getInputStream();
             Bitmap myBitmap = BitmapFactory.decodeStream(input);
+            connection.disconnect();
             return myBitmap;
         } catch (IOException e) {
             // Log exception
+
             return null;
         }
     }

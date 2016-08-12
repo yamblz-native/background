@@ -2,8 +2,6 @@ package ru.yandex.yamblz.data;
 
 import java.util.List;
 
-import rx.observables.BlockingObservable;
-
 /**
  * Created by dalexiv on 8/8/16.
  */
@@ -15,12 +13,6 @@ public class Genre {
     public Genre(String name, List<String> urls) {
         this.name = name;
         this.urls = urls;
-    }
-
-    // How to refactor that?
-    public Genre(String key, BlockingObservable<List<String>> single) {
-        this.name = key;
-        single.subscribe(list-> this.urls = list);
     }
 
     public String getName() {

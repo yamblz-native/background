@@ -83,6 +83,7 @@ android {
 }
 
 // Libraries declared in dependencies.gradle in the root of the project
+
 dependencies {
     compile libraries.dagger
     apt libraries.daggerCompiler
@@ -91,6 +92,7 @@ dependencies {
 //    сompile libraries.retrofitAdapter
 //    сompile libraries.retrofitConverterGson
 //    сompile libraries.retrofitLoggingInterceptor
+
 
     // Retrofit
     // TODO refactor
@@ -121,6 +123,7 @@ dependencies {
     compile libraries.lynx
     compile libraries.processPhoenix
 
+
     testCompile libraries.junit
     testCompile libraries.robolectric
     testCompile libraries.assertJ
@@ -138,7 +141,6 @@ dependencies {
         exclude module: 'support-v4'
     }
 }
-
 configurations.all {
     resolutionStrategy {
         // Force our version of support-annotations, we have a conflict between app and androidTest dependency resolution.
