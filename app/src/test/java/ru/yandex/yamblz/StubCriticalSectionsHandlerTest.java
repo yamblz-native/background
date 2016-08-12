@@ -3,6 +3,9 @@ package ru.yandex.yamblz;
 import org.junit.Before;
 import org.junit.Test;
 
+
+import java.util.Observable;
+
 import ru.yandex.yamblz.handler.StubCriticalSectionsHandler;
 import ru.yandex.yamblz.handler.Task;
 import ru.yandex.yamblz.handler.UIThreadExecutor;
@@ -111,6 +114,14 @@ public class StubCriticalSectionsHandlerTest {
 
         Thread.sleep(2000);
         assertEquals(1,handler.lowPriorityTasksCount());
+    }
+
+    @Test
+    public void test(){
+        rx.Observable.just(1,2)
+                .subscribe(s ->{
+                    System.out.println(s);
+                });
     }
 
     private Task createAwaitTask(String name, int delay) {
