@@ -1,4 +1,4 @@
-package ru.yandex.yamblz.loader;
+package ru.yandex.yamblz.loader.interfaces;
 
 import android.widget.ImageView;
 
@@ -13,5 +13,4 @@ public interface CollageLoader {
     void loadCollage(List<String> urls, ImageView imageView, CollageStrategy collageStrategy);
 
     void loadCollage(List<String> urls, ImageTarget imageTarget, CollageStrategy collageStrategy);
-
 }

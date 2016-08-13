@@ -1,7 +1,6 @@
 package ru.yandex.yamblz.handler;
 
-public interface Task {
-
+public interface Task
+{
     void run();
-
 }
