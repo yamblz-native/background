@@ -17,12 +17,11 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import ru.yandex.yamblz.App;
 import ru.yandex.yamblz.R;
 import ru.yandex.yamblz.genre.adapter.CollageAdapter;
 import ru.yandex.yamblz.genre.data.entity.Artist;
 import ru.yandex.yamblz.genre.data.entity.Genre;
-import ru.yandex.yamblz.genre.data.source.Cache;
-import ru.yandex.yamblz.genre.data.source.CacheImpl;
 import ru.yandex.yamblz.genre.data.source.DataSource;
 import ru.yandex.yamblz.genre.data.source.RemoteDataSource;
 import ru.yandex.yamblz.genre.data.source.Repository;
@@ -32,11 +31,8 @@ import ru.yandex.yamblz.ui.fragments.BaseFragment;
 
 public class GenresFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, GenresView {
 
-    private static final String TAG = "GenresFragment";
-
     private GenresPresenter<GenresView> presenter;
     private CollageAdapter collageAdapter;
-    private Unbinder unbinder;
 
     @BindView(R.id.rv_collages)
     RecyclerView recyclerView;
@@ -47,21 +43,14 @@ public class GenresFragment extends BaseFragment implements SwipeRefreshLayout.O
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
-        File cacheDir = getActivity().getCacheDir();
-        Cache<Artist> cache = new CacheImpl(cacheDir);
-        DataSource remoteDataSource = new RemoteDataSource();
-
-        presenter = new GenresPresenterImpl(Repository.getInstance(cache, remoteDataSource));
+        presenter = new GenresPresenterImpl(App.get(getContext()).getArtistRepository());
     }
 
     @NonNull
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle bundle)
     {
-        View view = inflater.inflate(R.layout.fragment_content, container, false);
-        unbinder = ButterKnife.bind(this, view);
-        return view;
+        return inflater.inflate(R.layout.fragment_content, container, false);
     }
 
     @Override
@@ -89,13 +78,6 @@ public class GenresFragment extends BaseFragment implements SwipeRefreshLayout.O
         super.onPause();
         presenter.unsubscribe();
         presenter.unbind();
-    }
-
-    @Override
-    public void onDestroyView()
-    {
-        unbinder.unbind();
-        super.onDestroyView();
     }
 
     @Override

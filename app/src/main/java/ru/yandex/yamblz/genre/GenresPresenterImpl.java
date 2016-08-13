@@ -39,15 +39,13 @@ public class GenresPresenterImpl implements GenresPresenter<GenresView>
             genresView.showProgress(true);
             if (forceLoad) dataSource.delete();
 
-            subscriptions.add(dataSource.getList()
+            subscriptions.add(dataSource.getGenres()
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .map(Utils::transformArtistToGenres)
                     .subscribe(onNext, onError));
         }
         else
         {
-            genresView.showProgress(false);
             genresView.showError("no connection");
         }
     }
@@ -70,12 +68,14 @@ public class GenresPresenterImpl implements GenresPresenter<GenresView>
         subscriptions.clear();
     }
 
-    private Action1<List<Genre>> onNext = genres -> {
+    private Action1<List<Genre>> onNext = genres ->
+    {
         genresView.showProgress(false);
         genresView.showGenres(genres);
     };
 
-    private Action1<Throwable> onError = e -> {
+    private Action1<Throwable> onError = e ->
+    {
         genresView.showProgress(false);
         genresView.showError(e.getMessage());
     };

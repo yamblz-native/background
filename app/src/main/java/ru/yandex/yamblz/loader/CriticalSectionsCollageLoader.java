@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import ru.yandex.yamblz.handler.CriticalSectionsHandler;
 import ru.yandex.yamblz.handler.CriticalSectionsManager;
-import ru.yandex.yamblz.handler.Task;
 import ru.yandex.yamblz.handler.TaskSetImageView;
 import ru.yandex.yamblz.loader.interfaces.CollageLoader;
 import ru.yandex.yamblz.loader.interfaces.CollageStrategy;

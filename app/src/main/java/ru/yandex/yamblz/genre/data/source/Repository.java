@@ -3,6 +3,9 @@ package ru.yandex.yamblz.genre.data.source;
 import java.util.List;
 
 import ru.yandex.yamblz.genre.data.entity.Artist;
+import ru.yandex.yamblz.genre.data.entity.Genre;
+import ru.yandex.yamblz.genre.data.source.local.ICache;
+import ru.yandex.yamblz.genre.util.Utils;
 import rx.Observable;
 
 /**
@@ -10,31 +13,26 @@ import rx.Observable;
  */
 public class Repository implements DataSource
 {
-    private static Repository sRepository;
-
-    private Cache<Artist> cache;
+    private ICache<Artist> cache;
     private DataSource remote;
 
-    public static Repository getInstance(Cache<Artist> cache, DataSource remote)
-    {
-        if (sRepository == null)
-        {
-            sRepository = new Repository(cache, remote);
-        }
-        return sRepository;
-    }
-
-    private Repository(Cache<Artist> cache, DataSource remote)
+    public Repository(ICache<Artist> cache, DataSource remote)
     {
         this.cache = cache;
         this.remote = remote;
     }
 
     @Override
-    public Observable<List<Artist>> getList()
+    public Observable<List<Artist>> getArtists()
     {
         if (cache.isEmpty()) return fromRemote();
         return fromLocal();
+    }
+
+    @Override
+    public Observable<List<Genre>> getGenres()
+    {
+        return getArtists().map(Utils::transformArtistToGenres);
     }
 
     @Override
@@ -45,7 +43,7 @@ public class Repository implements DataSource
 
     private Observable<List<Artist>> fromRemote()
     {
-        return remote.getList().doOnNext(artists -> cache.put(artists));
+        return remote.getArtists().doOnNext(artists -> cache.put(artists));
     }
 
     private Observable<List<Artist>> fromLocal()

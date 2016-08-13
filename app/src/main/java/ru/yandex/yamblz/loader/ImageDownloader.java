@@ -40,14 +40,8 @@ public class ImageDownloader implements Runnable
     @Override
     public void run()
     {
-        if (bitmapCache.get(url) != null)
-        {
-            bitmaps.add(cachedBitmap());
-        }
-        else
-        {
-            bitmaps.add(remoteBitmap());
-        }
+        if (bitmapCache.get(url) != null) bitmaps.add(cachedBitmap());
+        else bitmaps.add(remoteBitmap());
 
         countDownLatch.countDown();
     }
